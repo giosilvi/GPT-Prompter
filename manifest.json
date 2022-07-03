@@ -1,0 +1,20 @@
+{
+    "name": "PrismAI",
+    "version": "1.0",
+    "description": "Find answers to your questions",
+    "manifest_version": 3,
+    "permissions": ["contextMenus"],
+    "content_scripts": [
+        {
+            "matches": ["<all_urls>"],
+            "js":["content.js"]
+        }
+    ],
+    "action": {
+        "default_popup": "popup.html",
+        "default_title": "PrismAI"
+    },
+    "background": {
+        "service_worker": "background.js"
+    }
+}
