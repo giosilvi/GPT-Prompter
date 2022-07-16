@@ -1,9 +1,9 @@
 {
-    "name": "PrismAI",
-    "version": "1.0",
+    "name": "GPT-Xplainer",
+    "version": "0.1",
     "description": "Find answers to your questions",
     "manifest_version": 3,
-    "permissions": ["contextMenus"],
+    "permissions": ["contextMenus","storage"],
     "content_scripts": [
         {
             "matches": ["<all_urls>"],
@@ -15,6 +15,7 @@
         "default_title": "PrismAI"
     },
     "background": {
-        "service_worker": "background.js"
+        "service_worker": "background.js",
+        "type": "module"
     }
 }

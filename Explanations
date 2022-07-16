@@ -31,3 +31,6 @@
 // - a boolean value that determines whether the function is called in the capturing phase or the bubbling phase.
 // The capturing phase is when the event is triggered from the top to the bottom of the DOM tree.
 // The bubbling phase is when the event is triggered from the bottom to the top of the DOM tree.
+
+//In background.js, the function tabs.sendMessage() is used to send a message to the content script.
+// The message is "The selected text is: " + selectionText. While the message sent back in rsp is 'a-response-object'.

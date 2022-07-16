@@ -3,25 +3,46 @@
  *          plus minimal framework for messaging between here and
  *          a content script.
  */
-chrome.runtime.onInstalled.addListener( function( ) {
-    chrome.contextMenus.create( {
-        id: 'a unique id',
-        title: 'My Context Menu',
-        contexts: [ 'all' ]
-    } );
-} );
+import promptGPT3Explanation from './gpt3.js';
 
-chrome.contextMenus.onClicked.addListener( (info,tabs) => {
-    console.log( 'context menu clicked' );
-    console.log( info.selectionText );
-    console.log( tabs );
-    console.log( 'The selected text is',info.selectionText );
-    chrome.tabs.sendMessage( tabs.id, 'The selected text is'+info.selectionText,
-                             (rsp)=> { console.log( "content script replies:" );
-                                       console.log( rsp ); } );
+
+chrome.runtime.onMessage.addListener(
+    function(request, sender, sendResponse) {
+      console.log(sender.tab ?
+                  "from a content script:" + sender.tab.url :
+                  "from the extension");
+     console.log(request.APIKEY);
+    }
+  );
+
+chrome.runtime.onInstalled.addListener(function () {
+    chrome.contextMenus.create({
+        id: 'GPTexplainer',
+        title: 'GPT3 Explain',
+        contexts: ['all']
+    });
+});
+
+chrome.contextMenus.onClicked.addListener((info, tabs) => {
+    console.log('context menu clicked');
+    console.log(info.selectionText);
+    console.log(tabs);
+    // call promptGPT3Explanation() to show the GPT3 explanation
+    (async () => {
+        await promptGPT3Explanation(info.selectionText,tabs.id)
+     
+
+    // console.log(response);
+    // chrome.tabs.sendMessage(tabs.id, response,
+    //     (rsp) => {
+    //         console.log("content script replies:");
+    //         console.log(rsp);
+    //     });
+    })()
     //Here we can use the selected text to be send in a prompt to GPT3
 
-} );
+});
+
 
 // the function sendMessage() accepts three arguments:
 // - the tab id
@@ -33,7 +54,7 @@ chrome.contextMenus.onClicked.addListener( (info,tabs) => {
 // the function addListener() takes two arguments:
 // - the event name
 // - the function to be called when the event is triggered
-// if addListener() is called from onClicked(), 
+// if addListener() is called from onClicked(),
 //the function is called when the user clicks on the context menu.
 // In this case, addListener() takes two arguments:
 // - the event name which is "onClicked"
@@ -43,7 +64,7 @@ chrome.contextMenus.onClicked.addListener( (info,tabs) => {
 // - info, which is an object that contains information about the event.
 // - tabs, which is an array of objects that contains information about the tabs.
 // info comes from the context menu, tabs comes from the tabs.
-// We are interested in the selectionText property of the info object. 
+// We are interested in the selectionText property of the info object.
 // The selectionText property is the text that the user has selected.
 // We want to send this text to the content script. So we use the sendMessage() function.
 // The content script is the script that is injected into the page.

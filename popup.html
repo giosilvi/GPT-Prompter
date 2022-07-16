@@ -7,7 +7,12 @@
     <title>Document</title>
 </head>
 <body>
-    <button> Run </button>
+<form action="" class="apikey" id="api">
+    <input type="text" id="apikey" placeholder="Please enter your API key ...">
+    <button type="submit" id="saveKey" form="api">Save</button>
+    <button type="button" id="showKey">Show API Key</button>
+    <a class="hint" href="https://beta.openai.com/docs/api-reference/authentication">Where can I generate my API key?</a>
     <script src="popup.js"></script>
+</form>
 </body>
 </html>
