@@ -6,20 +6,28 @@
 import promptGPT3Explanation from './gpt3.js';
 
 
-chrome.runtime.onMessage.addListener(
-    function(request, sender, sendResponse) {
-      console.log(sender.tab ?
-                  "from a content script:" + sender.tab.url :
-                  "from the extension");
-     console.log(request.APIKEY);
-    }
-  );
+// chrome.runtime.onMessage.addListener(
+//     function(request, sender, sendResponse) {
+//       console.log(sender.tab ?
+//                   "from a content script:" + sender.tab.url :
+//                   "from the extension");
+//      console.log(request.APIKEY);
+//     }
+//   );
+
+// function sendSearch(selectedText) {
+//     var serviceCall = 'http://www.google.com/search?q=' + selectedText;
+//     chrome.tabs.create({url: serviceCall});
+//     }
 
 chrome.runtime.onInstalled.addListener(function () {
     chrome.contextMenus.create({
-        id: 'GPTexplainer',
-        title: 'GPT3 Explain',
-        contexts: ['all']
+        id: 'GPT-xplainer',
+        title: 'GPT-3 Tell me more about "%s"',
+        contexts: ["selection"]
+        // onclick: function(info, tab) {
+        //     promptGPT3Explanation(info.selectionText,tab.id);
+        // }
     });
 });
 

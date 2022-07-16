@@ -21,21 +21,18 @@ function retrieveKey() {
     chrome.storage.sync.get('APIKEY', function (items) {
         // Check that the key exists
         if (typeof items.APIKEY !== 'undefined') {
-            // Use the key
-            // Send the key to the background script
-            chrome.runtime.sendMessage({ 'APIKEY': items.APIKEY });
 
             chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-                chrome.tabs.sendMessage(tabs[0].id, 'APIKEY:' + items.APIKEY)
+                chrome.tabs.sendMessage(tabs[0].id, 'APIKEY: ' + items.APIKEY)
             })
-            console.log('Your API key is: ' + items.APIKEY);
+            
         } else {
             // Send message no key found
 
             chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
                 chrome.tabs.sendMessage(tabs[0].id, 'APIKEY: Not found')
             })
-            console.log('No API key found.');
+
         }
     });
 }
