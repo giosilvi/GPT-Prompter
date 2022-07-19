@@ -3,7 +3,9 @@ async function promptGPT3Explanation(inputtext, id) {
     chrome.storage.sync.get('APIKEY', function (items) {
         if (typeof items.APIKEY !== 'undefined') {
             var url = "https://api.openai.com/v1/completions";
-
+            // fetch has 2 arguments:
+            // - the url
+            // - the headers
             fetch(url, {
                 method: 'POST',
                 headers: {
@@ -31,7 +33,6 @@ async function promptGPT3Explanation(inputtext, id) {
         }
     })
 }
-
 // to send a message to the content script, we use the sendMessage() function.
 // The content script is the script that is injected into the page.
 // inside an async function, we can use await to wait for a promise to be resolved.

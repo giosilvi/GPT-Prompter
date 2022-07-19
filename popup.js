@@ -38,6 +38,40 @@ function retrieveKey() {
 }
 
 
+//make a function that listen for event keydown on the input
+document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('customprompt').addEventListener('keyup', onkey, false);
+    function onkey(e) {
+        //get the value of the input
+        var inputtext = document.getElementById('customprompt').value;
+        //check if "##SELECTED TEXT##" doesn`t contained in inputtext
+        if (inputtext.indexOf("##SELECTED TEXT##") == -1) {
+            //if not, reset the input
+            //check if "##SELECTED TEXT#" is contained in inputtext
+            if (inputtext.indexOf("##SELECTED TEXT#") != -1) {
+                //if yes, replace it with "##SELECTED TEXT##"
+                inputtext = inputtext.replace("##SELECTED TEXT#", "##SELECTED TEXT##");
+                // update the input
+                document.getElementById('customprompt').value = inputtext;
+            }
+            //check if "#SELECTED TEXT##" is contained in inputtext
+            else if (inputtext.indexOf("#SELECTED TEXT##") != -1) {
+                //if yes, replace it with "##SELECTED TEXT##"
+                inputtext = inputtext.replace("#SELECTED TEXT##", "##SELECTED TEXT##");
+                // update the input
+                document.getElementById('customprompt').value = inputtext;
+            }
+            else {
+            document.getElementById('customprompt').value = "##SELECTED TEXT##";
+            }
+
+        }
+
+        }
+    }
+    );
+
+
 
 document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('saveKey').addEventListener('click', onclick, false)
