@@ -17,7 +17,7 @@ async function promptGPT3Explanation(prompt, tabs) {
                 body: JSON.stringify({ "model": "text-davinci-002", "prompt":prompt, "temperature": 0, "max_tokens": 1000 })
             }).then(result => result.json())
                 .then((result) => {
-                    chrome.tabs.sendMessage(tabs.id, prompt+result.choices[0].text,
+                    chrome.tabs.sendMessage(tabs.id, prompt+result.choices[0].text, // send message to tab
                         (rsp) => {
                             console.log("content script replies:");
                             console.log(rsp);
