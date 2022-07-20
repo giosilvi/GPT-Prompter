@@ -1,6 +1,5 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -10,34 +9,50 @@
 </head>
 
 <body>
-    <div class="header">Here you can set your API Key from OpenAI and your prompts</div>
+    <div class="header">
+        Here you can set your API Key from OpenAI and your prompts
+    </div>
 
     <div class="main_container"> 
-        <h1>GTP Tool from J</h1>
+        <h1>GPT-3 Tool from J</h1>
         <div class="container" style="width:600px"> 
-            <div style="float:left; width:300px; height:auto; background-color:white;"><input type="text" class="form" id="apikey" style="color:#8e8ea0; width: 300px;" placeholder=" Please enter your API key ..."></div> 
-            <div style="float:left; width:auto; height:auto; background-color:white;"><button type="submit" id="saveKey" form="api" class="save">Save</button></div> 
-            <div style="float:left; width:auto; height:auto; background-color:white;" class="newbutton"><button type="button" id="showKey" class="apikeybutton" style="font-family: Helvetica, sans-serif;">Show API Key</button><br></div>
+            <div style="float:left; width:300px; height:auto; background-color:white;">
+                <input type="text" class="form" id="apikey" style="color:#8e8ea0; width: 300px;" placeholder=" Please enter your API key ...">
+            </div> 
+
+            <div style="float:left; width:auto; height:auto; background-color:white;">
+                <button type="submit" id="saveKey" form="api" class="save">APISave</button>
+            </div> 
+
+            <div style="float:left; width:auto; height:auto; background-color:white;" class="newbutton">
+                <button type="button" id="showKey" class="apikeybutton" style="font-family: Helvetica, sans-serif;">Show API Key</button><br>
+            </div>
+
             <div style="clear:both;"></div>
         </div> 
+
         <div class="container" style="width:600px">
             <div><a class="hint" href="https://beta.openai.com/account/api-keys">Where can I generate my API key?</a></div>
         </div>
+
         <div style="height:30px"></div>
+
         <div class="container" style="width:600px">
             <div style="width: 600px;"><h2 style="float: left;">Prompt design</h2></div>
-            <div style="width:200px;"><textarea id="promptinput" name="prompt" rows="5" cols="50" class="form" style="color:#202123" > Tell me more about "##SELECTED TEXT##":</textarea></div>
+            <div style="width:200px;">
+                <textarea id="promptinput" name="prompt" rows="2" cols="50" class="form" style="color:#202123" >Tell me more about "##SELECTED TEXT##":</textarea>
+            </div>
             <div></div><button type="button" id="createPrompt" class="button">Create prompt</button>
         </div>
+
         <div style="height:30px"></div>
+
         <div class="container" style="width:600px">
             <h2>List of prompts</h2>
             <ol id="list-of-prompts" ></ol>
-            </div>
-
-            <script src="popup.js"></script>
         </div>
+
+        <script src="popup.js"></script>
     </div>
 </body>
-
 </html>
