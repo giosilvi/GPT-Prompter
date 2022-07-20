@@ -1,13 +1,23 @@
 function makePromptList (items) {
     var freshList = '';
-        for (var i = 0; i < items.customprompt.length; i++) {
-            console.log(items.customprompt[i]);
-            freshList += '<li>' + items.customprompt[i] + '<button id="del' + i.toString() + '" > Delete </button></li>'; //onclick="erasePrompt('+i.toString()+'"
-        }
-        return freshList;
+    for (var i = 0; i < items.customprompt.length; i++) {
+        //console.log(items.customprompt[i]);
+        freshList += '<li>' + items.customprompt[i] + ' <button id="del' + i.toString() + '" > Delete </button></li>';
+    }
+    return freshList;
+        
 }
 
+function update_del_buttons(items){
+    for (var j = 0; j < items.customprompt.length; j++) {
+        document.getElementById('del' + j.toString()).addEventListener('click', function () {
+            var id = this.id.substring(3);
+            erasePrompt(id);
+        }
+            , false)
 
+    }
+}
 
 
 //add function to save the the custom prompt in storage
@@ -24,38 +34,42 @@ function savePrompt() {
             // if the prompt is not present in the list items.customprompt, push to it
             if (!items.customprompt.includes(text)) {
                 items.customprompt.push(text);
+                freshList = makePromptList(items);
+                document.getElementById('list-of-prompts').innerHTML = freshList
+                update_del_buttons(items);
+                chrome.storage.sync.set({ 'customprompt': items.customprompt }, function () {
+                    // Notify that we saved
+                    console.log('Your custom prompt was saved.');
+                })
+
+                chrome.runtime.sendMessage({text: "new prompt list"});
             }
+            
 
         } else {
             // if the prompt does not exist, create a new array with the prompt
             items.customprompt = [text];
         };
-
-        freshList = makePromptList(items);
-        document.getElementById('list-of-prompts').innerHTML = freshList
-
-        // save the new array in the storage API
-        chrome.storage.sync.set({ 'customprompt': items.customprompt }, function () {
-            // Notify that we saved
-            console.log('Your custom prompt was saved.');
-        })
-        chrome.runtime.sendMessage({text: "new prompt list"});
     });
 }
 
 //add a function to erase a custom prompt from the storage API provided the index of the prompt
 function erasePrompt(index) {
     // try to retrive the custom prompt from the storage API
+    console.log('erasePrompt: ' + index);
     chrome.storage.sync.get('customprompt', function (items) {
         // Check that the prompt exists
+        console.log('Erasing.');
         if (typeof items.customprompt !== 'undefined') {
             // check that the index is valid
-            if (index < items.customprompt.length) {
+            if (index <= items.customprompt.length) {
                 // remove the prompt from the array
                 items.customprompt.splice(index, 1);
-                // save the new array in the storage API
+                freshList = makePromptList(items);
+                document.getElementById('list-of-prompts').innerHTML = freshList
+                //document.getElementById('list-of-prompts').removeChild(document.getElementById('del' + index.toString()));
                 chrome.storage.sync.set({ 'customprompt': items.customprompt }, function () {
-                    // Notify that we saved
+                    // Notify that is erased
                     console.log('Your custom prompt was erased.');
                 })
                 
@@ -63,13 +77,7 @@ function erasePrompt(index) {
             }
             
         }
-    }
-    
-    );
-    // chrome.storage.sync.get('customprompt', function (items) {
-    //     freshList = makePromptList(items);
-    //     document.getElementById('list-of-prompts').innerHTML = freshList
-    // });
+    });
 }
 
 
@@ -208,15 +216,7 @@ document.addEventListener('DOMContentLoaded', function () {
             freshList = makePromptList(items);
             document.getElementById('list-of-prompts').innerHTML = freshList
             //add an event listener to the delete buttons
-            for (var j = 0; j < items.customprompt.length; j++) {
-                document.getElementById('del' + j.toString()).addEventListener('click', function () {
-                    var id = this.id.substring(3);
-                    erasePrompt(id);
-                }
-                    , false)
-
-            }
-            j = 0;
+            update_del_buttons(items);
         }
     }
     )
