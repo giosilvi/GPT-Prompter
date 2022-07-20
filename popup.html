@@ -18,10 +18,12 @@
             key?</a>
         <p> 
             <h2>Prompt design</h2>
-            <textarea id="customprompt" name="prompt" rows="4" cols="50" >Tell me more about "##SELECTED TEXT##"</textarea>
+            <textarea id="promptinput" name="prompt" rows="4" cols="50" >Tell me more about "##SELECTED TEXT##":</textarea>
         </p>
-        <button type="button" id="CreatePrompt">Create prompt</button>
-
+        <button type="button" id="createPrompt">Create prompt</button>
+        
+        <h2>List of prompts</h2>
+        <p id="list-of-prompts" ></p>
         
         <script src="popup.js"></script>
     </form>

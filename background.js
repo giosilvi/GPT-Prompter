@@ -6,77 +6,104 @@
 import promptGPT3Explanation from './gpt3.js';
 
 
-// chrome.runtime.onMessage.addListener(
-//     function(request, sender, sendResponse) {
-//       console.log(sender.tab ?
-//                   "from a content script:" + sender.tab.url :
-//                   "from the extension");
-//      console.log(request.APIKEY);
-//     }
-//   );
-
-// function sendSearch(selectedText) {
-//     var serviceCall = 'http://www.google.com/search?q=' + selectedText;
-//     chrome.tabs.create({url: serviceCall});
-//     }
-
-chrome.runtime.onInstalled.addListener(function () {
+//Function to create context menu, erasing the previous one
+function createContextMenu() {
+    // if the context menu already exists, erase it
+    chrome.contextMenus.removeAll();
+    // create a new context menu
     chrome.contextMenus.create({
         id: 'GPT-xplainer',
-        title: 'GPT-3 Tell me more about "%s"',
+        title: 'GPT-xplainer ',
         contexts: ["selection"]
-        // onclick: function(info, tab) {
-        //     promptGPT3Explanation(info.selectionText,tab.id);
-        // }
     });
+    // retrieve from storage the list of custom prompts
+    chrome.storage.sync.get('customprompt', function (items) {
+        // Check that the prompt exists
+        if (typeof items.customprompt !== 'undefined') {
+            // add a context menu for each custom prompt
+            for (var i = 0; i < items.customprompt.length; i++) {
+                chrome.contextMenus.create({
+                    id: 'customprompt-' + i,
+                    parentId: "GPT-xplainer",
+                    title: items.customprompt[i].replace('##SELECTED TEXT##', '%s'),
+                    contexts: ["selection"]
+                });
+            }
+        }
+    });
+}
+
+
+// Initial context menu creation, on install
+chrome.runtime.onInstalled.addListener(function () {
+    // add one prompt to the storage
+    chrome.storage.sync.get('customprompt', function (items) {
+        // Check that the prompt exists
+        items.customprompt = ['Tell me more about "##SELECTED TEXT##":'];
+        // save the new prompt
+        chrome.storage.sync.set({ 'customprompt': items.customprompt });
+        createContextMenu()
+    }
+    );
+    
 });
+
+// listen for a signal to refresh the context menu
+chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
+    if (message.text == "new prompt list") {
+        createContextMenu()
+        // Run your script from here
+    }
+});
+
+
 
 chrome.contextMenus.onClicked.addListener((info, tabs) => {
     console.log('context menu clicked');
     console.log(info.selectionText);
     console.log(tabs);
-    // call promptGPT3Explanation() to show the GPT3 explanation
-    (async () => {
-        await promptGPT3Explanation(info.selectionText,tabs.id)
-     
+    // get the id of the context menu clicked
+    console.log(info.menuItemId.replace('customprompt-', ''));
+    // to transfort a string to int do: parseInt(string)
+    var promptNumber = parseInt(info.menuItemId.replace('customprompt-', ''));
+    console.log(promptNumber);
+    // retrieve from storage the list of custom prompts
+    chrome.storage.sync.get('customprompt', function (items) {
+        // Check that the prompt exists
+        if (typeof items.customprompt !== 'undefined') {
+            // check tha the prompt number is valid
+            if (promptNumber <= items.customprompt.length) {
+                // get the prompt
+                var prompt = items.customprompt[promptNumber];
+                // replace the selected text in the prompt
+                prompt = prompt.replace('##SELECTED TEXT##', info.selectionText);
+                // console.log(prompt);
 
-    // console.log(response);
-    // chrome.tabs.sendMessage(tabs.id, response,
-    //     (rsp) => {
-    //         console.log("content script replies:");
-    //         console.log(rsp);
-    //     });
-    })()
-    //Here we can use the selected text to be send in a prompt to GPT3
+                (async () => {
+                    await promptGPT3Explanation(prompt, tabs)
+                }
+                )();
+            }
+            else {
+                console.log('invalid prompt number');
+            }
+        }
+    else {
+        console.log('no custom prompts');
+    }
+    });
+}
+);
 
-});
-
-
-// the function sendMessage() accepts three arguments:
-// - the tab id
-// - the message
-// - the callback function, a callback function is a function that is called
-// when the asynchronous operation is complete.
-// The tabs.id contains the id of the tab that is currently active.
-
-// the function addListener() takes two arguments:
-// - the event name
-// - the function to be called when the event is triggered
-// if addListener() is called from onClicked(),
-//the function is called when the user clicks on the context menu.
-// In this case, addListener() takes two arguments:
-// - the event name which is "onClicked"
-// - the function to be called when the event is triggered, in the case above:
-// the function is called when the user clicks on the context menu.
-// The function takes two arguments:
-// - info, which is an object that contains information about the event.
-// - tabs, which is an array of objects that contains information about the tabs.
-// info comes from the context menu, tabs comes from the tabs.
-// We are interested in the selectionText property of the info object.
-// The selectionText property is the text that the user has selected.
-// We want to send this text to the content script. So we use the sendMessage() function.
-// The content script is the script that is injected into the page.
-
-//Between content and background scripts, in case one need to make some computation,
-// one should place the computation in the background script. This is because the
-// computation is done in the background script, and the result is sent to the content script.
+//add a function to check if the API key is present in storage
+function checkAPIKey() {
+    chrome.storage.sync.get('APIKEY', function (items) {
+        // Check that the API key exists
+        if (typeof items.APIKEY !== 'undefined') {
+            // run your script from here
+            chrome.action.setIcon({ path: "icons/iconA16.png" })
+        }
+    }
+    );
+}
+checkAPIKey();
