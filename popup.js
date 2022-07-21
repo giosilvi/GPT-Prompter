@@ -20,6 +20,9 @@ function update_del_buttons(items){
 }
 
 
+
+
+
 //add function to save the the custom prompt in storage
 function savePrompt() {
     // get the text from the prompt
@@ -73,7 +76,6 @@ function erasePrompt(index) {
                     console.log('Your custom prompt was erased.');
                 })
                 
-                chrome.runtime.sendMessage({text: "new prompt list"});
             }
             
         }
@@ -95,7 +97,7 @@ function saveKey() {
         // Notify that we saved
         console.log('Your API key was saved.');
         chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-            chrome.tabs.sendMessage(tabs[0].id, 'Saved')
+            chrome.tabs.sendMessage(tabs[0].id, 'API KEY Saved')
         })
     });
     chrome.action.setIcon({ path: "icons/iconA16.png" })
@@ -129,25 +131,25 @@ document.addEventListener('DOMContentLoaded', function () {
     function onkey(e) {
         //get the value of the input
         var inputtext = document.getElementById('promptinput').value;
-        //check if "##SELECTED TEXT##" doesn`t contained in inputtext
-        if (inputtext.indexOf("##SELECTED TEXT##") == -1) {
+        //check if "#TEXT#" doesn`t contained in inputtext
+        if (inputtext.indexOf("#TEXT#") == -1) {
             //if not, reset the input
             //check if "##SELECTED TEXT#" is contained in inputtext
-            if (inputtext.indexOf("##SELECTED TEXT#") != -1) {
-                //if yes, replace it with "##SELECTED TEXT##"
-                inputtext = inputtext.replace("##SELECTED TEXT#", "##SELECTED TEXT##");
+            if (inputtext.indexOf("#TEXT") != -1) {
+                //if yes, replace it with "#TEXT#"
+                inputtext = inputtext.replace("#TEXT", "#TEXT#");
                 // update the input
                 document.getElementById('promptinput').value = inputtext;
             }
             //check if "#SELECTED TEXT##" is contained in inputtext
-            else if (inputtext.indexOf("#SELECTED TEXT##") != -1) {
-                //if yes, replace it with "##SELECTED TEXT##"
-                inputtext = inputtext.replace("#SELECTED TEXT##", "##SELECTED TEXT##");
+            else if (inputtext.indexOf("TEXT#") != -1) {
+                //if yes, replace it with "#TEXT#"
+                inputtext = inputtext.replace("TEXT#", "#TEXT#");
                 // update the input
                 document.getElementById('promptinput').value = inputtext;
             }
             else {
-                document.getElementById('promptinput').value = "##SELECTED TEXT##";
+                document.getElementById('promptinput').value = "#TEXT#";
             }
 
         }
@@ -155,6 +157,19 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 }
 );
+
+
+//Load History of the custom prompts
+document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('history').addEventListener('click', function () {
+        //access local history.html file, and modify the html
+        chrome.tabs.create({url: chrome.runtime.getURL('history.html'),active:true});
+    }
+    );
+}
+);
+
+
 
 
 
@@ -220,5 +235,17 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
     )
+    //check if API is present in storage
+    chrome.storage.sync.get('APIKEY', function (items) {
+        //if it exists send an alert
+        if (typeof items.APIKEY !== 'undefined') {
+            // alert(items.APIKEY);
+            chrome.action.setIcon({ path: "icons/iconA16.png" })
+        }
+    }
+    )
 }
     , false);
+
+// to change to a new html page for this extension
+// window.location.href="history.html";
