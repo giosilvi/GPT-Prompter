@@ -25,7 +25,7 @@ function createContextMenu() {
                 chrome.contextMenus.create({
                     id: 'customprompt-' + i,
                     parentId: "GPT-xplainer",
-                    title: items.customprompt[i].replace('##SELECTED TEXT##', '%s'),
+                    title: items.customprompt[i].replace('#TEXT#', '%s'),
                     contexts: ["selection"]
                 });
             }
@@ -39,7 +39,7 @@ chrome.runtime.onInstalled.addListener(function () {
     // add one prompt to the storage
     chrome.storage.sync.get('customprompt', function (items) {
         // Check that the prompt exists
-        items.customprompt = ['Tell me more about "##SELECTED TEXT##":'];
+        items.customprompt = ['Tell me more about "#TEXT#":'];
         // save the new prompt
         chrome.storage.sync.set({ 'customprompt': items.customprompt });
         createContextMenu()
@@ -76,7 +76,7 @@ chrome.contextMenus.onClicked.addListener((info, tabs) => {
                 // get the prompt
                 var prompt = items.customprompt[promptNumber];
                 // replace the selected text in the prompt
-                prompt = prompt.replace('##SELECTED TEXT##', info.selectionText);
+                prompt = prompt.replace('#TEXT#', info.selectionText);
                 // console.log(prompt);
 
                 (async () => {

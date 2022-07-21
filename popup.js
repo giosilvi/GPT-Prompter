@@ -129,25 +129,25 @@ document.addEventListener('DOMContentLoaded', function () {
     function onkey(e) {
         //get the value of the input
         var inputtext = document.getElementById('promptinput').value;
-        //check if "##SELECTED TEXT##" doesn`t contained in inputtext
-        if (inputtext.indexOf("##SELECTED TEXT##") == -1) {
+        //check if "#TEXT#" doesn`t contained in inputtext
+        if (inputtext.indexOf("#TEXT#") == -1) {
             //if not, reset the input
             //check if "##SELECTED TEXT#" is contained in inputtext
             if (inputtext.indexOf("##SELECTED TEXT#") != -1) {
-                //if yes, replace it with "##SELECTED TEXT##"
-                inputtext = inputtext.replace("##SELECTED TEXT#", "##SELECTED TEXT##");
+                //if yes, replace it with "#TEXT#"
+                inputtext = inputtext.replace("##SELECTED TEXT#", "#TEXT#");
                 // update the input
                 document.getElementById('promptinput').value = inputtext;
             }
             //check if "#SELECTED TEXT##" is contained in inputtext
             else if (inputtext.indexOf("#SELECTED TEXT##") != -1) {
-                //if yes, replace it with "##SELECTED TEXT##"
-                inputtext = inputtext.replace("#SELECTED TEXT##", "##SELECTED TEXT##");
+                //if yes, replace it with "#TEXT#"
+                inputtext = inputtext.replace("#SELECTED TEXT##", "#TEXT#");
                 // update the input
                 document.getElementById('promptinput').value = inputtext;
             }
             else {
-                document.getElementById('promptinput').value = "##SELECTED TEXT##";
+                document.getElementById('promptinput').value = "#TEXT#";
             }
 
         }
@@ -217,6 +217,15 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('list-of-prompts').innerHTML = freshList
             //add an event listener to the delete buttons
             update_del_buttons(items);
+        }
+    }
+    )
+    //check if API is present in storage
+    chrome.storage.sync.get('APIKEY', function (items) {
+        //if it exists send an alert
+        if (typeof items.APIKEY !== 'undefined') {
+            // alert(items.APIKEY);
+            chrome.action.setIcon({ path: "icons/iconA16.png" })
         }
     }
     )

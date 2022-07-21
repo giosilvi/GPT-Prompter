@@ -1,3 +1,6 @@
+//make a constat called DaVinci cost
+const DaVinciCost = 0.06/1000;
+
 async function promptGPT3Explanation(prompt, tabs) {
     // var prompt =  "Tell me more about '" + info.selectionText + "':\n";
     console.log(prompt);
@@ -17,7 +20,10 @@ async function promptGPT3Explanation(prompt, tabs) {
                 body: JSON.stringify({ "model": "text-davinci-002", "prompt":prompt, "temperature": 0, "max_tokens": 1000 })
             }).then(result => result.json())
                 .then((result) => {
-                    chrome.tabs.sendMessage(tabs.id, prompt+result.choices[0].text,
+                    var cost = result['usage']['total_tokens']*DaVinciCost;
+                    //format cost to 5 digits
+                    cost = 'Cost: '+cost.toFixed(5)+'$ \n';
+                    chrome.tabs.sendMessage(tabs.id, cost+prompt+result.choices[0].text,
                         (rsp) => {
                             console.log("content script replies:");
                             console.log(rsp);
