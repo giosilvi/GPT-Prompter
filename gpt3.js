@@ -20,6 +20,7 @@ async function promptGPT3Explanation(prompt, tabs) {
                 body: JSON.stringify({ "model": "text-davinci-002", "prompt":prompt, "temperature": 0, "max_tokens": 1000 })
             }).then(result => result.json())
                 .then((result) => {
+
                     var cost = result['usage']['total_tokens']*DaVinciCost;
                     //format cost to 5 digits
                     cost = 'Cost: '+cost.toFixed(5)+'$ \n';
