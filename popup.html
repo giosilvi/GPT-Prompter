@@ -9,8 +9,9 @@
 </head>
 
 <body>
-    <form action="" class="apikey" id="api">
+    <form >
         <input type="text" id="apikey" placeholder="Please enter your API key ...">
+        
         <button type="submit" id="saveKey" form="api">Save</button>
         <button type="button" id="showKey">Show API Key</button>
         <br>
@@ -23,8 +24,8 @@
         <button type="button" id="createPrompt">Create prompt</button>
         
         <h2>List of prompts</h2>
-        <ul id="list-of-prompts" ></ul>
-        
+        <ol id="list-of-prompts" ></ol>
+        <button type="button" id="history">History</button>
         <script src="popup.js"></script>
     </form>
 </body>

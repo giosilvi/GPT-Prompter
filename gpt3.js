@@ -28,6 +28,21 @@ async function promptGPT3Explanation(prompt, tabs) {
                             console.log("content script replies:");
                             console.log(rsp);
                         });
+                    // save the result.choices[0].text in the clipboard
+                    // chrome.clipboard.writeText(result.choices[0].text);
+                    // save the result.choices[0].text in the storage in a list of strings under the name history
+                    chrome.storage.sync.get('history', function (items) {
+                        if (typeof items.history !== 'undefined') {
+                            items.history.push([prompt,result.choices[0].text]);
+                            chrome.storage.sync.set({ 'history': items.history });
+                        }
+                        else {
+                            items.history = [[prompt,result.choices[0].text]];
+                            chrome.storage.sync.set({ 'history': items.history });
+                        }
+                        console.log(items.history);
+                    }
+                    );
                 }).catch(err => {
                     console.log("error, login failed with API:"+items.APIKEY);
                     // loadIcon().then(console.log("loaded icon"));

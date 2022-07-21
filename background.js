@@ -83,6 +83,7 @@ chrome.contextMenus.onClicked.addListener((info, tabs) => {
                     await promptGPT3Explanation(prompt, tabs)
                 }
                 )();
+                // chrome.tabs.create({url:"history.html"});
             }
             else {
                 console.log('invalid prompt number');
