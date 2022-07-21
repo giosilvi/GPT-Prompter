@@ -31,6 +31,7 @@ function erasePrompt(index) {
                 items.history.splice(index, 1);
                 freshList = makeHistoryList(items);
                 document.getElementById('history-of-prompts').innerHTML = freshList
+                update_del_buttons(items);
                 //document.getElementById('list-of-prompts').removeChild(document.getElementById('del' + index.toString()));
                 chrome.storage.sync.set({ 'history': items.history }, function () {
                     // Notify that is erased

@@ -82,7 +82,29 @@ body {
     outline: 0px !important;
     cursor: pointer;
 }
-
+.textarea{
+    -webkit-box-align: center;
+    align-items: center;
+    background-color: rgb(255, 255, 255);
+    border-color:#c5c5d2;
+    color:#1a1a1a;
+    border-radius: 4px;
+    border-style: solid;
+    border-width: 1px;
+    cursor: default;
+    -webkit-box-pack: justify;
+    justify-content: space-between;
+    min-height: 32px;
+    position: relative;
+    box-sizing: border-box;
+    width: 600px;
+    height: 100px;
+    outline: 0px !important;
+    font-family: helvetica, sans-serif;
+    font-size: 14px;
+    line-height: 20px;
+    cursor: text;
+}
 .apikeybutton{
     align-items: center;
     justify-content: space-around;

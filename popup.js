@@ -70,6 +70,7 @@ function erasePrompt(index) {
                 items.customprompt.splice(index, 1);
                 freshList = makePromptList(items);
                 document.getElementById('list-of-prompts').innerHTML = freshList
+                update_del_buttons(items);
                 //document.getElementById('list-of-prompts').removeChild(document.getElementById('del' + index.toString()));
                 chrome.storage.sync.set({ 'customprompt': items.customprompt }, function () {
                     // Notify that is erased
