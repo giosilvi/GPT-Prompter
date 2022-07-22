@@ -41,6 +41,13 @@ body {
     height: 50px;
 }
 
+.elemList{
+    font-family: helvetica, sans-serif;
+    font-size: 14px;
+    color: #202123;
+    padding: 10px;
+
+}
 
 .prova{
     -webkit-box-align: center;

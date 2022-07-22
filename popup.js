@@ -2,7 +2,7 @@ function makePromptList (items) {
     var freshList = '';
     for (var i = 0; i < items.customprompt.length; i++) {
         //console.log(items.customprompt[i]);
-        freshList += '<li>' + items.customprompt[i] + ' <button id="del' + i.toString() + '" class="button_del" > Delete </button></li>';
+        freshList += '<li class="elemList">' + items.customprompt[i] + ' <button id="del' + i.toString() + '" class="save" > Delete </button></li>';
     }
     return freshList;
         
@@ -18,9 +18,6 @@ function update_del_buttons(items){
 
     }
 }
-
-
-
 
 
 //add function to save the the custom prompt in storage
@@ -97,6 +94,7 @@ function saveKey() {
     chrome.storage.sync.set({ 'APIKEY': apiKey }, function () {
         // Notify that we saved
         console.log('Your API key was saved.');
+        // chrome.runtime.sendMessage({text: "checkAPIKey"});
         chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
             chrome.tabs.sendMessage(tabs[0].id, 'API KEY Saved')
         })

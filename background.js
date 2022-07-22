@@ -76,7 +76,7 @@ chrome.contextMenus.onClicked.addListener((info, tabs) => {
                 // get the prompt
                 var prompt = items.customprompt[promptNumber];
                 // replace the selected text in the prompt
-                prompt = prompt.replace('#TEXT#', info.selectionText);
+                prompt = prompt.replace('#TEXT#', info.selectionText); //important part
                 // console.log(prompt);
 
                 (async () => {
@@ -84,6 +84,12 @@ chrome.contextMenus.onClicked.addListener((info, tabs) => {
                 }
                 )();
                 // chrome.tabs.create({url:"history.html"});
+                //message the info.selectionText to the content script
+                chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+                    chrome.tabs.sendMessage(tabs[0].id, 'highlight');
+
+                }
+                );
             }
             else {
                 console.log('invalid prompt number');

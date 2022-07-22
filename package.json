@@ -1,0 +1,32 @@
+{
+  "name": "chrome_extension_gpt3",
+  "version": "1.0.0",
+  "description": "",
+  "main": "background.js",
+  "dependencies": {
+    "@webcomponents/custom-elements": "^1.5.0",
+    "asynckit": "^0.4.0",
+    "axios": "^0.26.1",
+    "combined-stream": "^1.0.8",
+    "delayed-stream": "^1.0.0",
+    "follow-redirects": "^1.15.1",
+    "form-data": "^4.0.0",
+    "mime-db": "^1.52.0",
+    "mime-types": "^2.1.35",
+    "openai": "^3.0.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/giosilvi/Chrome_Extension_GPT3.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/giosilvi/Chrome_Extension_GPT3/issues"
+  },
+  "homepage": "https://github.com/giosilvi/Chrome_Extension_GPT3#readme"
+}
