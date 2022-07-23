@@ -2,7 +2,7 @@ function makeHistoryList (items) {
     var freshList = '';
     for (var i = items.history.length-1; i >= 0 ; i--) {
         //console.log(items.customprompt[i]);
-        freshList += '<li class="listhist">' + items.history[i][0]+'<br>' +  items.history[i][1] +'  <button  class="save" id="his' + i.toString() + '" > Delete </button></li>';
+        freshList += '<li class="list-group-item list-group-item-action">' + items.history[i][0]+'<br>' +  items.history[i][1] +'  <button  class="save" id="his' + i.toString() + '" > Delete </button></li>';
     }
     return freshList;
         

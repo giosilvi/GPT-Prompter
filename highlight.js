@@ -28,6 +28,7 @@ const styled = `
     width: auto;
     max-width: 500px;
     z-index: 9999;
+    line-height: 1.5;
   }
   .show {
     display: flex;
