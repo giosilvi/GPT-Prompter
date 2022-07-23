@@ -3,12 +3,12 @@
     "version": "0.1",
     "description": "Find answers to your questions",
     "manifest_version": 3,
-    "icons": { "16": "icons/icon16.png",
+    "icons": { "16": "icons/iconA16.png",
            "48": "icons/iconA48.png",
           "128": "icons/iconA128.png" },
     "permissions": ["contextMenus","storage", "tabs"],
     "content_scripts": [
-        {
+        {   "exclude_globs": ["*://google.com*"],
             "matches": ["<all_urls>"],
             "js":["node_modules/@webcomponents/custom-elements/custom-elements.min.js",
                   "content.js",

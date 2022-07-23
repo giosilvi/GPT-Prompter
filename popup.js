@@ -99,7 +99,6 @@ function saveKey() {
             chrome.tabs.sendMessage(tabs[0].id, 'API KEY Saved')
         })
     });
-    chrome.action.setIcon({ path: "icons/iconA16.png" })
 }
 
 // retrieve the API key from the storage API and

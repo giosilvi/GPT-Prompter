@@ -131,6 +131,20 @@ body {
     cursor: pointer;
 }
 
+.listhist{
+    font-family: helvetica, sans-serif;
+    font-size: 14px;
+    color: #000000;
+    padding: 10px;
+    border-width: 0px;
+    flex-wrap: wrap;
+    -webkit-box-pack: justify;
+    justify-content: space-between;
+    transition: all 100ms ease 0s;
+    box-sizing: border-box;
+    outline: 0px !important;
+}
+
 .form {
     -webkit-box-align: center;
     align-items: center;

@@ -1,36 +1,53 @@
 const highlightColor = "#d2f4d3";//"rgb(16, 163, 255)";
 
-const template = `
-  <template id="highlightTemplate">
-    <span class="highlight" style="background-color: ${highlightColor}; display: inline" ></span>
-  </template>
+
+const minipopup = (id,{ display = "none", left = 0, top = 0 }) => `
+<span class="popuptext" id="${id}" style="left: ${left}px; top:${top}px">
+Message incoming....
+</span>
 `;
 
-{/* <button id="mediumHighlighter">
-<svg class="text-marker" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 544 512"><path d="M0 479.98L99.92 512l35.45-35.45-67.04-67.04L0 479.98zm124.61-240.01a36.592 36.592 0 0 0-10.79 38.1l13.05 42.83-50.93 50.94 96.23 96.23 50.86-50.86 42.74 13.08c13.73 4.2 28.65-.01 38.15-10.78l35.55-41.64-173.34-173.34-41.52 35.44zm403.31-160.7l-63.2-63.2c-20.49-20.49-53.38-21.52-75.12-2.35L190.55 183.68l169.77 169.78L530.27 154.4c19.18-21.74 18.15-54.63-2.35-75.13z"></path></svg>
-</button> */}
+const template = (id) => `
+<template id="highlightTemplate${id}">
+<span class="highlight" id="asdjfhglk${id}"  style="background-color: ${highlightColor}; display: inline; cursor: pointer"></span>
+</template>
+`;
 
-const styled = ({ display = "none", left = 0, top = 0 }) => `
-  #mediumHighlighter {
+
+const styled = `
+  .popuptext {
     align-items: center;
     background-color: black;
     border-radius: 5px;
     border: none;
-    cursor: pointer;
-    display: ${display};
+    color: #fff;
+    display: none;
     justify-content: center;
-    left: ${left}px;
     padding: 5px 10px;
     position: fixed;
-    top: ${top}px;
-    width: 40px;
+    width: auto;
+    max-width: 500px;
     z-index: 9999;
   }
-  .text-marker {
-    fill: white;
+  .show {
+    display: flex;
+    -webkit-animation: fadeIn 1s;
+    animation: fadeIn 1s;
   }
-  .text-marker:hover {
-    fill: ${highlightColor};
+
+  @-webkit-keyframes fadeIn {
+    from {opacity: 0;} 
+    to {opacity: 1;}
+  }
+
+  @keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity:1 ;}
+  }
+  .miniclose{
+    color: #fff;
+    background-color: #000;
+    cursor: pointer;
   }
 `;
 
@@ -49,7 +66,7 @@ class MediumHighlighter extends HTMLElement {
   }
 
   get highlightTemplate() {
-    return this.shadowRoot.getElementById("highlightTemplate");
+    return this.shadowRoot.getElementById("highlightTemplate"+(this.ids-1));
   }
 
   static get observedAttributes() {
@@ -59,20 +76,27 @@ class MediumHighlighter extends HTMLElement {
   render() {
     this.attachShadow({ mode: "open" }); // here we create the shadow DOM
     const style = document.createElement("style");
-    style.textContent = styled({});
-    this.shadowRoot.appendChild(style); // here append the style to the shadowRoot
-    this.shadowRoot.innerHTML += template;// here append our HTML to the shadowRoot
-    // this.shadowRoot
-    //   .getElementById("mediumHighlighter")
-    //   .addEventListener("click", () => this.highlightSelection());
+    style.textContent = styled;
+    this.shadowRoot.appendChild(style); // here append the style to the shadowRoot    
+    this.ids = 0;
   }
 
-//   this function update the style to the current marker position
-  attributeChangedCallback(name, oldValue, newValue) { 
+  //   this function update the style in shadow DOM with the new markerPosition
+  attributeChangedCallback(name, oldValue, newValue) {
     if (name === "markerPosition") {
-      this.styleElement.textContent = styled(this.markerPosition);
+      newValue = JSON.parse(newValue);
+      if (newValue["display"] == "flex") {
+        this.shadowRoot.innerHTML += this.lastpop
+        this.shadowRoot.getElementById(this.ids).classList.toggle('show');
+        this.ids++;
+      }
+      else {
+        this.lastpop=minipopup(this.ids,this.markerPosition);
+      }
     }
   }
+
+
 
   // this function highlight the selected text
   highlightSelection() {
@@ -81,13 +105,35 @@ class MediumHighlighter extends HTMLElement {
       this.highlightRange(userSelection.getRangeAt(i));
     }
     window.getSelection().empty();
-  }
+    //add event listerer to element "buttontest" to send an alert when the user click on it
+
+    //convert this.ids-1 to string and use it as id of the element
+    const id = this.ids-1;
+    document.getElementById('asdjfhglk'+id).addEventListener("click", () => {
+      this.shadowRoot.getElementById(id).classList.toggle('show');
+    });
+    
+      }
 
   highlightRange(range) {
+    this.shadowRoot.innerHTML += template(this.ids-1);
     const clone =
       this.highlightTemplate.cloneNode(true).content.firstElementChild;
     clone.appendChild(range.extractContents()); // extract the selected text and append it to the clone
     range.insertNode(clone);
+  }
+  updatepopup(message){
+    
+    const id2 = this.ids-1;
+    var id_close = "mclose"+id2
+    this.shadowRoot.getElementById(id2).innerHTML = message + "<button class='miniclose' id='"+id_close+"'>x</button>";
+    //loop over number of ids
+    for (let i = 0; i < this.ids; i++) {
+    const id_close = "mclose"+i;
+    this.shadowRoot.getElementById(id_close).addEventListener("click", () => {
+      this.shadowRoot.getElementById(i).classList.toggle('show');
+    });
+  }
   }
 }
 

@@ -22,17 +22,17 @@ async function promptGPT3Explanation(prompt, tabs) {
                  ).then(result => result.json())
                   .then((result) => {
                         var cost = result['usage']['total_tokens'] * DaVinciCost;
-                        cost = 'Cost: ' + cost.toFixed(5) + '$ \n';
-                        chrome.tabs.sendMessage(tabs.id, cost + prompt + result.choices[0].text); //send the answer to the content script
+                        cost = '<br> (Cost: ' + cost.toFixed(5) + '$)';
+                        chrome.tabs.sendMessage(tabs.id,{message:'GPTanswer', text:result.choices[0].text}); //send the answer to the content script
                         // save the result.choices[0].text in the storage 
-                        chrome.storage.sync.get('history', function (items) {
+                        chrome.storage.local.get('history', function (items) {
                             if (typeof items.history !== 'undefined') {
-                                items.history.push([prompt, result.choices[0].text]);
-                                chrome.storage.sync.set({ 'history': items.history });
+                                items.history.push([prompt, result.choices[0].text + cost]);
+                                chrome.storage.local.set({ 'history': items.history });
                             }
                             else {
-                                items.history = [[prompt, result.choices[0].text]];
-                                chrome.storage.sync.set({ 'history': items.history });
+                                items.history = [[prompt, result.choices[0].text + cost]];
+                                chrome.storage.local.set({ 'history': items.history });
                             }
                             console.log(items.history);
                         }

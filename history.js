@@ -1,8 +1,8 @@
 function makeHistoryList (items) {
     var freshList = '';
-    for (var i = 0; i < items.history.length; i++) {
+    for (var i = items.history.length-1; i >= 0 ; i--) {
         //console.log(items.customprompt[i]);
-        freshList += '<li>' + items.history[i][0]+'<br>' +  items.history[i][1] +'  <button id="his' + i.toString() + '" > Delete </button></li>';
+        freshList += '<li class="listhist">' + items.history[i][0]+'<br>' +  items.history[i][1] +'  <button  class="save" id="his' + i.toString() + '" > Delete </button></li>';
     }
     return freshList;
         
@@ -21,7 +21,7 @@ function update_del_buttons(items){
 function erasePrompt(index) {
     // try to retrive the custom prompt from the storage API
     console.log('erasePrompt: ' + index);
-    chrome.storage.sync.get('history', function (items) {
+    chrome.storage.local.get('history', function (items) {
         // Check that the prompt exists
         console.log('Erasing.');
         if (typeof items.history !== 'undefined') {
@@ -33,7 +33,7 @@ function erasePrompt(index) {
                 document.getElementById('history-of-prompts').innerHTML = freshList
                 update_del_buttons(items);
                 //document.getElementById('list-of-prompts').removeChild(document.getElementById('del' + index.toString()));
-                chrome.storage.sync.set({ 'history': items.history }, function () {
+                chrome.storage.local.set({ 'history': items.history }, function () {
                     // Notify that is erased
                     console.log('Your history prompt was erased.');
                 })
@@ -49,7 +49,7 @@ function erasePrompt(index) {
 function load() {
     console.log('I load')
     //retrieve from chrome storage the custom prompt
-    chrome.storage.sync.get('history', function (items) {
+    chrome.storage.local.get('history', function (items) {
         //if it exists send an alert
         if (typeof items.history !== 'undefined') {
             freshList = makeHistoryList(items);
@@ -58,8 +58,6 @@ function load() {
         
         }
     }
-    )
-    //check if API is present in storage
-    
+    )    
 }
 load()

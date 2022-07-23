@@ -86,7 +86,7 @@ chrome.contextMenus.onClicked.addListener((info, tabs) => {
                 // chrome.tabs.create({url:"history.html"});
                 //message the info.selectionText to the content script
                 chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-                    chrome.tabs.sendMessage(tabs[0].id, 'highlight');
+                    chrome.tabs.sendMessage(tabs[0].id, {message:'highlight'});
 
                 }
                 );
@@ -106,9 +106,9 @@ chrome.contextMenus.onClicked.addListener((info, tabs) => {
 function checkAPIKey() {
     chrome.storage.sync.get('APIKEY', function (items) {
         // Check that the API key exists
-        if (typeof items.APIKEY !== 'undefined') {
+        if (typeof items.APIKEY == 'undefined') {
             // run your script from here
-            chrome.action.setIcon({ path: "icons/iconA16.png" })
+            chrome.action.setIcon({ path: "icons/icon16.png" })
         }
     }
     );
