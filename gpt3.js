@@ -5,9 +5,7 @@ async function promptGPT3Explanation(prompt,items, tabs) {
     // var prompt =  "Tell me more about '" + info.selectionText + "':\n";
     console.log(prompt);
     var url = "https://api.openai.com/v1/completions";
-    // fetch has 2 arguments:
-    // - the url
-    // - the headers
+    var body_data = JSON.stringify({ "model": "text-davinci-002", "temperature": 0, "max_tokens": 1000, "prompt": prompt })
     fetch(url, {
         method: 'POST',
         headers: {
@@ -15,12 +13,12 @@ async function promptGPT3Explanation(prompt,items, tabs) {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + items.APIKEY
         },
-        body: JSON.stringify({ "model": "text-davinci-002", "prompt": prompt, "temperature": 0, "max_tokens": 1000 })
+        body: body_data
     }
     ).then(result => result.json())
         .then((result) => {
             var cost = result['usage']['total_tokens'] * DaVinciCost;
-            cost = '<br> (Cost: ' + cost.toFixed(5) + '$)';
+            cost =+ cost.toFixed(5);
             
             try{
             chrome.tabs.sendMessage(tabs.id, { message: 'GPTanswer', text: result.choices[0].text }); //send the answer to the content script
@@ -41,11 +39,11 @@ async function promptGPT3Explanation(prompt,items, tabs) {
             // save the result.choices[0].text in the storage 
             chrome.storage.local.get('history', function (items) {
                 if (typeof items.history !== 'undefined') {
-                    items.history.push([prompt, result.choices[0].text + cost]);
+                    items.history.push([body_data, result.choices[0].text, cost]);
                     chrome.storage.local.set({ 'history': items.history });
                 }
                 else {
-                    items.history = [[prompt, result.choices[0].text + cost]];
+                    items.history = [[body_data, result.choices[0].text, cost]];
                     chrome.storage.local.set({ 'history': items.history });
                 }
                 // console.log(items.history);

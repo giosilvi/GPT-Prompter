@@ -23,6 +23,7 @@ const styled = `
     color: #fff;
     display: none;
     justify-content: center;
+    opacity: 0.9;
     padding: 5px 10px;
     position: fixed;
     width: auto;
