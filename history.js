@@ -73,6 +73,7 @@ function delete_all(){
         if (typeof items.history !== 'undefined') {
             items.history = [];
             document.getElementById('history-of-prompts').innerHTML = "History deleted";
+            document.getElementById('totCost').innerHTML = "";
             update_del_buttons(items);
             chrome.storage.local.set({ 'history': items.history }, function () {
                 // Notify that is erased
