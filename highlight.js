@@ -55,7 +55,7 @@ const styled = `
   }
 `;
 
-class MediumHighlighter extends HTMLElement {
+class CustomMiniPopup extends HTMLElement {
   constructor() {
     super();
     this.render();
@@ -141,4 +141,4 @@ class MediumHighlighter extends HTMLElement {
   }
 }
 
-window.customElements.define("medium-highlighter", MediumHighlighter);
+window.customElements.define("mini-popup", CustomMiniPopup);

@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <title>GPT-Xplainer</title>
+    <title>GPT-Prompter</title>
     </head>
 
 <body>
@@ -14,7 +14,7 @@
     <div class="container-sm" style="width: 600px;">
         <div class="card text-center">
             <div class="card-body">
-              <h5 class="card-title"><img src="icons\iconA48.png" alt="logo" class="logo"> GPT-Xplainer<br></h5>
+              <h5 class="card-title"><img src="icons\iconA48.png" alt="logo" class="logo"> GPT-Prompter<br></h5>
               <!-- <p class="card-text">Here are the instructions to configure the plugin to work properly</p> -->
             </div>
         </div>
@@ -23,7 +23,10 @@
                 <input type="text" class="form-control" id="apikey" placeholder="Insert your API Key">
             </div>
             <div class="col-sm-2">
-                <button type="button" class="save", id="saveKey">Save</button>
+                <button type="button" class="save" id="saveKey">Save</button>
+            </div>
+            <div class="col-sm-2">
+                <button type="button" class="save" id="deleteKey" style="color:red;margin-left: -20px">Delete</button>
             </div>
             <div class="col-sm-2">
                 <button type="button" class="apikeybutton" style="margin-left: -20px" id="showKey">Show API</button>

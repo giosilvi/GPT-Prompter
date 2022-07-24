@@ -13,7 +13,7 @@ function makeHistoryList (items) {
         freshList +=  'Cost: '+ items.history[i][2] +'$  <button  class="save" id="eraseItem' + i.toString() + '" > Delete </button></li>';
         totalCost += parseFloat(items.history[i][2]);
     }
-    document.getElementById('totCost').innerHTML = 'Total cost: ' + totalCost + '$';
+    document.getElementById('totCost').innerHTML = 'Total cost: ' + totalCost.toFixed(2) + '$';
     return freshList;}
 // in javascript, to return two values, use an array
 

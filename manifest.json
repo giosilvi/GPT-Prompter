@@ -1,12 +1,12 @@
 {
-    "name": "GPT-Xplainer",
+    "name": "GPT-Prompter",
     "version": "0.1",
     "description": "Find answers to your questions",
     "manifest_version": 3,
     "icons": { "16": "icons/iconA16.png",
            "48": "icons/iconA48.png",
           "128": "icons/iconA128.png" },
-    "permissions": ["contextMenus","storage", "tabs","notifications"],
+    "permissions": ["contextMenus","storage","tabs","notifications"],
     "content_scripts": [
         {   "matches": ["https://*/*", "http://*/*"],
             "js":["node_modules/@webcomponents/custom-elements/custom-elements.min.js",
@@ -16,7 +16,7 @@
     ],
     "action": {
         "default_popup": "popup.html",
-        "default_title": "GPT-Xplainer"
+        "default_title": "GPT-Prompter"
     },
     "background": {
         "service_worker": "background.js",

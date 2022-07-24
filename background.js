@@ -3,7 +3,7 @@
  *          plus minimal framework for messaging between here and
  *          a content script.
  */
-import promptGPT3Explanation from './gpt3.js';
+import promptGPT3Prompting from './gpt3.js';
 
 
 //Function to create context menu, erasing the previous one
@@ -12,8 +12,8 @@ function createContextMenu() {
     chrome.contextMenus.removeAll();
     // create a new context menu
     chrome.contextMenus.create({
-        id: 'GPT-xplainer',
-        title: 'GPT-xplainer ',
+        id: 'GPT-Prompter',
+        title: 'GPT-Prompter ',
         contexts: ["selection"]
     });
     // retrieve from storage the list of custom prompts
@@ -24,8 +24,8 @@ function createContextMenu() {
             for (var i = 0; i < items.customprompt.length; i++) {
                 chrome.contextMenus.create({
                     id: 'customprompt-' + i,
-                    parentId: "GPT-xplainer",
-                    title: items.customprompt[i].replace('#TEXT#', '%s'),
+                    parentId: "GPT-Prompter",
+                    title: items.customprompt[i].replaceAll('#TEXT#', '%s'),
                     contexts: ["selection"]
                 });
             }
@@ -43,16 +43,13 @@ chrome.runtime.onInstalled.addListener(function () {
         // save the new prompt
         chrome.storage.sync.set({ 'customprompt': items.customprompt });
         createContextMenu()
-    }
-    );
-    
+    });
 });
 
 // listen for a signal to refresh the context menu
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     if (message.text == "new prompt list") {
         createContextMenu()
-        // Run your script from here
     }
     else if (message.text == "checkAPIKey") {
         (async () => {
@@ -60,9 +57,7 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
         }
         )();
     }
-    else{
-
-    }
+    else{ console.log(message); }
 },);
 
 
@@ -73,10 +68,8 @@ chrome.contextMenus.onClicked.addListener((info, tabs) => {
     console.log(tabs);
 
     // get the id of the context menu clicked
-    console.log(info.menuItemId.replace('customprompt-', ''));
     // to transfort a string to int do: parseInt(string)
     var promptNumber = parseInt(info.menuItemId.replace('customprompt-', ''));
-    console.log(promptNumber);
     // retrieve from storage the list of custom prompts
     chrome.storage.sync.get('customprompt', function (items) {
         // Check that the prompt exists
@@ -86,25 +79,19 @@ chrome.contextMenus.onClicked.addListener((info, tabs) => {
                 // get the prompt
                 var prompt = items.customprompt[promptNumber];
                 // replace the selected text in the prompt
-                prompt = prompt.replace('#TEXT#', info.selectionText); //important part
-                // console.log(prompt);
+                prompt = prompt.replaceAll('#TEXT#', info.selectionText); //important part
                 chrome.storage.sync.get('APIKEY', function (items) {
                     if (typeof items.APIKEY !== 'undefined') {
-                (async () => {
-                    await promptGPT3Explanation(prompt, items, tabs)
-                }
-                )();
-                chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-                    chrome.tabs.sendMessage(tabs[0].id, {message:'highlight'});});
-                } else {
-                    chrome.tabs.sendMessage(tabs.id, 'APIKEY not found');
-                    console.log('No API key found.');
-                }
+                        (async () => {
+                            await promptGPT3Prompting(prompt, items, tabs)
+                        })();
+                        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+                        chrome.tabs.sendMessage(tabs[0].id, {message:'highlight'});});
+                        } 
+                    else {
+                        chrome.tabs.sendMessage(tabs.id, 'APIKEY not found');
+                        console.log('No API key found.');}
                 })
-                
-                // chrome.tabs.create({url:"history.html"});
-                //message the info.selectionText to the content script
-               
                 
             }
             else {

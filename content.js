@@ -1,27 +1,26 @@
 
-const mediumHighlighter = document.createElement("medium-highlighter");
+
 window.addEventListener("scroll", function () {
   var x = window.scrollX, y = window.scrollY;
-  for (var i = 0; i < mediumHighlighter.ids; i++) {
+  for (var i = 0; i < customMiniPopup.ids; i++) {
     //
-    elem = mediumHighlighter.shadowRoot.getElementById(i);
+    elem = customMiniPopup.shadowRoot.getElementById(i);
     var elemTop = elem.offsetTop - (y - this.window.lastY);
     var elemLeft = elem.offsetLeft - (x - this.window.lastX);
 
     elem.style.top = elemTop + 'px';
     elem.style.left = elemLeft + 'px';
-
   }
   this.window.lastY = y;
   this.window.lastX = x;
 }
 );
 
-
-document.body.appendChild(mediumHighlighter);
+const customMiniPopup = document.createElement("mini-popup");
+document.body.appendChild(customMiniPopup); //attach the shadowDOM to body
 
 const setMarkerPosition = (markerPosition) =>
-  mediumHighlighter.setAttribute(
+  customMiniPopup.setAttribute(
     "markerPosition",
     JSON.stringify(markerPosition)
   );
@@ -34,11 +33,6 @@ document.addEventListener("click", () => {
   }
 });
 
-// document.addEventListener("selectionchange", () => {
-//   if (getSelectedText().length === 0) {
-//     setMarkerPosition({ display: "none" });
-//   }
-// });
 
 function getMarkerPosition() {
   const rangeBounds = window
@@ -59,10 +53,10 @@ chrome.runtime.onMessage.addListener(function (request) {
   //  if attribute text in request exists, it's a gpt-3 response
   if (request.message == 'highlight') {
     setMarkerPosition({ display: "flex" });
-    mediumHighlighter.highlightSelection();
+    customMiniPopup.highlightSelection();
   }
   else if (request.message == 'GPTanswer') {
-    mediumHighlighter.updatepopup(request.text);
+    customMiniPopup.updatepopup(request.text);
   }
   else {
     alert(request)
@@ -70,9 +64,9 @@ chrome.runtime.onMessage.addListener(function (request) {
 })
 
 
-// just for testing the message passing
-chrome.runtime.onMessage.addListener((req, snd, rsp) => {
-  console.log(snd.tab ? "another content script says:" : "the extension says:");
-  console.log(req);
-  rsp('a-response-object');
-});
+// Obsolete, useful for debugging
+// chrome.runtime.onMessage.addListener((req, snd, rsp) => {
+//   console.log(snd.tab ? "another content script says:" : "the extension says:");
+//   console.log(req);
+//   rsp('a-response-object');
+// });
