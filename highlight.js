@@ -28,7 +28,7 @@ const styled = `
     position: fixed;
     width: auto;
     max-width: 500px;
-    z-index: 9999;
+    z-index: -1;
     line-height: 1.5;
     font-size: 18px!important;
   }
@@ -36,6 +36,7 @@ const styled = `
     opacity: 0.9;
     -webkit-animation: fadeIn 1s;
     animation: fadeIn 1s;
+    z-index: 3;
   }
 
   @-webkit-keyframes fadeIn {
