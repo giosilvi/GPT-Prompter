@@ -12,21 +12,6 @@
 <body>
     
     <div class="container-sm" style="width: 600px;">
-        <div class="row" style="background-color: rgba(0,0,0,.03); padding:10px;">
-            <div class="col-sm-6">
-                <input type="text" class="form-control" id="apikey" placeholder="Insert your API Key">
-            </div>
-            <div class="col-sm-2">
-                <button type="button" class="save">Save</button>
-            </div>
-            <div class="col-sm-2">
-                <button type="button" class="apikeybutton" style="margin-left: -20px">Show API</button>
-            </div>
-            <div class="col-sm-2">
-                <button type="button" class="apikeybutton" style="margin-left: -20px">Delete API</button>
-            </div>
-        </div>
-        <div style="background-color: rgba(0,0,0,.03);"><a href="https://beta.openai.com/account/api-keys" style="padding-left:10px;">Where can I generate my API key?</a></div>
         <div style="height:20px"></div>
         <div class="card text-center">
             <div class="card-body">
@@ -35,6 +20,19 @@
             </div>
         </div>
         <div style="height:20px"></div>
+        <div class="row" style="background-color: rgba(0,0,0,.03); padding:10px;">
+            <div class="col-sm-6">
+                <input type="text" class="form-control" id="apikey" placeholder="Insert your API Key">
+            </div>
+            <div class="col-sm-2">
+                <button type="button" class="save", id="saveKey">Save</button>
+            </div>
+            <div class="col-sm-2">
+                <button type="button" class="apikeybutton" style="margin-left: -20px" id="showKey">Show API</button>
+            </div>
+        </div>
+        <div  style="background-color: rgba(0,0,0,.03);"><a id="linktoAPI" href="https://beta.openai.com/account/api-keys" style="padding-left:10px;">Where can I generate my API key?</a></div>
+
 
         <div class="card text-bg-light">
             <div class="card-header"><img src="icons\iconA16.png" alt="logo" class="logo"> Prompt design</div>

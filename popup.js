@@ -20,6 +20,25 @@ function update_del_buttons(items){
     }
 }
 
+function showsaveKey() {
+    //display the element with id 'apikey' and the 'saveKey' button
+    document.getElementById('apikey').style.display = 'block';
+    document.getElementById('saveKey').style.display = 'block';
+    document.getElementById('linktoAPI').style.display = 'block';
+    //hide the element with id 'showKey'
+    document.getElementById('showKey').style.display = 'none';
+}
+
+
+function hidesaveKey() {
+    //hide the element with id 'apikey' and the 'saveKey' button
+    document.getElementById('apikey').style.display = 'none';
+    document.getElementById('saveKey').style.display = 'none';
+    document.getElementById('linktoAPI').style.display = 'none';
+    //show the element with id 'showKey'
+    document.getElementById('showKey').style.display = 'block';
+}
+
 //add function to save the the custom prompt in storage
 function savePrompt() {
     // get the text from the prompt
@@ -198,12 +217,7 @@ document.addEventListener('DOMContentLoaded', function () {
 document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('showKey').addEventListener('click', onclick, false)
     function onclick() {
-        //display the element with id 'apikey' and the 'saveKey' button
-        document.getElementById('apikey').style.display = 'block';
-        document.getElementById('saveKey').style.display = 'block';
-        //hide the element with id 'showKey'
-        document.getElementById('showKey').style.display = 'none';
-
+        showsaveKey();
     }
 }
     , false)
@@ -252,17 +266,6 @@ document.addEventListener('DOMContentLoaded', function () {
     , false);
 
 
-function hidesaveKey() {
-    //hide the element with id 'apikey' and the 'saveKey' button
-    document.getElementById('apikey').style.display = 'none';
-    document.getElementById('saveKey').style.display = 'none';
-    //show the element with id 'showKey'
-    // change the value of 'showKey' to 'Successfully saved' for 1 second just this time
-    // add an element <span> to the element with id 'showKey' with the innerHTML 'Successfully saved'
-
-    //show the element with id 'showKey'
-    document.getElementById('showKey').style.display = 'block';
-}
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.message == "API key is valid") {
