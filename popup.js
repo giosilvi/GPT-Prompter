@@ -2,7 +2,7 @@ function makePromptList (items) {
     var freshList = '';
     for (var i = 0; i < items.customprompt.length; i++) {
         //console.log(items.customprompt[i]);
-        freshList += '<li class="elemList">' + items.customprompt[i] + ' <button id="del' + i.toString() + '" class="save" > Delete </button></li>';
+        freshList += '<li class="list-group-item">' + items.customprompt[i] + ' <button id="del' + i.toString() + '" class="save" > Delete </button></li>';
     }
     return freshList;
         

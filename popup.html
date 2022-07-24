@@ -1,57 +1,58 @@
 <!DOCTYPE HTML>
 <html lang="en">
-<head>
+    <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <title>GPT-Xplainer</title>
-</head>
+    </head>
 
 <body>
-    <div class="header">
-        Here you can set your API Key from OpenAI and your prompts
-    </div>
-
-    <div class="main_container"> 
-        <div class="container" style="width:600px"> 
-            <div style="float:left; width:300px; height:auto; background-color:white;">
-                <input type="text" class="form" id="apikey" style="color:#8e8ea0; width: 300px;" placeholder=" Please enter your API key ...">
-            </div> 
-
-            <div style="float:left; width:auto; height:auto; background-color:white;">
-                <button type="submit" id="saveKey" form="api" class="save">APISave</button>
-            </div> 
-
-            <div style="float:left; width:auto; height:auto; background-color:white;" class="newbutton">
-                <button type="button" id="showKey" class="apikeybutton" style="font-family: Helvetica, sans-serif;">Show API Key</button><br>
+    
+    <div class="container-sm" style="width: 600px;">
+        <div class="row" style="background-color: rgba(0,0,0,.03); padding:10px;">
+            <div class="col-sm-6">
+                <input type="text" class="form-control" id="apikey" placeholder="Insert your API Key">
             </div>
-
-            <div style="clear:both;"></div>
-        </div> 
-
-        <div class="container" style="width:600px">
-            <div><a class="hint" href="https://beta.openai.com/account/api-keys">Where can I generate my API key?</a></div>
-        </div>
-
-        <div style="height:30px"></div>
-
-        <div class="container" style="width:600px">
-            <div style="width: 600px;"><h2 style="float: left;">Prompt design</h2></div>
-            <div style="width:200px;">
-                <textarea id="promptinput" name="prompt"  class="textarea"  >Tell me more about "#TEXT#":</textarea>
+            <div class="col-sm-2">
+                <button type="button" class="save">Save</button>
             </div>
-            <div></div><button type="button" id="createPrompt" class="button">Create prompt</button>
+            <div class="col-sm-2">
+                <button type="button" class="apikeybutton" style="margin-left: -20px">Show API</button>
+            </div>
+            <div class="col-sm-2">
+                <button type="button" class="apikeybutton" style="margin-left: -20px">Delete API</button>
+            </div>
+        </div>
+        <div style="background-color: rgba(0,0,0,.03);"><a href="https://beta.openai.com/account/api-keys" style="padding-left:10px;">Where can I generate my API key?</a></div>
+        <div style="height:20px"></div>
+        <div class="card text-center">
+            <div class="card-body">
+              <h5 class="card-title"><img src="icons\iconA48.png" alt="logo" class="logo"> GPT-Xplainer<br></h5>
+              <p class="card-text">Here are the instructions to configure the plugin to work properly</p>
+            </div>
+        </div>
+        <div style="height:20px"></div>
+
+        <div class="card text-bg-light">
+            <div class="card-header"><img src="icons\iconA16.png" alt="logo" class="logo"> Prompt design</div>
+            <div class="card-body">
+                <textarea class="form-control" id="promptinput" rows="3">Tell me more about "#TEXT#":</textarea>
+                <button type="button" id="createPrompt" class="list-group-item list-group-item-action text-center"><b>Create prompt</b></button>
+            </div>
         </div>
 
-        <div style="height:30px"></div>
-
-        <div class="container" style="width:600px">
-            <h2>List of prompts in right-click menu</h2>
-            <ol id="list-of-prompts" ></ol>
+        <div class="card text-bg-light">
+            <div class="card-header"><img src="icons\iconA16.png" alt="logo" class="logo"> Your Prompts</div>
+            <div class="card-body">
+                <ol id="list-of-prompts" class="list-group"></ol>
+                <button type="button" id="history" class="list-group-item list-group-item-action text-center"><b>History</b></button>
+            </div>
         </div>
-         <button type="button" id="history" class="save">History</button>
+
         <script src="popup.js"></script>
-    </div>
+
 </body>
 </html>

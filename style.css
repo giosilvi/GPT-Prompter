@@ -21,6 +21,11 @@ body {
     font-family: helvetica, sans-serif;
     color:#202123;
     margin: 0!important;
+    font: 1rem/1.5 var(--bs-font-sans-serif);
+  }
+
+  a {
+    color: var(--bs-blue);
   }
 
 .main_container {
@@ -74,10 +79,10 @@ body {
 .save{
     align-items: center;
     justify-content: space-around;
-    margin: 0 10px 0 24px;
+    margin:auto;
     max-width: 700px;
-    font-size: 14px;
-    background-color: white;
+    font-size: 1rem;
+    background-color: transparent;
     color:#10a37f;
     padding: 10px 0;
     border-width: 0px;
@@ -117,8 +122,8 @@ body {
     justify-content: space-around;
     margin: 0 10px 0 24px;
     max-width: 700px;
-    font-size: 14px;
-    background-color: white;
+    font-size: 1rem;
+    background-color: transparent;
     color:#6e6e80;
     padding: 10px 0;
     border-width: 0px;
@@ -129,6 +134,8 @@ body {
     box-sizing: border-box;
     outline: 0px !important;
     cursor: pointer;
+    white-space: nowrap;
+    margin:auto;
 }
 
 .listhist{
