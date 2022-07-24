@@ -17,7 +17,7 @@ const template = (id) => `
 const styled = `
   .popuptext {
     align-items: center;
-    background-color: black;
+    background-color: #202123;
     border-radius: 5px;
     border: none;
     color: #fff;
@@ -29,6 +29,7 @@ const styled = `
     max-width: 500px;
     z-index: 9999;
     line-height: 1.5;
+    font-size: 18px!important;
   }
   .show {
     display: flex;
