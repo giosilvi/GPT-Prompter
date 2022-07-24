@@ -1,33 +1,10 @@
-// function notifyMe() {
-//     if (Notification.permission !== 'granted')
-//      Notification.requestPermission();
-//     else {
-//      var notification = new Notification('Notification title', {
-//       icon: 'http://cdn.sstatic.net/stackexchange/img/logos/so/so-icon.png',
-//       body: 'Hey there! You\'ve been notified!',
-//      });
-//      notification.onclick = function() {
-//       window.open('http://stackoverflow.com/a/13328397/1269037');
-//      };
-//     }
-// }
-
-
-
 
 const mediumHighlighter = document.createElement("medium-highlighter");
 window.addEventListener("scroll", function () {
   var x = window.scrollX, y = window.scrollY;
-  // get the scroll position of the page
-  // console.log(x, y);
-  // set the position of the marker
-  // console.log(x+" "+y);
-  // for loop from 0 to mediumHighlighter.ids
   for (var i = 0; i < mediumHighlighter.ids; i++) {
     //
     elem = mediumHighlighter.shadowRoot.getElementById(i);
-    // console.log(elem.offsetTop)
-    // get position of elem in px
     var elemTop = elem.offsetTop - (y - this.window.lastY);
     var elemLeft = elem.offsetLeft - (x - this.window.lastX);
 

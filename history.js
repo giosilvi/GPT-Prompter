@@ -67,5 +67,29 @@ function load_history() {
     }
     )    
 }
+
+function delete_all(){
+    chrome.storage.local.get('history', function (items) {
+        if (typeof items.history !== 'undefined') {
+            items.history = [];
+            document.getElementById('history-of-prompts').innerHTML = "History deleted";
+            update_del_buttons(items);
+            chrome.storage.local.set({ 'history': items.history }, function () {
+                // Notify that is erased
+                console.log('Your history was erased.');
+            })
+        }
+    }
+    )
+
+}
 // execute the load function when the page is loaded
 document.addEventListener('DOMContentLoaded', load_history, false);
+
+document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('delete-all').addEventListener('click', function () {
+        delete_all();
+    }
+    );
+}
+);
