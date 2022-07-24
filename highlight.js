@@ -21,9 +21,9 @@ const styled = `
     border-radius: 5px;
     border: none;
     color: #fff;
-    display: none;
+    display: flex;
     justify-content: center;
-    opacity: 0.9;
+    opacity: 0;
     padding: 5px 10px;
     position: fixed;
     width: auto;
@@ -33,7 +33,7 @@ const styled = `
     font-size: 18px!important;
   }
   .show {
-    display: flex;
+    opacity: 0.9;
     -webkit-animation: fadeIn 1s;
     animation: fadeIn 1s;
   }
@@ -93,7 +93,7 @@ class MediumHighlighter extends HTMLElement {
         this.shadowRoot.getElementById(this.ids).classList.toggle('show');
         this.ids++;
       }
-      else {
+      else { 
         this.lastpop=minipopup(this.ids,this.markerPosition);
       }
     }

@@ -19,17 +19,18 @@ const mediumHighlighter = document.createElement("medium-highlighter");
 window.addEventListener("scroll", function () {
   var x = window.scrollX, y = window.scrollY;
   // get the scroll position of the page
-  console.log(x, y);
+  // console.log(x, y);
   // set the position of the marker
   // console.log(x+" "+y);
   // for loop from 0 to mediumHighlighter.ids
   for (var i = 0; i < mediumHighlighter.ids; i++) {
     //
     elem = mediumHighlighter.shadowRoot.getElementById(i);
-    // get top and left from elem style
+    // console.log(elem.offsetTop)
     // get position of elem in px
     var elemTop = elem.offsetTop - (y - this.window.lastY);
     var elemLeft = elem.offsetLeft - (x - this.window.lastX);
+
     elem.style.top = elemTop + 'px';
     elem.style.left = elemLeft + 'px';
 
