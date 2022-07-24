@@ -12,15 +12,13 @@
 <body>
     
     <div class="container-sm" style="width: 600px;">
-        <div style="height:20px"></div>
         <div class="card text-center">
             <div class="card-body">
               <h5 class="card-title"><img src="icons\iconA48.png" alt="logo" class="logo"> GPT-Xplainer<br></h5>
               <p class="card-text">Here are the instructions to configure the plugin to work properly</p>
             </div>
         </div>
-        <div style="height:20px"></div>
-        <div class="row" style="background-color: rgba(0,0,0,.03); padding:10px;">
+        <div class="row" style="padding:10px;">
             <div class="col-sm-6">
                 <input type="text" class="form-control" id="apikey" placeholder="Insert your API Key">
             </div>
@@ -43,10 +41,10 @@
         </div>
 
         <div class="card text-bg-light">
-            <div class="card-header"><img src="icons\iconA16.png" alt="logo" class="logo"> Your Prompts</div>
+            <div class="card-header"><img src="icons\iconA16.png" alt="logo" class="logo"> Your Prompts    
+                <button type="button" id="history" class="save" style="margin-left:250px">History of Your Prompt</button></div>
             <div class="card-body">
                 <ol id="list-of-prompts" class="list-group"></ol>
-                <button type="button" id="history" class="list-group-item list-group-item-action text-center"><b>History</b></button>
             </div>
         </div>
 
