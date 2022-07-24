@@ -6,10 +6,9 @@
     "icons": { "16": "icons/iconA16.png",
            "48": "icons/iconA48.png",
           "128": "icons/iconA128.png" },
-    "permissions": ["contextMenus","storage", "tabs"],
+    "permissions": ["contextMenus","storage", "tabs","notifications"],
     "content_scripts": [
-        {   "exclude_globs": ["*://google.com*"],
-            "matches": ["<all_urls>"],
+        {   "matches": ["https://*/*", "http://*/*"],
             "js":["node_modules/@webcomponents/custom-elements/custom-elements.min.js",
                   "content.js",
                   "highlight.js"]
@@ -22,9 +21,5 @@
     "background": {
         "service_worker": "background.js",
         "type": "module"
-    },
-    "web_accessible_resources": [{
-        "resources": ["page.html"],
-        "matches": ["<all_urls>"]
-      }]
+    }
 }

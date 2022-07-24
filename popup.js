@@ -1,3 +1,4 @@
+// GENERAL FUNCTIONS
 function makePromptList (items) {
     var freshList = '';
     for (var i = 0; i < items.customprompt.length; i++) {
@@ -18,7 +19,6 @@ function update_del_buttons(items){
 
     }
 }
-
 
 //add function to save the the custom prompt in storage
 function savePrompt() {
@@ -95,9 +95,9 @@ function saveKey() {
         // Notify that we saved
         console.log('Your API key was saved.');
         // chrome.runtime.sendMessage({text: "checkAPIKey"});
-        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-            chrome.tabs.sendMessage(tabs[0].id, 'API KEY Saved')
-        })
+        // chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        //     chrome.tabs.sendMessage(tabs[0].id, 'API KEY Saved')
+        // })
     });
 }
 
@@ -175,8 +175,10 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('saveKey').addEventListener('click', onclick, false)
     function onclick() {
         //call saveKey() function
-        saveKey();
-        //get the text in
+        console.log(document.getElementById('apikey').value)
+        //send a message to background.js to check the API key
+        chrome.runtime.sendMessage({text: "checkAPIKey", apiKey: document.getElementById('apikey').value});
+
 
     }
 
@@ -196,7 +198,12 @@ document.addEventListener('DOMContentLoaded', function () {
 document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('showKey').addEventListener('click', onclick, false)
     function onclick() {
-        retrieveKey()
+        //display the element with id 'apikey' and the 'saveKey' button
+        document.getElementById('apikey').style.display = 'block';
+        document.getElementById('saveKey').style.display = 'block';
+        //hide the element with id 'showKey'
+        document.getElementById('showKey').style.display = 'none';
+
     }
 }
     , false)
@@ -233,17 +240,73 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
     )
-    //check if API is present in storage
+    //check if API is present in storage and if yes, display the API
     chrome.storage.sync.get('APIKEY', function (items) {
         //if it exists send an alert
         if (typeof items.APIKEY !== 'undefined') {
             // alert(items.APIKEY);
-            chrome.action.setIcon({ path: "icons/iconA16.png" })
-        }
-    }
-    )
+            document.getElementById('apikey').value = items.APIKEY;
+        }})
+
 }
     , false);
 
+
+function hidesaveKey() {
+    //hide the element with id 'apikey' and the 'saveKey' button
+    document.getElementById('apikey').style.display = 'none';
+    document.getElementById('saveKey').style.display = 'none';
+    //show the element with id 'showKey'
+    // change the value of 'showKey' to 'Successfully saved' for 1 second just this time
+    // add an element <span> to the element with id 'showKey' with the innerHTML 'Successfully saved'
+
+    //show the element with id 'showKey'
+    document.getElementById('showKey').style.display = 'block';
+}
+
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+    if (request.message == "API key is valid") {
+        hidesaveKey();
+        saveKey(); // if the API key is valid, save it
+        chrome.action.setIcon({ path: "icons/iconA16.png" })
+        // change the value of 'showKey' to 'Successfully saved' for 1 second
+        document.getElementById('showKey').innerHTML = "API Key is valid!";
+        setTimeout(function () {
+            document.getElementById('showKey').innerHTML = "Show API Key";
+        }, 1000);
+        
+    }
+    else if (request.message == "API key is invalid") {
+        // write in inputkey the message 'API key is invalid'
+        document.getElementById('apikey').value = "API key is invalid";
+        setTimeout(function () {
+            document.getElementById('apikey').value = "";
+        }, 1000);
+    }
+});
+function checkAPIKey() {
+    chrome.storage.sync.get('APIKEY', function (items) {
+        // Check that the API key exists
+        if (typeof items.APIKEY !== 'undefined') {
+            hidesaveKey();
+        }
+        else {
+            //hide show key button
+            document.getElementById('showKey').style.display = 'none';
+        }
+    }
+    );
+}
+checkAPIKey();
+
 // to change to a new html page for this extension
 // window.location.href="history.html";
+
+// chrome.notifications.create('prompt', {
+//     type: 'basic',
+//     title: 'GPT explanation',
+//     iconUrl: "http://www.google.com/favicon.ico",
+//     message:  "test",
+//     priority: 2
+// },
+// function(id) { console.log("Last error:", chrome.runtime.lastError); });

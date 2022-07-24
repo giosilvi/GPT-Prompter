@@ -54,7 +54,16 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
         createContextMenu()
         // Run your script from here
     }
-});
+    else if (message.text == "checkAPIKey") {
+        (async () => {
+            await checkGPT(message.apiKey);
+        }
+        )();
+    }
+    else{
+
+    }
+},);
 
 
 
@@ -62,6 +71,7 @@ chrome.contextMenus.onClicked.addListener((info, tabs) => {
     console.log('context menu clicked');
     console.log(info.selectionText);
     console.log(tabs);
+
     // get the id of the context menu clicked
     console.log(info.menuItemId.replace('customprompt-', ''));
     // to transfort a string to int do: parseInt(string)
@@ -78,18 +88,24 @@ chrome.contextMenus.onClicked.addListener((info, tabs) => {
                 // replace the selected text in the prompt
                 prompt = prompt.replace('#TEXT#', info.selectionText); //important part
                 // console.log(prompt);
-
+                chrome.storage.sync.get('APIKEY', function (items) {
+                    if (typeof items.APIKEY !== 'undefined') {
                 (async () => {
-                    await promptGPT3Explanation(prompt, tabs)
+                    await promptGPT3Explanation(prompt, items, tabs)
                 }
                 )();
+                chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+                    chrome.tabs.sendMessage(tabs[0].id, {message:'highlight'});});
+                } else {
+                    chrome.tabs.sendMessage(tabs.id, 'APIKEY not found');
+                    console.log('No API key found.');
+                }
+                })
+                
                 // chrome.tabs.create({url:"history.html"});
                 //message the info.selectionText to the content script
-                chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-                    chrome.tabs.sendMessage(tabs[0].id, {message:'highlight'});
-
-                }
-                );
+               
+                
             }
             else {
                 console.log('invalid prompt number');
@@ -102,7 +118,39 @@ chrome.contextMenus.onClicked.addListener((info, tabs) => {
 }
 );
 
-//add a function to check if the API key is present in storage
+
+
+async function checkGPT(apikey) {
+    chrome.storage.sync.get('APIKEY', function (items) {
+        console.log(apikey);
+            var url = "https://api.openai.com/v1/models";
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json, text/plain, */*',
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + apikey
+                },
+            }
+            ).then(result => result.json())
+                .then((result) => {
+                    console.log(result);
+                    // if result has data, then the API key is valid
+                    if (result.data) 
+                        {chrome.runtime.sendMessage({ message: 'API key is valid' });}
+                    else
+                        {console.log('Here')
+                            chrome.runtime.sendMessage({ message: 'API key is invalid' });}
+
+                }).catch(err => {
+                    console.log("error" + err);
+                });
+
+    })
+}
+
+
+//add a function to check if the API key is present in storage, if not set black icon
 function checkAPIKey() {
     chrome.storage.sync.get('APIKEY', function (items) {
         // Check that the API key exists

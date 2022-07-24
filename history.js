@@ -52,9 +52,11 @@ function load() {
     chrome.storage.local.get('history', function (items) {
         //if it exists send an alert
         if (typeof items.history !== 'undefined') {
-            freshList = makeHistoryList(items);
-            document.getElementById('history-of-prompts').innerHTML = freshList
-            update_del_buttons(items);
+            if (items.history.length > 0) {
+                freshList = makeHistoryList(items);
+                document.getElementById('history-of-prompts').innerHTML = freshList
+                update_del_buttons(items);
+            }
         
         }
     }
