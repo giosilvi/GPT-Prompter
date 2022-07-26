@@ -94,8 +94,13 @@ class CustomMiniPopup extends HTMLElement {
         this.shadowRoot.getElementById(this.ids).classList.toggle('show');
         this.ids++;
       }
-      else { 
-        this.lastpop=minipopup(this.ids,this.markerPosition);
+      else { if (this.markerPosition.left+150 > window.innerWidth)
+        {var position = this.markerPosition
+        position.left = window.innerWidth - 150
+        this.lastpop=minipopup(this.ids,position);
+        }
+        else
+        {this.lastpop=minipopup(this.ids,this.markerPosition);}
       }
     }
   }

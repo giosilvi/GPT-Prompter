@@ -14,7 +14,8 @@ function createContextMenu() {
     chrome.contextMenus.create({
         id: 'GPT-Prompter',
         title: 'GPT-Prompter ',
-        contexts: ["selection"]
+        contexts: ["selection"],
+        documentUrlPatterns: ["https://*/*", "http://*/*"]
     });
     // retrieve from storage the list of custom prompts
     chrome.storage.sync.get('customprompt', function (items) {
