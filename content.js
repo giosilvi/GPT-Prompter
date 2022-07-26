@@ -52,8 +52,9 @@ function getMarkerPosition() {
 chrome.runtime.onMessage.addListener(function (request) {
   //  if attribute text in request exists, it's a gpt-3 response
   if (request.message == 'highlight') {
+    if (customMiniPopup.hasAttribute("markerPosition")) {
     setMarkerPosition({ display: "flex" });
-    customMiniPopup.highlightSelection();
+    customMiniPopup.highlightSelection();}
   }
   else if (request.message == 'GPTanswer') {
     customMiniPopup.updatepopup(request.text);
