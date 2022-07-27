@@ -28,9 +28,11 @@ const styled = `
     position: fixed;
     width: auto;
     max-width: 500px;
-    z-index: -1;
+    z-index: 100;
     line-height: 1.5;
     font-size: 18px!important;
+    margin-right: 10px!important;
+    min-width: auto;!important;
   }
   .show {
     opacity: 0.9;
