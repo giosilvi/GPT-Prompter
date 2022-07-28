@@ -38,7 +38,7 @@ const styled = `
     opacity: 0.9;
     -webkit-animation: fadeIn 1s;
     animation: fadeIn 1s;
-    z-index: 100;
+    z-index: 3;
   }
 
   @-webkit-keyframes fadeIn {
