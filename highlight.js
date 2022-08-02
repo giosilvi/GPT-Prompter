@@ -2,8 +2,8 @@ const highlightColor = "#d2f4d3";//"rgb(16, 163, 255)";
 
 
 const minipopup = (id,{ display = "none", left = 0, top = 0 }) => `
-<span class="popuptext" id="${id}" style="left: ${left}px; top:${top}px">
-</span>
+<div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px">
+</div>
 `;
 
 const template = (id) => `
@@ -17,13 +17,12 @@ const styled = `
   .popuptext {
     align-items: center;
     background-color: #202123;
-    border-radius: 5px;
+    border-radius: 30px;
     border: none;
     color: #fff;
     display: flex;
     justify-content: center;
     opacity: 0;
-    padding: 5px 10px;
     position: fixed;
     width: auto;
     max-width: 500px;
@@ -32,12 +31,15 @@ const styled = `
     font-size: 18px!important;
     margin-right: 10px!important;
     min-width: auto;!important;
+    font-family: 'Roboto', sans-serif!important;
   }
   .show {
     opacity: 0.9;
     -webkit-animation: fadeIn 1s;
     animation: fadeIn 1s;
-    z-index: 3;
+    z-index: 100;
+    padding: 17px;
+
   }
 
   @-webkit-keyframes fadeIn {
@@ -141,7 +143,7 @@ class CustomMiniPopup extends HTMLElement {
     if (stream) {
       this.shadowRoot.getElementById(id2).innerHTML += message}
     else {
-    this.shadowRoot.getElementById(id2).innerHTML +="<button class='miniclose' id='"+id_close+"'>x</button>"; //<button class='miniclose' id='"+id_minimize+"'>v</button>
+    this.shadowRoot.getElementById(id2).innerHTML +="<button class='miniclose' style='margin-left:5px' id='"+id_close+"'>x</button>"; //<button class='miniclose' id='"+id_minimize+"'>v</button>
     //loop over number of ids
     for (let i = 0; i < this.ids; i++) {
     const id_close = "mclose"+i;
