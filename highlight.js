@@ -17,19 +17,19 @@ const styled = `
   .popuptext {
     align-items: center;
     background-color: #202123;
-    border-radius: 30px;
+    border-radius: 20px;
     border: none;
     color: #fff;
     display: flex;
-    justify-content: center;
-    opacity: 0;
-    position: fixed;
-    width: auto;
-    max-width: 500px;
-    z-index: -1;
-    line-height: 1.5;
-    font-size: 18px!important;
-    margin-right: 10px!important;
+    justify-content:center;
+    opacity:0;
+    position:fixed;
+    width:auto;
+    max-width:500px;
+    z-index:-1;
+    line-height:1.8;
+    font-size:18px!important;
+    margin-right:10px!important;
     min-width: auto;!important;
     font-family: 'Roboto', sans-serif!important;
   }
@@ -39,6 +39,7 @@ const styled = `
     animation: fadeIn 1s;
     z-index: 100;
     padding: 17px;
+
 
   }
 
@@ -143,7 +144,7 @@ class CustomMiniPopup extends HTMLElement {
     if (stream) {
       this.shadowRoot.getElementById(id2).innerHTML += message}
     else {
-    this.shadowRoot.getElementById(id2).innerHTML +="<button class='miniclose' style='margin-left:5px' id='"+id_close+"'>x</button>"; //<button class='miniclose' id='"+id_minimize+"'>v</button>
+    this.shadowRoot.getElementById(id2).innerHTML +="<button class='miniclose' style='margin-left:5px; font-size:20px' id='"+id_close+"'>x</button>"; //<button class='miniclose' id='"+id_minimize+"'>v</button>
     //loop over number of ids
     for (let i = 0; i < this.ids; i++) {
     const id_close = "mclose"+i;
