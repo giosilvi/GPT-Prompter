@@ -3,7 +3,6 @@ const highlightColor = "#d2f4d3";//"rgb(16, 163, 255)";
 
 const minipopup = (id,{ display = "none", left = 0, top = 0 }) => `
 <span class="popuptext" id="${id}" style="left: ${left}px; top:${top}px">
-Message incoming....
 </span>
 `;
 
@@ -133,17 +132,28 @@ class CustomMiniPopup extends HTMLElement {
     clone.appendChild(range.extractContents()); // extract the selected text and append it to the clone
     range.insertNode(clone);
   }
-  updatepopup(message){
+  updatepopup(message, stream){
     
     const id2 = this.ids-1;
     var id_close = "mclose"+id2
-    this.shadowRoot.getElementById(id2).innerHTML = message + "<button class='miniclose' id='"+id_close+"'>x</button>";
+    var id_minimize = "minimize"+id2
+    //if stream is true
+    if (stream) {
+      this.shadowRoot.getElementById(id2).innerHTML += message}
+    else {
+    this.shadowRoot.getElementById(id2).innerHTML +="<button class='miniclose' id='"+id_close+"'>x</button>"; //<button class='miniclose' id='"+id_minimize+"'>v</button>
     //loop over number of ids
     for (let i = 0; i < this.ids; i++) {
     const id_close = "mclose"+i;
+    // const id_minimize = "minimize"+id2;
     this.shadowRoot.getElementById(id_close).addEventListener("click", () => {
       this.shadowRoot.getElementById(i).classList.toggle('show');
     });
+    // // add listener to undo the highlight range and erase the element with id2
+    // this.shadowRoot.getElementById(id_close).addEventListener("click", () => {
+    //   this.shadowRoot.getElementById(i).remove();
+    // });
+  }
   }
   }
 }

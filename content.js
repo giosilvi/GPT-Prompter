@@ -59,6 +59,21 @@ chrome.runtime.onMessage.addListener(function (request) {
   else if (request.message == 'GPTanswer') {
     customMiniPopup.updatepopup(request.text);
   }
+  else if (request.message == 'GPTStream_answer'){
+    //convert request.text to JSON
+    var text = request.text.substring(6); // remove the first "data: "
+    //if text is not "[DONE]"
+    console.log(text,text.indexOf("[DONE]")==-1);
+    // if last characht of text is not "]"
+    if (text.indexOf("[DONE]")==-1) {
+    var json = JSON.parse(text);
+    var text = json.choices[0].text
+    customMiniPopup.updatepopup(text, true);
+    }
+    else {
+      customMiniPopup.updatepopup("[DONE]", false);
+    }
+  }
   else {
     alert(request)
   }
