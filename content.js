@@ -13,6 +13,7 @@ window.addEventListener("scroll", function () {
   }
   this.window.lastY = y;
   this.window.lastX = x;
+  // console.log(this.window.lastY);
 }
 );
 
@@ -28,6 +29,7 @@ const setMarkerPosition = (markerPosition) =>
 const getSelectedText = () => window.getSelection().toString();
 
 document.addEventListener("click", () => {
+  // console.log(getSelectedText().length)
   if (getSelectedText().length > 0) {
     setMarkerPosition(getMarkerPosition());
   }
@@ -55,23 +57,27 @@ chrome.runtime.onMessage.addListener(function (request) {
     if (customMiniPopup.hasAttribute("markerPosition")) {
     setMarkerPosition({ display: "flex" });
     customMiniPopup.highlightSelection();}
+    else
+    { // in case we can`t get the markerPosition, we use the default popup
+    customMiniPopup.defaultpopup();
+    }
   }
-  else if (request.message == 'GPTanswer') {
-    customMiniPopup.updatepopup(request.text);
-  }
+  // else if (request.message == 'GPTanswer') {
+  //   customMiniPopup.updatepopup(request.text);
+  // }
   else if (request.message == 'GPTStream_answer'){
     //convert request.text to JSON
-    var text = request.text.substring(6); // remove the first "data: "
+    console.log(request.text);
+    var text = request.text; // remove the first "data: "
     //if text is not "[DONE]"
-    console.log(text,text.indexOf("[DONE]")==-1);
-    // if last characht of text is not "]"
+    // console.log(text);
     if (text.indexOf("[DONE]")==-1) {
-    var json = JSON.parse(text);
-    var text = json.choices[0].text
-    customMiniPopup.updatepopup(text, true);
-    }
+      var json = JSON.parse(text);
+      customMiniPopup.updatepopup(json, true);
+      }
     else {
-      customMiniPopup.updatepopup("[DONE]", false);
+      // close the stream with the full request data
+      customMiniPopup.updatepopup(request, false);
     }
   }
   else {
@@ -79,6 +85,7 @@ chrome.runtime.onMessage.addListener(function (request) {
   }
 })
 
+console.log('GPT-prompter content script is running')
 
 // Obsolete, useful for debugging
 // chrome.runtime.onMessage.addListener((req, snd, rsp) => {
