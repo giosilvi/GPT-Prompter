@@ -82,7 +82,7 @@ async function promptGPT3Prompting(prompt, items, tabs) {
           }
           // Enqueue the next data chunk into our target stream
           // console.log(value);
-          var string = new TextDecoder().decode(value).substring(6);
+          var string = new TextDecoder().decode(value);//.substring(6);
           // console.log(string, typeof string);
           // if tabs.id == -1 then use querySelector to get the tab
           if (tabs.id == -1) {

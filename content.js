@@ -67,8 +67,8 @@ chrome.runtime.onMessage.addListener(function (request) {
   // }
   else if (request.message == 'GPTStream_answer'){
     //convert request.text to JSON
-    console.log(request.text);
-    var text = request.text; // remove the first "data: "
+    // console.log(request.text);
+    var text = request.text.replace('data: ',''); // remove the "data: "
     //if text is not "[DONE]"
     // console.log(text);
     if (text.indexOf("[DONE]")==-1) {
