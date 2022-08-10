@@ -1,5 +1,5 @@
 # GPT-Prompter
-Chrome extension to get a fast explanation/prompts of the selected text using GPT-3. Available in the chrome web store
+Open source Chrome extension to get a fast customizable prompts (e.g. explanations) of the selected text using GPT-3 model. Available in the Chrome web store.
 
 To use it follows these steps:
 
@@ -11,4 +11,4 @@ To use it follows these steps:
 
 4- You are set to go! Now just select text from a website and select from the right-click menu the GPT-Prompter command to send the custom prompt with the selected text. 
 
-5- The default prompt available is "Tell me more about <selected text>" but you can create anything you want with just the constrain that it has to contain a field for the selected text.
+5- The default prompt is "Tell me more about <selected text>", but you can create anything you want with just the constrain that it has to contain a field for the selected text to be parsed in it.
