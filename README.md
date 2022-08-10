@@ -7,7 +7,7 @@ To use it follows these steps:
 
 2- If you don`t have it already, make a profile at OpenAI https://beta.openai.com/
 
-3- From https://beta.openai.com/account/api-keys you can copy your API Key and paste into the chrome extension.
+3- From https://beta.openai.com/account/api-keys you can copy your API Key and paste into the chrome extension (we never have access to your API Key, it is stored on your Chrome profile).
 
 4- You are set to go! Now just select text from a website and select from the right-click menu the GPT-Prompter command to send the custom prompt with the selected text. 
 
