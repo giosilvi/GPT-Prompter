@@ -1,5 +1,5 @@
 # GPT-Prompter
-Open source Chrome extension to get a fast customizable prompts (e.g. explanations) of the selected text using GPT-3 model. Available in the Chrome web store.
+Open source Chrome extension to get fast customizable prompts (e.g. explanations) of the selected text using OpenAI`s GPT-3 model. Available in the Chrome web store.
 
 To use it follows these steps:
 
