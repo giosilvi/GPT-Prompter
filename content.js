@@ -78,6 +78,7 @@ chrome.runtime.onMessage.addListener(function (request) {
     else {
       // close the stream with the full request data
       customMiniPopup.updatepopup(request, false);
+      addListeners();
     }
   }
   else {
@@ -93,3 +94,85 @@ console.log('GPT-prompter content script is running')
 //   console.log(req);
 //   rsp('a-response-object');
 // });
+
+
+// code to move the mini popup
+
+function addListeners(){
+  for (var indice = 0; indice < customMiniPopup.ids; indice++) {
+    // to pass the id to mouseDown function use the following syntax:
+    // customMiniPopup.shadowRoot.getElementById(i).addEventListener('mousedown', mouseDown.bind(null, i));
+
+    elem = customMiniPopup.shadowRoot.getElementById(indice).addEventListener('mousedown',mouseDown, false);
+    // add event listener to mouse up that removes the event listener from the line above
+  }
+  // add event listener to mouse up that removes the event listener from the line above
+  // window.addEventListener('mouseup', mouseUp, false);
+  
+}
+// to remove the listener, use the following syntax:
+// customMiniPopup.shadowRoot.getElementById(i).removeEventListener('mousedown', mouseDown.bind(null, i));
+
+
+
+function mouseDown(e)
+  {console.log('mouse clicked', this.id)
+  // console.log('Zero:',inde);
+  // customMiniPopup.shadowRoot.getElementById(inde).addEventListener('mousemove', spanMove, true);
+  const indice = this.id; 
+  function wrapper(event){
+    spanMove(event,indice)
+  }
+  window.addEventListener('mousemove',  wrapper, true);
+  // add a listener to the mouse up event, to remove the wrapper function
+  window.addEventListener('mouseup', function(){
+    window.removeEventListener('mousemove', wrapper, true);
+  }
+  , false);
+  }
+
+
+function spanMove(e,id){
+  console.log('Zero?',id)
+  var object = customMiniPopup.shadowRoot.getElementById(id)
+
+
+  console.log(e.clientX) // x position of the mouse pointer
+  console.log(e.clientY) // y position of the mouse pointer
+
+  // variables 
+  var y_position = object.offsetTop; 
+  var x_position = object.offsetLeft;
+
+  // for loop over distance between mouse position and object position
+  if (e.clientY > y_position) {
+    console.log('up')
+    for (var i = y_position; i < e.clientY ; i++) {
+      // move the object
+      
+      setTimeout(function(){object.style.top = i - object.offsetHeight/2 +'px';}, 50);
+    }
+  }
+  else {
+    console.log('down')
+    for (var j = y_position; j > e.clientY ; j--) {
+      // move the object
+      setTimeout(function(){object.style.top = j - object.offsetHeight/2 +'px';}, 50);
+    }
+  }
+  if (e.clientX > x_position) {
+    console.log('right')
+    for (var k = x_position; k < e.clientX; k++) {
+      setTimeout(function(){object.style.left = k - object.offsetWidth/2 +'px';}, 50);
+      // wait 10ms to move the object
+    }
+  }
+  else {
+    console.log('left')
+    for (var l = x_position; l > e.clientX; l--) {
+      setTimeout(function(){object.style.left = l - object.offsetWidth/2 +'px';}, 50);
+    }
+  }
+
+}
+  
