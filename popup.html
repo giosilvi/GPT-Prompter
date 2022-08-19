@@ -33,9 +33,11 @@
                 <button type="button" class="apikeybutton" style="margin-left: -20px" id="showKey">Show API</button>
             </div>
         </div>
-        <div  style="background-color: rgba(0,0,0,.03);"><a id="linktoAPI" href="https://beta.openai.com/account/api-keys" style="padding-left:10px;">Where can I generate my API key?</a></div>
-                            <!--selector-->
+        <div  style="background-color: rgba(0,0,0,.0); padding-left:10px; margin-bottom:10px!important;"><a id="linktoAPI" href="https://beta.openai.com/account/api-keys">Where can I generate my API key?</a></div>      
+        
         <div class="card text-bg-light" style="border-radius:0px;">
+            <div class="card-header"><img src="icons\iconA16.png" alt="logo" class="logo"> <b> Prompt Design</b></div>
+                            <!--selector-->
             <div class="input-group mb-3">
                 <div class="input-group-prepend">
                   <label class="input-group-text" for="inputGroupSelect01">Options</label>
@@ -48,10 +50,20 @@
                   <option value="4">ada</option>
                 </select>
               </div>
-        </div>
+            
+                  <!--temperature-->
+            <div class="row" style="margin-left:0px!important">
+                <label for="customRange1" class="form-label col-sm-3">Set temperature</label>
+                <input type="range" class="form-range col-sm-6" style="margin-right:30px" id="customRange1">
+                <input class="text-input col-sm-2" type="text" style="text-align:right" value="0.67">
+                </div>
 
-        <div class="card text-bg-light" style="border-radius:0px;">
-            <div class="card-header"><img src="icons\iconA16.png" alt="logo" class="logo"> <b> Prompt Design</b></div>
+                <!--max token-->
+                <div class="row" style="margin-left:0px!important">
+                    <label for="customRange1" class="form-label col-sm-3">Max Token</label>
+                    <input type="range" class="form-range col-sm-6" style="margin-right:30px" id="customRange1">
+                    <input class="text-input col-sm-2" type="text" style="text-align:right" min="0" max="4000" value="3957">
+                    </div>
             <div class="card-body">
                 <textarea class="form-control" id="promptinput" rows="3">Tell me more about "#TEXT#":</textarea>
                 <button type="button" id="createPrompt" class="list-group-item list-group-item-action text-center" style="background-color:#10a37f; color:white"><b>Create prompt</b></button>
