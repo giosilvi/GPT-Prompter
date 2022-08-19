@@ -54,15 +54,17 @@
                   <!--temperature-->
             <div class="row" style="margin-left:0px!important">
                 <label for="customRange1" class="form-label col-sm-3">Set temperature</label>
-                <input type="range" class="form-range col-sm-6" style="margin-right:30px" id="customRange1">
-                <input class="text-input col-sm-2" type="text" style="text-align:right" value="0.67">
+                <input type="range" class="form-range col-sm-6" style="margin-right:30px" id="temperature" min="0" max="100" oninput="myFunction(this.value)">
+                <p id="temperature">sono qui</p>
+                <input class="text-input col-sm-2" type="text" style="text-align:right" value="0.67" id="">
+
                 </div>
 
                 <!--max token-->
                 <div class="row" style="margin-left:0px!important">
                     <label for="customRange1" class="form-label col-sm-3">Max Token</label>
-                    <input type="range" class="form-range col-sm-6" style="margin-right:30px" id="customRange1">
-                    <input class="text-input col-sm-2" type="text" style="text-align:right" min="0" max="4000" value="3957">
+                    <input type="range" class="form-range col-sm-6" style="margin-right:30px" id="token" min="0" max="4000">
+                    <input class="text-input col-sm-2" type="text" style="text-align:right">
                     </div>
             <div class="card-body">
                 <textarea class="form-control" id="promptinput" rows="3">Tell me more about "#TEXT#":</textarea>

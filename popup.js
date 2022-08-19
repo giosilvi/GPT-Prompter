@@ -280,3 +280,7 @@ function checkAPIKeyatBeginning() {
     }
     );
 }
+
+function myFunction(val) {
+    document.getElementById("temperature").innerHTML = val;
+  }
