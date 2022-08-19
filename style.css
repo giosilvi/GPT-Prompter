@@ -467,3 +467,17 @@ body {
     y: initial;
     z-index: 2147483647;
 }
+
+
+.noselection
+{
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    
+}
+
+

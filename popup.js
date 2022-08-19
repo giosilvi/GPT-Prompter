@@ -201,9 +201,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 }
     , false)
-
-
-
     
 //to attach the link to the element "a"
 document.addEventListener('DOMContentLoaded', function () {
@@ -281,6 +278,28 @@ function checkAPIKeyatBeginning() {
     );
 }
 
-function myFunction(val) {
-    document.getElementById("temperature").innerHTML = val;
-  }
+
+// Update the values of temperature and max token
+
+// To get the value of the input and save it in the storage
+function Temp() {
+    var t=document.getElementById("temperature").value;
+    document.getElementById("temp").value = t;
+    }
+
+// add listener when the input is changed and activate the function Temp()
+document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('temperature').addEventListener('change', Temp, false)
+}
+    , false)
+
+function Token() {
+    var k=document.getElementById("maxtoken").value;
+    document.getElementById("token").value = k;
+    }
+
+// add listener when the input is changed and activate the function Token()
+document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('maxtoken').addEventListener('change', Token, false)
+}
+    , false)
