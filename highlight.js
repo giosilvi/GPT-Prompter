@@ -1,9 +1,11 @@
 const highlightColor = "#d2f4d3";//"rgb(16, 163, 255)";
 const DaVinciCost = 0.06 / 1000;
 
-const minipopup = (id, { display = "none", left = 0, top = 0 }) => `
-<span class="popuptext" id="${id}" style="left: ${left}px; top:${top}px">
-</span>
+
+const minipopup = (id,{ display = "none", left = 0, top = 0 }) => `
+<div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px">
+</div>
+
 `;
 
 const template = (id) => `
@@ -17,21 +19,21 @@ const styled = `
   .popuptext {
     align-items: center;
     background-color: #202123;
-    border-radius: 5px;
+    border-radius: 20px;
     border: none;
     color: #fff;
     display: flex;
-    justify-content: center;
-    opacity: 0;
-    padding: 5px 10px;
-    position: fixed;
-    width: auto;
-    max-width: 500px;
-    z-index: -1;
-    line-height: 1.5;
-    font-size: 18px;
-    margin-right: 10px!important;
+    justify-content:center;
+    opacity:0;
+    position:fixed;
+    width:auto;
+    max-width:500px;
+    z-index:-1;
+    line-height:1.8;
+    font-size:18px!important;
+    margin-right:10px!important;
     min-width: auto;!important;
+    font-family: 'Roboto', sans-serif!important;
     user-select: none;
   }
   .show {
@@ -39,6 +41,7 @@ const styled = `
     -webkit-animation: fadeIn 1s;
     animation: fadeIn 1s;
     z-index: 100;
+    padding: 17px;
   }
   .minimize{
     font-size: 2px;
@@ -167,7 +170,7 @@ class CustomMiniPopup extends HTMLElement {
     }
     else {
       var fullmessage = this.shadowRoot.getElementById(id2).innerHTML
-      this.shadowRoot.getElementById(id2).innerHTML += "<div><button class='miniclose' id='"+id_minimize+"'>v</button><button class='miniclose' id='" + id_close + "'>x</button> </div>";
+      this.shadowRoot.getElementById(id2).innerHTML += "<div><button class='miniclose'style='margin-left:5px; font-size:20px' id='"+id_minimize+"'>v</button><button class='miniclose' style='margin-left:5px; font-size:20px' id='" + id_close + "'>x</button> </div>";
       
       // this.shadowRoot.getElementById(id2).innerHTML += 
       //loop over number of ids
