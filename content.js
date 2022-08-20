@@ -56,7 +56,8 @@ chrome.runtime.onMessage.addListener(function (request) {
   if (request.message == 'highlight') {
     if (customMiniPopup.hasAttribute("markerPosition")) {
     setMarkerPosition({ display: "flex" });
-    customMiniPopup.highlightSelection();}
+  //  customMiniPopup.highlightSelection();
+  }
     else
     { // in case we can`t get the markerPosition, we use the default popup
     customMiniPopup.defaultpopup();
@@ -132,47 +133,50 @@ function mouseDown(e)
   }
 
 
+
 function spanMove(e,id){
   console.log('Zero?',id)
   var object = customMiniPopup.shadowRoot.getElementById(id)
 
-
-  console.log(e.clientX) // x position of the mouse pointer
-  console.log(e.clientY) // y position of the mouse pointer
-
   // variables 
   var y_position = object.offsetTop; 
   var x_position = object.offsetLeft;
+  var mouse_y = e.clientY;
+  var mouse_x = e.clientX;
+  var mouse_x_position = mouse_x - object.offsetWidth/2;
+  var mouse_y_position = mouse_y - object.offsetHeight/2;
+
+  // console.log(x_position,e.clientX) // x position of the mouse pointer
+  // console.log(y_position,e.clientY) // y position of the mouse pointer
 
   // for loop over distance between mouse position and object position
-  if (e.clientY > y_position) {
-    console.log('up')
-    for (var i = y_position; i < e.clientY ; i++) {
+  if (mouse_y_position > y_position) {
+    for (var i = y_position; i < mouse_y_position; i++) {
       // move the object
-      
-      setTimeout(function(){object.style.top = i - object.offsetHeight/2 +'px';}, 50);
+      object.style.top = i  +'px';
+      // setTimeout(function(){object.style.top = i  +'px';}, 50);
     }
   }
   else {
-    console.log('down')
-    for (var j = y_position; j > e.clientY ; j--) {
+    for (var j = y_position; j > mouse_y_position; j--) {
       // move the object
-      setTimeout(function(){object.style.top = j - object.offsetHeight/2 +'px';}, 50);
+      object.style.top = j  +'px';
+      // setTimeout(function(){object.style.top = j  +'px';}, 50);
     }
   }
-  if (e.clientX > x_position) {
-    console.log('right')
-    for (var k = x_position; k < e.clientX; k++) {
-      setTimeout(function(){object.style.left = k - object.offsetWidth/2 +'px';}, 50);
-      // wait 10ms to move the object
+  if (mouse_x_position > x_position) {
+    for (var k = x_position; k < mouse_x_position ; k++) {
+      object.style.left = k+'px';
+      // setTimeout(function(){object.style.left = k+'px';}, 50);
     }
   }
   else {
-    console.log('left')
-    for (var l = x_position; l > e.clientX; l--) {
-      setTimeout(function(){object.style.left = l - object.offsetWidth/2 +'px';}, 50);
+    for (var l = x_position; l > mouse_x_position ; l--) {
+      object.style.left = l +'px';
+      // setTimeout(function(){object.style.left = l +'px';}, 50);
     }
   }
-
+  object.previous_x_position = x_position;
+  object.previous_y_position = y_position;
 }
   

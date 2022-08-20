@@ -29,7 +29,7 @@ const styled = `
     max-width: 500px;
     z-index: -1;
     line-height: 1.5;
-    font-size: 18px!important;
+    font-size: 18px;
     margin-right: 10px!important;
     min-width: auto;!important;
     user-select: none;
@@ -39,6 +39,9 @@ const styled = `
     -webkit-animation: fadeIn 1s;
     animation: fadeIn 1s;
     z-index: 100;
+  }
+  .minimize{
+    font-size: 2px;
   }
 
   @-webkit-keyframes fadeIn {
@@ -113,11 +116,11 @@ class CustomMiniPopup extends HTMLElement {
   // TO DO: it should toggle to no-text/text when the user click on the popup
   defaultpopup(){
     //check if shadowRoot element exists
-    if (this.shadowRoot.getElementById(this.ids-1)) {
-      //cancel the element if it exists
-      this.ids--;
-      this.shadowRoot.getElementById(this.ids).remove();
-    }
+    // if (this.shadowRoot.getElementById(this.ids-1)) {
+    //   //cancel the element if it exists
+    //   this.ids--;
+    //   this.shadowRoot.getElementById(this.ids).remove();
+    // }
     this.shadowRoot.innerHTML += minipopup(this.ids, { display: "flex", left: 0, top: 0 });
     this.shadowRoot.getElementById(this.ids).classList.toggle('show');
     this.ids++;
@@ -154,24 +157,29 @@ class CustomMiniPopup extends HTMLElement {
     var id_minimize = "minimize" + id2
     //if stream is true
     if (stream) {
+      // if innerHTML is empty, add the text to it
+      // if (this.tokens == 0) {
+        
+      // }
       var text = message.choices[0].text
       this.tokens++;
       this.shadowRoot.getElementById(id2).innerHTML += text
     }
     else {
+      this.shadowRoot.getElementById(id2).innerHTML += "<div><button class='miniclose' id='"+id_minimize+"'>v</button><button class='miniclose' id='" + id_close + "'>x</button> </div>";
       var fullmessage = this.shadowRoot.getElementById(id2).innerHTML
-      this.shadowRoot.getElementById(id2).innerHTML += "<button class='miniclose' id='" + id_close + "'>x</button>"; //<button class='miniclose' id='"+id_minimize+"'>v</button>
+      // this.shadowRoot.getElementById(id2).innerHTML += 
       //loop over number of ids
       for (let i = 0; i < this.ids; i++) {
         const id_close = "mclose" + i;
-        // const id_minimize = "minimize"+id2;
+        const id_minimize = "minimize"+i;
         this.shadowRoot.getElementById(id_close).addEventListener("click", () => {
           this.shadowRoot.getElementById(i).classList.toggle('show');
         });
-        // // add listener to undo the highlight range and erase the element with id2
-        // this.shadowRoot.getElementById(id_close).addEventListener("click", () => {
-        //   this.shadowRoot.getElementById(i).remove();
-        // });
+        // add listener to undo the highlight range and change the font size to 0 to hide the text
+        this.shadowRoot.getElementById(id_minimize).addEventListener("click", () => {
+          this.shadowRoot.getElementById(i).classList.toggle('minimize');
+        });
       }
       //save prompt to local storage 
       // now one can get the model from message.body_data.model

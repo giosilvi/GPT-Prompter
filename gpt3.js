@@ -57,7 +57,7 @@ async function promptGPT3Prompting(prompt, items, tabs) {
   console.log(prompt);
   console.log('Tabs', tabs);
   var url = "https://api.openai.com/v1/completions";
-  var body_data = { "model": "text-davinci-002", "temperature": 0, "max_tokens": 1000, "prompt": prompt, "stream": true };
+  var body_data = { "model": "text-davinci-002", "temperature": 0, "max_tokens": 1000, "prompt": prompt,"echo": true, "stream": true };
   var str_body_data = JSON.stringify(body_data);
   fetch(url, {
     method: 'POST',
