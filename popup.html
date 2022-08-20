@@ -42,30 +42,29 @@
                             <!--selector-->
             <div class="input-group mb-3">
                 <div class="input-group-prepend">
-                  <label class="input-group-text" for="inputGroupSelect01" style="border:0">Options</label>
+                  <label class="input-group-text" for="inputmodel" style="border:0">Model</label>
                 </div>
-                <select class="custom-select" id="inputGroupSelect01">
-                  <option selected>Choose your model</option>
-                  <option value="1">text-davinci-002</option>
-                  <option value="2">text-curie-001</option>
-                  <option value="3">text-babbage-001</option>
-                  <option value="4">text-ada-001</option>
+                <select class="custom-select" id="inputmodel">
+                  <option selected value="text-davinci-002">text-davinci-002</option>
+                  <option value="text-curie-001">text-curie-001</option>
+                  <option value="text-babbage-001">text-babbage-001</option>
+                  <option value="text-ada-001">text-ada-001</option>
                 </select>
             </div>
             
                   <!--temperature-->
             <div class="row" style="margin-left:0px!important">
-                <label for="temperature" class="form-label col-sm-3">Set temperature</label>
-                <input type="range" class="form-range col-sm-6" style="margin-right:30px; padding:0" id="temperature" min="0" max="1" step="0.01" value="0.7">
-                <input class="text-input col-sm-2 noselection" type="text" readonly="readonly" style="text-align:right" id="temp" value="0.7">
+                <label for="temperature" class="form-label col-sm-3">Temperature</label>
+                <input type="range" class="form-range col-sm-6" style="margin-right:30px; padding:0" id="temperature" min="0" max="1" step="0.01" value="0.1">
+                <input class="text-input col-sm-2 noselection" type="text" readonly="readonly" style="text-align:right" id="temp" value="0.1">
 
             </div>
 
                 <!--max token-->
             <div class="row" style="margin-left:0px!important">
-                    <label for="maxtoken" class="form-label col-sm-3">Max Token</label>
-                    <input id="maxtoken" type="range" class="form-range col-sm-6" style="margin-right:30px;padding:0" min="0" max="4000" step="1" value="256">
-                    <input class="text-input col-sm-2 noselection" onselectstart="return false" type="text" readonly="readonly" style="text-align:right" id="token" value="256">
+                    <label for="maxtoken" class="form-label col-sm-3">Maximum length</label>
+                    <input id="maxtoken" type="range" class="form-range col-sm-6" style="margin-right:30px;padding:0" min="0" max="2048" step="1" value="1024">
+                    <input class="text-input col-sm-2 noselection" onselectstart="return false" type="text" readonly="readonly" style="text-align:right" id="token" value="1024">
             </div>
             <div class="card-body">
                 <textarea class="form-control" id="promptinput" rows="3">Tell me more about "#TEXT#":</textarea>
@@ -73,7 +72,7 @@
             </div>
         </div>
 
-        <div id="history" class="card text-bg-light" style="border-radius:0px; border:0">
+        <div class="card text-bg-light" style="border-radius:0px; border:0">
             <div class="card-header logo" style="border:0"><img src="icons\iconA16.png" alt="logo"> <b>  Your Prompts</b>    
                 <button type="button" id="history" class="save" style="margin-left:160px;">History of Your Prompts and Answers</button></div>
             <div class="card-body" style="border:0">

@@ -1,6 +1,23 @@
 const highlightColor = "#d2f4d3";//"rgb(16, 163, 255)";
 const DaVinciCost = 0.06 / 1000;
+const CurieCost = 0.006 / 1000;
+const BabbageCost = 0.0012 / 1000;
+const AdaCost = 0.0008 / 1000;
 
+
+function computeCost(tokens, model)
+{
+    var cost = 0;
+    if (model == "text-davinci-002")
+        cost = tokens * DaVinciCost;
+    else if (model == "text-curie-001")
+        cost = tokens * CurieCost;
+    else if (model == "text-babbage-001")
+        cost = tokens * BabbageCost;
+    else if (model == "text-ada-001")
+        cost = tokens * AdaCost;
+    return cost.toFixed(5);
+}
 
 const minipopup = (id,{ display = "none", left = 0, top = 0 }) => `
 <div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px">
@@ -30,7 +47,7 @@ const styled = `
     max-width:500px;
     z-index:-1;
     line-height:1.8;
-    font-size:18px!important;
+    font-size:18px;
     margin-right:10px!important;
     min-width: auto;!important;
     font-family: 'Roboto', sans-serif!important;
@@ -153,44 +170,71 @@ class CustomMiniPopup extends HTMLElement {
     clone.appendChild(range.extractContents()); // extract the selected text and append it to the clone
     range.insertNode(clone);
   }
+
+  minimizeButtons(id_target, id_button) {
+    this.shadowRoot.getElementById(id_button).addEventListener("click", () => {
+      this.shadowRoot.getElementById(id_target).classList.toggle('minimize');
+    });
+  }
+  closeButtons(id_target, id_button) {
+    this.shadowRoot.getElementById(id_button).addEventListener("click", () => {
+      this.shadowRoot.getElementById(id_target).classList.toggle('show');
+    });
+  }
+
+
+  buttonForPopUp(){
+    for (let id_target = 0; id_target < this.ids; id_target++) {
+        const id_close = "mclose" + id_target;
+        const id_minimize = "minimize"+id_target;
+        this.minimizeButtons(id_target,id_minimize);
+        this.closeButtons(id_target,id_close);
+        };
+    }
+  
+
+
   updatepopup(message, stream) {
 
     const id2 = this.ids - 1;
     var id_close = "mclose" + id2
     var id_minimize = "minimize" + id2
+    // TODO: Update the two buttons to two icons, one for minimize and one for close
+    var minimcloseButtons = "<div><button class='miniclose'style='margin-left:5px; font-size:20px' id='"+id_minimize+"'>v</button><button class='miniclose' style='margin-left:5px; font-size:20px' id='" + id_close + "'>x</button> </div>";
     //if stream is true
     if (stream) {
       // if innerHTML is empty, add the text to it
       // if (this.tokens == 0) {
-        
       // }
-      var text = message.choices[0].text
+      // if choiches is a key in message
+      if (message.choices) {
+        var text = message.choices[0].text
+        this.shadowRoot.getElementById(id2).innerHTML += text;
+      }
+      // if message has a key "error"
+      else if (message.error) {
+        var text = message.error.message
+        var type = message.error.type
+        this.shadowRoot.getElementById(id2).innerHTML += type + "<br>" + text;
+        this.shadowRoot.getElementById(id2).innerHTML += minimcloseButtons;
+        this.buttonForPopUp()
+      }
       this.tokens++;
-      this.shadowRoot.getElementById(id2).innerHTML += text
+      
     }
     else {
       var fullmessage = this.shadowRoot.getElementById(id2).innerHTML
-      this.shadowRoot.getElementById(id2).innerHTML += "<div><button class='miniclose'style='margin-left:5px; font-size:20px' id='"+id_minimize+"'>v</button><button class='miniclose' style='margin-left:5px; font-size:20px' id='" + id_close + "'>x</button> </div>";
-      
+      this.shadowRoot.getElementById(id2).innerHTML += minimcloseButtons;
+      this.buttonForPopUp(); // connect the buttons of the popup
       // this.shadowRoot.getElementById(id2).innerHTML += 
       //loop over number of ids
-      for (let i = 0; i < this.ids; i++) {
-        const id_close = "mclose" + i;
-        const id_minimize = "minimize"+i;
-        this.shadowRoot.getElementById(id_close).addEventListener("click", () => {
-          this.shadowRoot.getElementById(i).classList.toggle('show');
-        });
-        // add listener to undo the highlight range and change the font size to 0 to hide the text
-        this.shadowRoot.getElementById(id_minimize).addEventListener("click", () => {
-          this.shadowRoot.getElementById(i).classList.toggle('minimize');
-        });
-      }
+     
       //save prompt to local storage 
-      // now one can get the model from message.body_data.model
-      var cost = this.tokens * DaVinciCost;
-      cost = cost.toFixed(5);
-      this.tokens = 0;
+      
       var body_data = JSON.stringify(message.body_data)
+      var model = message.body_data.model
+      var cost = computeCost(this.tokens,model)
+      this.tokens = 0;
        // save the result.choices[0].text in the storage 
       chrome.storage.local.get('history', function (items) {
           if (typeof items.history !== 'undefined') {
@@ -207,3 +251,4 @@ class CustomMiniPopup extends HTMLElement {
 }
 
 window.customElements.define("mini-popup", CustomMiniPopup);
+

@@ -2,7 +2,7 @@
 function makePromptList (items) {
     var freshList = '';
     for (var i = 0; i < items.customprompt.length; i++) {
-        freshList += '<li class="list-group-item">' + items.customprompt[i] + ' <button id="del' + i.toString() + '" class="save" > Delete </button></li>';
+        freshList += '<li class="list-group-item">' + items.customprompt[i]['prompt']+ " Model:"+items.customprompt[i]['model'] +" Temp:"+items.customprompt[i]['temperature'] +' <button id="del' + i.toString() + '" class="save" > Delete </button></li>';
     }
     return freshList;
 }
@@ -53,17 +53,28 @@ function hideSaveKey() {
 //add function to save the the custom prompt in storage
 function savePrompt() {
     // get the text from the prompt
+    var model = document.getElementById("inputmodel").value;
+    var temp = parseFloat(document.getElementById("temp").value);
+    var token = parseInt(document.getElementById("token").value);
     var text = document.getElementById("promptinput").value;
+    console.log('Temp: ' + temp);
+    var body_data = { "model": model, "temperature": temp, "max_tokens": token, "prompt": text,"echo": true, "stream": true }
     // try to retrive the custom prompt from the storage API
     chrome.storage.sync.get('customprompt', function (items) {
         // Check that the prompt exists
         if (typeof items.customprompt !== 'undefined') {
-            // if the prompt is not present in the list items.customprompt, push to it
-            if (!items.customprompt.includes(text)) {
-                items.customprompt.push(text);
-                freshList = makePromptList(items);
-                document.getElementById('list-of-prompts').innerHTML = freshList
-                update_del_buttons(items);
+            var prompt_already_present = false;
+            // check that the prompt is not already present, looping over every prompt in the array and comparing each values in the dictionary
+            for (var i = 0; i < items.customprompt.length; i++) {
+                if (items.customprompt[i]['prompt'] == text && items.customprompt[i]['model'] == model && items.customprompt[i]['temperature'] == temp) {
+                    prompt_already_present = true;
+                }
+            }
+            
+            if (prompt_already_present==false) {
+                items.customprompt.push(body_data);
+                document.getElementById('list-of-prompts').innerHTML = makePromptList(items) //update the list of prompts
+                update_del_buttons(items); // update right click menu
                 chrome.storage.sync.set({ 'customprompt': items.customprompt }, function () {
                     // Notify that we saved
                     console.log('Your custom prompt was saved.');
@@ -89,8 +100,7 @@ function erasePrompt(index) {
             if (index <= items.customprompt.length) {
                 // remove the prompt from the array
                 items.customprompt.splice(index, 1);
-                freshList = makePromptList(items);
-                document.getElementById('list-of-prompts').innerHTML = freshList //update the list of prompts
+                document.getElementById('list-of-prompts').innerHTML = makePromptList(items); //update the list of prompts
                 update_del_buttons(items);  // update the delete buttons
                 
                 chrome.storage.sync.set({ 'customprompt': items.customprompt }, function () {
@@ -281,7 +291,7 @@ function checkAPIKeyatBeginning() {
 
 // Update the values of temperature and max token
 
-// To get the value of the input and save it in the storage
+// To get the value of the temperature and pass it to element with id temp
 function Temp() {
     var t=document.getElementById("temperature").value;
     document.getElementById("temp").value = t;

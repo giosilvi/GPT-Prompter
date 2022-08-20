@@ -26,7 +26,7 @@ function createContextMenu() {
                 chrome.contextMenus.create({
                     id: 'customprompt-' + i,
                     parentId: "GPT-Prompter",
-                    title: items.customprompt[i].replaceAll('#TEXT#', '%s'),
+                    title: items.customprompt[i]["prompt"].replaceAll('#TEXT#', '%s'), // here the text in the menu is created with selected text %s
                     contexts: ["selection"]
                 });
             }
@@ -40,7 +40,7 @@ chrome.runtime.onInstalled.addListener(function () {
     // add one prompt to the storage
     chrome.storage.sync.get('customprompt', function (items) {
         // Check that the prompt exists
-        items.customprompt = ['Tell me more about "#TEXT#":'];
+        items.customprompt = [{ "model": "text-davinci-002", "temperature": 0, "max_tokens": 1024, "prompt": 'Tell me more about "#TEXT#":',"echo": true, "stream": true }];
         // save the new prompt
         chrome.storage.sync.set({ 'customprompt': items.customprompt });
         createContextMenu()
@@ -78,9 +78,14 @@ chrome.contextMenus.onClicked.addListener((info, tabs) => {
             // check tha the prompt number is valid
             if (promptNumber <= items.customprompt.length) {
                 // get the prompt
-                var prompt = items.customprompt[promptNumber];
+                var prompt = items.customprompt[promptNumber]
+                // get element "prompt" from prompt object
+                var promptText = prompt["prompt"];
+                promptText = promptText.replaceAll('#TEXT#', info.selectionText);
+                // update prompt text in prompt
+                prompt["prompt"] = promptText;
+                
                 // replace the selected text in the prompt
-                prompt = prompt.replaceAll('#TEXT#', info.selectionText); //important part
                 chrome.storage.sync.get('APIKEY', function (items) {
                     if (typeof items.APIKEY !== 'undefined') {
                         (async () => {

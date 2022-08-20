@@ -55,32 +55,39 @@ chrome.runtime.onMessage.addListener(function (request) {
   //  if attribute text in request exists, it's a gpt-3 response
   if (request.message == 'highlight') {
     if (customMiniPopup.hasAttribute("markerPosition")) {
-    setMarkerPosition({ display: "flex" });
-  //  customMiniPopup.highlightSelection();
-  }
-    else
-    { // in case we can`t get the markerPosition, we use the default popup
-    customMiniPopup.defaultpopup();
+      setMarkerPosition({ display: "flex" });
+      //  customMiniPopup.highlightSelection();
+    }
+    else { // in case we can`t get the markerPosition, we use the default popup
+      customMiniPopup.defaultpopup();
     }
   }
   // else if (request.message == 'GPTanswer') {
   //   customMiniPopup.updatepopup(request.text);
   // }
-  else if (request.message == 'GPTStream_answer'){
+  else if (request.message == 'GPTStream_answer') {
     //convert request.text to JSON
     // console.log(request.text);
-    var text = request.text.replace('data: ',''); // remove the "data: "
+    // split the request.text by the string 'data:'
+    var data = request.text.split('data: ');
+    console.log('split:', data.length);
+    // var cleanmessage = request.text.replaceAll('data: ',''); // remove the "data: "
     //if text is not "[DONE]"
-    // console.log(text);
-    if (text.indexOf("[DONE]")==-1) {
-      var json = JSON.parse(text);
-      customMiniPopup.updatepopup(json, true);
+    // if the length of data is 2
+    for (var m = 1; m < data.length; m++) {
+
+        if (data[m].indexOf("[DONE]") == -1) {
+          var json = JSON.parse(data[m]);
+          customMiniPopup.updatepopup(json, true); // still the message, just multiple stream in one
+          if (json.error) { addListeners(); }
+        }
+        else {
+          customMiniPopup.updatepopup(request, false); // the end of the stream
+          addListeners();
+        }
       }
-    else {
-      // close the stream with the full request data
-      customMiniPopup.updatepopup(request, false);
-      addListeners();
-    }
+
+    
   }
   else {
     alert(request)
@@ -99,52 +106,51 @@ console.log('GPT-prompter content script is running')
 
 // code to move the mini popup
 
-function addListeners(){
+function addListeners() {
   for (var indice = 0; indice < customMiniPopup.ids; indice++) {
     // to pass the id to mouseDown function use the following syntax:
     // customMiniPopup.shadowRoot.getElementById(i).addEventListener('mousedown', mouseDown.bind(null, i));
 
-    elem = customMiniPopup.shadowRoot.getElementById(indice).addEventListener('mousedown',mouseDown, false);
+    elem = customMiniPopup.shadowRoot.getElementById(indice).addEventListener('mousedown', mouseDown, false);
     // add event listener to mouse up that removes the event listener from the line above
   }
   // add event listener to mouse up that removes the event listener from the line above
   // window.addEventListener('mouseup', mouseUp, false);
-  
+
 }
 // to remove the listener, use the following syntax:
 // customMiniPopup.shadowRoot.getElementById(i).removeEventListener('mousedown', mouseDown.bind(null, i));
 
 
 
-function mouseDown(e)
-  {console.log('mouse clicked', this.id)
+function mouseDown(e) {
+  console.log('mouse clicked', this.id)
   // console.log('Zero:',inde);
   // customMiniPopup.shadowRoot.getElementById(inde).addEventListener('mousemove', spanMove, true);
-  const indice = this.id; 
-  function wrapper(event){
-    spanMove(event,indice)
+  const indice = this.id;
+  function wrapper(event) {
+    spanMove(event, indice)
   }
-  window.addEventListener('mousemove',  wrapper, true);
+  window.addEventListener('mousemove', wrapper, true);
   // add a listener to the mouse up event, to remove the wrapper function
-  window.addEventListener('mouseup', function(){
+  window.addEventListener('mouseup', function () {
     window.removeEventListener('mousemove', wrapper, true);
   }
-  , false);
-  }
+    , false);
+}
 
 
 
-function spanMove(e,id){
-  console.log('Zero?',id)
+function spanMove(e, id) {
   var object = customMiniPopup.shadowRoot.getElementById(id)
 
   // variables 
-  var y_position = object.offsetTop; 
+  var y_position = object.offsetTop;
   var x_position = object.offsetLeft;
   var mouse_y = e.clientY;
   var mouse_x = e.clientX;
-  var mouse_x_position = mouse_x - object.offsetWidth/2;
-  var mouse_y_position = mouse_y - object.offsetHeight/2;
+  var mouse_x_position = mouse_x - object.offsetWidth / 2;
+  var mouse_y_position = mouse_y - object.offsetHeight / 2;
 
   // console.log(x_position,e.clientX) // x position of the mouse pointer
   // console.log(y_position,e.clientY) // y position of the mouse pointer
@@ -153,30 +159,29 @@ function spanMove(e,id){
   if (mouse_y_position > y_position) {
     for (var i = y_position; i < mouse_y_position; i++) {
       // move the object
-      object.style.top = i  +'px';
+      object.style.top = i + 'px';
       // setTimeout(function(){object.style.top = i  +'px';}, 50);
     }
   }
   else {
     for (var j = y_position; j > mouse_y_position; j--) {
       // move the object
-      object.style.top = j  +'px';
+      object.style.top = j + 'px';
       // setTimeout(function(){object.style.top = j  +'px';}, 50);
     }
   }
   if (mouse_x_position > x_position) {
-    for (var k = x_position; k < mouse_x_position ; k++) {
-      object.style.left = k+'px';
+    for (var k = x_position; k < mouse_x_position; k++) {
+      object.style.left = k + 'px';
       // setTimeout(function(){object.style.left = k+'px';}, 50);
     }
   }
   else {
-    for (var l = x_position; l > mouse_x_position ; l--) {
-      object.style.left = l +'px';
+    for (var l = x_position; l > mouse_x_position; l--) {
+      object.style.left = l + 'px';
       // setTimeout(function(){object.style.left = l +'px';}, 50);
     }
   }
   object.previous_x_position = x_position;
   object.previous_y_position = y_position;
 }
-  

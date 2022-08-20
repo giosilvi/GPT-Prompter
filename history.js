@@ -2,14 +2,15 @@ function makeHistoryList (items) {
     var freshList = '';
     var totalCost = 0;
     for (var i = items.history.length-1; i >= 0 ; i--) {
-        //console.log(items.customprompt[i]);
+        console.log(items.history[i]);
         freshList += '<li class="list-group-item list-group-item-action">'
         var prompt = JSON.parse(items.history[i][0]);
         for (var key in prompt){
             var value = prompt[key];
             freshList+= key + ': ' + value + '<br>';
         }
-        freshList += 'answer:'+ items.history[i][1] +'<br>' 
+        var cleanAns = items.history[i][1].replace(prompt["prompt"], '');
+        freshList += 'answer:'+ cleanAns+'<br>' 
         freshList +=  'Cost: '+ items.history[i][2] +'$  <button  class="save" id="eraseItem' + i.toString() + '" > Delete </button></li>';
         totalCost += parseFloat(items.history[i][2]);
     }
