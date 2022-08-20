@@ -4,7 +4,7 @@ const DaVinciCost = 0.06 / 1000;
 // async function promptGPT3Prompting(prompt,items, tabs) {
 //     // var prompt =  "Tell me more about '" + info.selectionText + "':\n";
 //     console.log(prompt);
-    
+
 //     var url = "https://api.openai.com/v1/completions";
 //     var body_data = JSON.stringify({ "model": "text-davinci-002", "temperature": 0, "max_tokens": 1000, "prompt": prompt ,"stream": false});
 //     fetch(url, {
@@ -53,50 +53,65 @@ const DaVinciCost = 0.06 / 1000;
 // }
 
 
-async function promptGPT3Prompting(prompt,items, tabs) {
-    // var prompt =  "Tell me more about '" + info.selectionText + "':\n";
-    console.log(prompt);
-    
-    var url = "https://api.openai.com/v1/completions";
-    var body_data = JSON.stringify({ "model": "text-davinci-002", "temperature": 0, "max_tokens": 1000, "prompt": prompt ,"stream": true});
-    fetch(url, {
-        method: 'POST',
-        headers: {
-            'Accept': 'application/json, text/plain, */*',
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + items.APIKEY
-        },
-        body: body_data
-        }
-    ).then((response) =>response.body)
+async function promptGPT3Prompting(prompt, items, tabs) {
+  console.log(prompt);
+  console.log('Tabs', tabs);
+  var url = "https://api.openai.com/v1/completions";
+  var body_data = { "model": "text-davinci-002", "temperature": 0, "max_tokens": 1000, "prompt": prompt,"echo": true, "stream": true };
+  var str_body_data = JSON.stringify(body_data);
+  fetch(url, {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json, text/plain, */*',
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + items.APIKEY
+    },
+    body: str_body_data
+  }
+  ).then((response) => response.body)
     .then((body) => {
-        const reader = body.getReader();
-        return new ReadableStream({
-            start(controller) {
-              return pump();
-        
-              function pump() {
-                return reader.read().then(({ done, value }) => {
-                  // When no more data needs to be consumed, close the stream
-                  if (done) {
-                    controller.close();
-                    return;
-                  }
-        
-                  // Enqueue the next data chunk into our target stream
-                  console.log(value);
-                  var string = new TextDecoder().decode(value);
-                  console.log(string, typeof string);
-                  chrome.tabs.sendMessage(tabs.id, { message: 'GPTStream_answer', text: string })
-                //   convert to JSON or send a message with string
+      const reader = body.getReader();
+      return pump();
 
-                  controller.enqueue(value);
-                  return pump();
-                });
-              }
-            }
-          })
-        })
+      function pump() {
+        return reader.read().then(({ done, value }) => {
+          // When no more data needs to be consumed, close the stream
+          if (done) {
+            console.log("reader:done");
+            return;
+          }
+          // Enqueue the next data chunk into our target stream
+          // console.log(value);
+          var string = new TextDecoder().decode(value);//.substring(6);
+          // console.log(string, typeof string);
+          // if tabs.id == -1 then use querySelector to get the tab
+          if (tabs.id == -1) {
+            chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+              chrome.tabs.sendMessage(tabs[0].id, {
+                message: 'GPTStream_answer',
+                text: string,
+                body_data: body_data
+              }); //send the answer to the content script
+            });
+          }
+          else {
+            chrome.tabs.sendMessage(tabs.id, {
+              message: 'GPTStream_answer',
+              text: string,
+              body_data: body_data
+            }); //send the answer to the content script
+          }
 
+
+          return pump();
+        });
+      }
+    }
+    ).catch(err => {
+      console.log("error" + err);
+      chrome.tabs.sendMessage(tabs.id, { message: 'GPTStream_answer', text: "Error:" + err });
+
+    });
 }
+
 export default promptGPT3Prompting;

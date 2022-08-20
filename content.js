@@ -13,6 +13,7 @@ window.addEventListener("scroll", function () {
   }
   this.window.lastY = y;
   this.window.lastX = x;
+  // console.log(this.window.lastY);
 }
 );
 
@@ -28,6 +29,7 @@ const setMarkerPosition = (markerPosition) =>
 const getSelectedText = () => window.getSelection().toString();
 
 document.addEventListener("click", () => {
+  // console.log(getSelectedText().length)
   if (getSelectedText().length > 0) {
     setMarkerPosition(getMarkerPosition());
   }
@@ -54,24 +56,30 @@ chrome.runtime.onMessage.addListener(function (request) {
   if (request.message == 'highlight') {
     if (customMiniPopup.hasAttribute("markerPosition")) {
     setMarkerPosition({ display: "flex" });
-    customMiniPopup.highlightSelection();}
+  //  customMiniPopup.highlightSelection();
   }
-  else if (request.message == 'GPTanswer') {
-    customMiniPopup.updatepopup(request.text);
+    else
+    { // in case we can`t get the markerPosition, we use the default popup
+    customMiniPopup.defaultpopup();
+    }
   }
+  // else if (request.message == 'GPTanswer') {
+  //   customMiniPopup.updatepopup(request.text);
+  // }
   else if (request.message == 'GPTStream_answer'){
     //convert request.text to JSON
-    var text = request.text.substring(6); // remove the first "data: "
+    // console.log(request.text);
+    var text = request.text.replace('data: ',''); // remove the "data: "
     //if text is not "[DONE]"
-    console.log(text,text.indexOf("[DONE]")==-1);
-    // if last characht of text is not "]"
+    // console.log(text);
     if (text.indexOf("[DONE]")==-1) {
-    var json = JSON.parse(text);
-    var text = json.choices[0].text
-    customMiniPopup.updatepopup(text, true);
-    }
+      var json = JSON.parse(text);
+      customMiniPopup.updatepopup(json, true);
+      }
     else {
-      customMiniPopup.updatepopup("[DONE]", false);
+      // close the stream with the full request data
+      customMiniPopup.updatepopup(request, false);
+      addListeners();
     }
   }
   else {
@@ -79,6 +87,7 @@ chrome.runtime.onMessage.addListener(function (request) {
   }
 })
 
+console.log('GPT-prompter content script is running')
 
 // Obsolete, useful for debugging
 // chrome.runtime.onMessage.addListener((req, snd, rsp) => {
@@ -86,3 +95,88 @@ chrome.runtime.onMessage.addListener(function (request) {
 //   console.log(req);
 //   rsp('a-response-object');
 // });
+
+
+// code to move the mini popup
+
+function addListeners(){
+  for (var indice = 0; indice < customMiniPopup.ids; indice++) {
+    // to pass the id to mouseDown function use the following syntax:
+    // customMiniPopup.shadowRoot.getElementById(i).addEventListener('mousedown', mouseDown.bind(null, i));
+
+    elem = customMiniPopup.shadowRoot.getElementById(indice).addEventListener('mousedown',mouseDown, false);
+    // add event listener to mouse up that removes the event listener from the line above
+  }
+  // add event listener to mouse up that removes the event listener from the line above
+  // window.addEventListener('mouseup', mouseUp, false);
+  
+}
+// to remove the listener, use the following syntax:
+// customMiniPopup.shadowRoot.getElementById(i).removeEventListener('mousedown', mouseDown.bind(null, i));
+
+
+
+function mouseDown(e)
+  {console.log('mouse clicked', this.id)
+  // console.log('Zero:',inde);
+  // customMiniPopup.shadowRoot.getElementById(inde).addEventListener('mousemove', spanMove, true);
+  const indice = this.id; 
+  function wrapper(event){
+    spanMove(event,indice)
+  }
+  window.addEventListener('mousemove',  wrapper, true);
+  // add a listener to the mouse up event, to remove the wrapper function
+  window.addEventListener('mouseup', function(){
+    window.removeEventListener('mousemove', wrapper, true);
+  }
+  , false);
+  }
+
+
+
+function spanMove(e,id){
+  console.log('Zero?',id)
+  var object = customMiniPopup.shadowRoot.getElementById(id)
+
+  // variables 
+  var y_position = object.offsetTop; 
+  var x_position = object.offsetLeft;
+  var mouse_y = e.clientY;
+  var mouse_x = e.clientX;
+  var mouse_x_position = mouse_x - object.offsetWidth/2;
+  var mouse_y_position = mouse_y - object.offsetHeight/2;
+
+  // console.log(x_position,e.clientX) // x position of the mouse pointer
+  // console.log(y_position,e.clientY) // y position of the mouse pointer
+
+  // for loop over distance between mouse position and object position
+  if (mouse_y_position > y_position) {
+    for (var i = y_position; i < mouse_y_position; i++) {
+      // move the object
+      object.style.top = i  +'px';
+      // setTimeout(function(){object.style.top = i  +'px';}, 50);
+    }
+  }
+  else {
+    for (var j = y_position; j > mouse_y_position; j--) {
+      // move the object
+      object.style.top = j  +'px';
+      // setTimeout(function(){object.style.top = j  +'px';}, 50);
+    }
+  }
+  if (mouse_x_position > x_position) {
+    for (var k = x_position; k < mouse_x_position ; k++) {
+      object.style.left = k+'px';
+      // setTimeout(function(){object.style.left = k+'px';}, 50);
+    }
+  }
+  else {
+    for (var l = x_position; l > mouse_x_position ; l--) {
+      object.style.left = l +'px';
+      // setTimeout(function(){object.style.left = l +'px';}, 50);
+    }
+  }
+  object.previous_x_position = x_position;
+  object.previous_y_position = y_position;
+}
+  
