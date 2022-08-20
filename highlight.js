@@ -166,8 +166,9 @@ class CustomMiniPopup extends HTMLElement {
       this.shadowRoot.getElementById(id2).innerHTML += text
     }
     else {
-      this.shadowRoot.getElementById(id2).innerHTML += "<div><button class='miniclose' id='"+id_minimize+"'>v</button><button class='miniclose' id='" + id_close + "'>x</button> </div>";
       var fullmessage = this.shadowRoot.getElementById(id2).innerHTML
+      this.shadowRoot.getElementById(id2).innerHTML += "<div><button class='miniclose' id='"+id_minimize+"'>v</button><button class='miniclose' id='" + id_close + "'>x</button> </div>";
+      
       // this.shadowRoot.getElementById(id2).innerHTML += 
       //loop over number of ids
       for (let i = 0; i < this.ids; i++) {
