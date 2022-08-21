@@ -18,6 +18,19 @@ function computeCost(tokens, model)
         cost = tokens * AdaCost;
     return cost.toFixed(5);
 }
+function symbolFromModel(model)
+{
+    var symbol = '';
+    if (model == "text-davinci-002")
+        symbol = '🅳';
+    else if (model == "text-curie-001")
+        symbol = '🅲';
+    else if (model == "text-babbage-001")
+        symbol = '🅑';
+    else if (model == "text-ada-001")
+        symbol = '🅐';
+    return symbol
+}
 
 const minipopup = (id,{ display = "none", left = 0, top = 0 }) => `
 <div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px">
@@ -27,11 +40,11 @@ const minipopup = (id,{ display = "none", left = 0, top = 0 }) => `
 
 `;
 
-const template = (id) => `
-<template id="highlightTemplate${id}">
-<span class="highlight" id="asdjfhglk${id}"  style="background-color: ${highlightColor}; display: inline; cursor: pointer"></span>
-</template>
-`;
+// const template = (id) => `
+// <template id="highlightTemplate${id}">
+// <span class="highlight" id="asdjfhglk${id}"  style="background-color: ${highlightColor}; display: inline; cursor: pointer"></span>
+// </template>
+// `;
 
 
 const styled = `
@@ -138,43 +151,39 @@ class CustomMiniPopup extends HTMLElement {
     }
   }
  
-  // in case one is on the pdf page, we just use a popup to show the text in a top left corner
-  // TO DO: it should toggle to no-text/text when the user click on the popup
+
+
+  // // this function highlight the selected text
+  // highlightSelection() {
+  //   var userSelection = window.getSelection();
+  //   for (let i = 0; i < userSelection.rangeCount; i++) {
+  //     this.highlightRange(userSelection.getRangeAt(i));
+  //   }
+  //   window.getSelection().empty();
+  //   //add event listerer to element "buttontest" to send an alert when the user click on it
+
+  //   //convert this.ids-1 to string and use it as id of the element
+  //   const id = this.ids - 1;
+  //   document.getElementById('asdjfhglk' + id).addEventListener("click", () => {
+  //     this.shadowRoot.getElementById(id).classList.toggle('show');
+  //   });
+
+  // }
+
+  // highlightRange(range) {
+  //   this.shadowRoot.innerHTML += template(this.ids - 1);
+  //   const clone =
+  //     this.highlightTemplate.cloneNode(true).content.firstElementChild;
+  //   clone.appendChild(range.extractContents()); // extract the selected text and append it to the clone
+  //   range.insertNode(clone);
+  // }
+
+  // in case one is on the pdf page (or one where we can`t get the position of the selected text),
+  // we just use a popup to show the text in a top left corner
   defaultpopup(){
-    //check if shadowRoot element exists
-    // if (this.shadowRoot.getElementById(this.ids-1)) {
-    //   //cancel the element if it exists
-    //   this.ids--;
-    //   this.shadowRoot.getElementById(this.ids).remove();
-    // }
     this.shadowRoot.innerHTML += minipopup(this.ids, { display: "flex", left: 0, top: 0 });
     this.shadowRoot.getElementById(this.ids).classList.toggle('show');
     this.ids++;
-  }
-
-  // this function highlight the selected text
-  highlightSelection() {
-    var userSelection = window.getSelection();
-    for (let i = 0; i < userSelection.rangeCount; i++) {
-      this.highlightRange(userSelection.getRangeAt(i));
-    }
-    window.getSelection().empty();
-    //add event listerer to element "buttontest" to send an alert when the user click on it
-
-    //convert this.ids-1 to string and use it as id of the element
-    const id = this.ids - 1;
-    document.getElementById('asdjfhglk' + id).addEventListener("click", () => {
-      this.shadowRoot.getElementById(id).classList.toggle('show');
-    });
-
-  }
-
-  highlightRange(range) {
-    this.shadowRoot.innerHTML += template(this.ids - 1);
-    const clone =
-      this.highlightTemplate.cloneNode(true).content.firstElementChild;
-    clone.appendChild(range.extractContents()); // extract the selected text and append it to the clone
-    range.insertNode(clone);
   }
 
   minimizeButtons(id_target, id_button) {
@@ -203,10 +212,12 @@ class CustomMiniPopup extends HTMLElement {
     var id_close = "mclose" + id2
     var id_minimize = "minimize" + id2
     //add the message to the popup in the element with id2+'prompt'
-    console.log(request.body_data)
+    // console.log(request.body_data)
     var symbol = symbolFromModel(request.body_data.model)
     
-    var minimcloseButtons = "<div style='width: 15%;min-width: 80px;text-align: right;'><button class='miniclose'style='margin-left:5px; font-size:15px' id='"+id_minimize+"'>&#128469;&#xFE0E;</button><button class='miniclose' style='margin-left:5px; font-size:15px' id='" + id_close + "'>&#128473;&#xFE0E;</button> </div>";
+    var minimcloseButtons = "<div style='width: 15%;min-width: 80px;text-align: right;'>\
+    <button class='miniclose'style='margin-left:5px; font-size:15px' id='"+id_minimize+"'>&#128469;&#xFE0E;</button>\
+    <button class='miniclose' style='margin-left:5px; font-size:15px' id='" + id_close + "'>&#128473;&#xFE0E;</button> </div>";
 
     this.shadowRoot.getElementById(id2+'prompt').innerHTML = "<div style='width: 85%'>"+symbol+"<i> "+request.text+"</i></div>";
     this.shadowRoot.getElementById(id2+"prompt").innerHTML += minimcloseButtons;
@@ -221,10 +232,7 @@ class CustomMiniPopup extends HTMLElement {
     
     //if stream is true
     if (stream) {
-      // if innerHTML is empty, add the text to it
-      // if (this.tokens == 0) {
-      // }
-      // if choiches is a key in message
+      // if choiches is a key in message, it means usual stream
       if (message.choices) {
         var text = message.choices[0].text
         this.shadowRoot.getElementById(id2+"text").innerHTML += text;
@@ -235,6 +243,7 @@ class CustomMiniPopup extends HTMLElement {
         var type = message.error.type
         this.shadowRoot.getElementById(id2+"text").innerHTML += type + "<br>" + text;
       }
+      // each message should be 1 token
       this.tokens++;
       
     }
@@ -267,16 +276,3 @@ class CustomMiniPopup extends HTMLElement {
 window.customElements.define("mini-popup", CustomMiniPopup);
 
 
-function symbolFromModel(model)
-{
-    var symbol = '';
-    if (model == "text-davinci-002")
-        symbol = '🅳';
-    else if (model == "text-curie-001")
-        symbol = '🅲';
-    else if (model == "text-babbage-001")
-        symbol = '🅑';
-    else if (model == "text-ada-001")
-        symbol = '🅐';
-    return symbol
-}

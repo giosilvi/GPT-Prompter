@@ -70,11 +70,12 @@ chrome.runtime.onInstalled.addListener(function () {
                 }
             }
         }
-        else {
+        else { // if the prompt does not exist, create the default one
             items.customprompt = [{ "model": "text-davinci-002", "temperature": 0, "max_tokens": 1024, "prompt": 'Tell me more about "#TEXT#":' }];
-            // save the new prompt
         }
+        // save the new prompt list
         chrome.storage.sync.set({ 'customprompt': items.customprompt });
+        // create the context menu
         createContextMenu()
     });
 });

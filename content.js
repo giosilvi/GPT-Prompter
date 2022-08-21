@@ -56,50 +56,41 @@ chrome.runtime.onMessage.addListener(function (request) {
   if (request.message == 'highlight') {
     if (customMiniPopup.hasAttribute("markerPosition")) {
       setMarkerPosition({ display: "flex" });
-      //  customMiniPopup.highlightSelection();
+      //  customMiniPopup.highlightSelection(); // highlight the selection
     }
-    else { // in case we can`t get the markerPosition, we use the default popup
+    else { // in case we can`t get the markerPosition, we use the default popup, at position 0,0
       customMiniPopup.defaultpopup();
     }
   }
-  // else if (request.message == 'GPTanswer') {
-  //   customMiniPopup.updatepopup(request.text);
-  // }
   else if (request.message == 'GPTStream_answer') {
-    //convert request.text to JSON
-    // console.log(request.text);
-    // split the request.text by the string 'data:'
-
-    // if error in request.text, show error message
-
-    console.log('split:', request);
-    // var cleanmessage = request.text.replaceAll('data: ',''); // remove the "data: "
-    //if text is not "[DONE]"
-    // if the length of data is 2
+    // split over 'data: ' in case there are multiple streams concatenated
     var data = request.text.split('data: ');
-    for (var m = 1; m < data.length; m++) {
+    // console.log('split:' + data.length);
+    for (var m = 1; m < data.length; m++) {// in case of multiple stream in one, loop over them
 
-        if (data[m].indexOf("[DONE]") == -1) { // if there is not "[DONE]" in the text
-          console.log('data:', data[m]);
+        if (data[m].indexOf("[DONE]") == -1) { // if there is not "[DONE]" in the text, it`s a stream
+          // console.log('data:', data[m]);
           var json = JSON.parse(data[m]);
-          customMiniPopup.updatepopup(json, true); // still the message, just multiple stream in one
-          if (json.error) { addListeners(); }
+          customMiniPopup.updatepopup(json, true); 
+          if (json.error) { addListenersForDrag(); } // just in case of error in a bundle of streams, not sure it`s needed
         }
         else {
           customMiniPopup.updatepopup(request, false); // the end of the stream
-          addListeners();
+          addListenersForDrag();
         }
       }
+    // in case of error, the split will not produce more than one element
     if(data.length == 1){
       //convert request.text to JSON
       var json = JSON.parse(request.text);
       if (json.error) {
         customMiniPopup.updatepopup(json, true);
-        addListeners();
+        addListenersForDrag();
       }
     }
   }
   else if (request.message == 'GPTprompt') {
+    // for updating the prompt upper part of the popup
     customMiniPopup.updatepopup_onlypromt(request);
 
   }
@@ -120,35 +111,23 @@ console.log('GPT-prompter content script is running')
 
 // code to move the mini popup
 
-function addListeners() {
+function addListenersForDrag() {
+  // add a listener to the mouse down event, to call the mouseDown function, to each popup in the shadowDOM
   for (var indice = 0; indice < customMiniPopup.ids; indice++) {
-    // to pass the id to mouseDown function use the following syntax:
-    // customMiniPopup.shadowRoot.getElementById(i).addEventListener('mousedown', mouseDown.bind(null, i));
-
     elem = customMiniPopup.shadowRoot.getElementById(indice).addEventListener('mousedown', mouseDown, false);
-    // add event listener to mouse up that removes the event listener from the line above
   }
-  // add event listener to mouse up that removes the event listener from the line above
-  // window.addEventListener('mouseup', mouseUp, false);
-
 }
-// to remove the listener, use the following syntax:
-// customMiniPopup.shadowRoot.getElementById(i).removeEventListener('mousedown', mouseDown.bind(null, i));
-
-
 
 function mouseDown(e) {
+  // this is to avoid the selection of a child, when the target is the parent
   if (e.target !== this)
     return;
-  console.log('mouse clicked', this.id)
-  // console.log('Zero:',inde);
-  // customMiniPopup.shadowRoot.getElementById(inde).addEventListener('mousemove', spanMove, true);
-  const indice = this.id;
+  const id_target = this.id;
   function wrapper(event) {
-    spanMove(event, indice)
+    spanMove(event, id_target)
   }
   window.addEventListener('mousemove', wrapper, true);
-  // add a listener to the mouse up event, to remove the wrapper function
+  // add a listener to the mouse up event, to remove the wrapper function when the mouse is up
   window.addEventListener('mouseup', function () {
     window.removeEventListener('mousemove', wrapper, true);
   }
