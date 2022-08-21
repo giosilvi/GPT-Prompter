@@ -146,7 +146,7 @@ function spanMove(e, id) {
   var mouse_y = e.clientY;
   var mouse_x = e.clientX;
   var mouse_x_position = mouse_x - object.offsetWidth / 2;
-  var mouse_y_position = mouse_y - object.offsetHeight / 4;
+  var mouse_y_position = mouse_y - object.offsetHeight / 30;
 
   // console.log(x_position,e.clientX) // x position of the mouse pointer
   // console.log(y_position,e.clientY) // y position of the mouse pointer
