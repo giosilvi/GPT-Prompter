@@ -198,6 +198,14 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('createPrompt').addEventListener('click', onclick, false)
     function onclick() {
         savePrompt();
+        // store value of document.getElementById("promptinput").value
+        var customprompt = document.getElementById('promptinput').value;
+        
+        document.getElementById('promptinput').value = 'Prompt created! Available in right-click menu.';
+        setTimeout(function () {
+            document.getElementById('promptinput').value = customprompt
+        }, 2000);
+        
     }
 }
     , false)
@@ -299,9 +307,8 @@ function Temp() {
 
 // add listener when the input is changed and activate the function Temp()
 document.addEventListener('DOMContentLoaded', function () {
-    document.getElementById('temperature').addEventListener('change', Temp, false)
-}
-    , false)
+    document.getElementById('temperature').addEventListener('mousemove', Temp, false)
+}, false)
 
 function Token() {
     var k=document.getElementById("maxtoken").value;
@@ -310,6 +317,5 @@ function Token() {
 
 // add listener when the input is changed and activate the function Token()
 document.addEventListener('DOMContentLoaded', function () {
-    document.getElementById('maxtoken').addEventListener('change', Token, false)
-}
-    , false)
+    document.getElementById('maxtoken').addEventListener('mousemove', Token, false)
+}, false)

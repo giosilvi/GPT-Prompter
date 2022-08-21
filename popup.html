@@ -56,7 +56,7 @@
             <div class="row" style="margin-left:0px!important">
                 <label for="temperature" class="form-label col-sm-3">Temperature</label>
                 <input type="range" class="form-range col-sm-6" style="margin-right:30px; padding:0" id="temperature" min="0" max="1" step="0.01" value="0.1">
-                <input class="text-input col-sm-2 noselection" type="text" readonly="readonly" style="text-align:right" id="temp" value="0.1">
+                <input class="text-input col-sm-2" type="text" readonly="readonly" style="text-align:right;border: 0;" id="temp" value="0.1">
 
             </div>
 
@@ -64,7 +64,7 @@
             <div class="row" style="margin-left:0px!important">
                     <label for="maxtoken" class="form-label col-sm-3">Maximum length</label>
                     <input id="maxtoken" type="range" class="form-range col-sm-6" style="margin-right:30px;padding:0" min="0" max="2048" step="1" value="1024">
-                    <input class="text-input col-sm-2 noselection" onselectstart="return false" type="text" readonly="readonly" style="text-align:right" id="token" value="1024">
+                    <input class="text-input col-sm-2" type="text" readonly="readonly" style="text-align:right;border: 0;" id="token" value="1024">
             </div>
             <div class="card-body">
                 <textarea class="form-control" id="promptinput" rows="3">Tell me more about "#TEXT#":</textarea>

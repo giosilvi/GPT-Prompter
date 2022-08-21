@@ -122,6 +122,7 @@ function mouseDown(e) {
   // this is to avoid the selection of a child, when the target is the parent
   if (e.target !== this)
     return;
+  e.preventDefault();
   const id_target = this.id;
   function wrapper(event) {
     spanMove(event, id_target)
