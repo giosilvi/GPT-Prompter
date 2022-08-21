@@ -52,19 +52,38 @@ const DaVinciCost = 0.06 / 1000;
 //         });
 // }
 
+function sendStream(message, id, string, body_data) {
+  console.log("sendStream");
+  console.log(body_data);
+  chrome.tabs.sendMessage(id, { message: message,
+                                text: string,
+                                body_data: body_data }); //send the answer to the content script
+}
+
+function checkTabs(message,tabs,string,body_data) {
+  if (tabs.id == -1) { //pdf case
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      sendStream(message,tabs[0].id, string, body_data);
+    });
+  }
+  else {// html case
+    sendStream(message,tabs.id, string, body_data);
+  }
+}
+
 
 async function promptGPT3Prompting(prompt, items, tabs) {
   var text = prompt["prompt"]
   var model = prompt["model"]
   var temperature = prompt["temperature"]
   var max_tokens = prompt["max_tokens"]
-
-  
+  //send immediately text to the content script
   console.log(text,model,temperature,max_tokens);
   console.log('Tabs', tabs);
   const url = "https://api.openai.com/v1/completions";
-  var body_data = { "model": model, "temperature": temperature, "max_tokens": max_tokens, "prompt": text,"echo": true, "stream": true };
+  var body_data = { "model": model, "temperature": temperature, "max_tokens": max_tokens, "prompt": text, "stream": true };
   var str_body_data = JSON.stringify(body_data);
+  
   fetch(url, {
     method: 'POST',
     headers: {
@@ -76,6 +95,7 @@ async function promptGPT3Prompting(prompt, items, tabs) {
   }
   ).then((response) => response.body)
     .then((body) => {
+      checkTabs("GPTprompt", tabs, text, body_data); // send the prompt to the content script, to be added to last mini popup
       const reader = body.getReader();
       return pump();
 
@@ -88,34 +108,17 @@ async function promptGPT3Prompting(prompt, items, tabs) {
           }
           // Enqueue the next data chunk into our target stream
           // console.log(value);
-          var string = new TextDecoder().decode(value);//.substring(6);
+          var stream = new TextDecoder().decode(value);//.substring(6);
           // console.log(string, typeof string);
           // if tabs.id == -1 then use querySelector to get the tab
-          if (tabs.id == -1) {
-            chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-              chrome.tabs.sendMessage(tabs[0].id, {
-                message: 'GPTStream_answer',
-                text: string,
-                body_data: body_data
-              }); //send the answer to the content script
-            });
-          }
-          else {
-            chrome.tabs.sendMessage(tabs.id, {
-              message: 'GPTStream_answer',
-              text: string,
-              body_data: body_data
-            }); //send the answer to the content script
-          }
-
-
+          checkTabs("GPTStream_answer", tabs, stream, str_body_data);
           return pump();
         });
       }
     }
     ).catch(err => {
       console.log("error" + err);
-      chrome.tabs.sendMessage(tabs.id, { message: 'GPTStream_answer', text: "Error:" + err });
+      checkTabs("GPTStream_answer", tabs, "Error:" + err, str_body_data);
 
     });
 }

@@ -21,6 +21,9 @@ function computeCost(tokens, model)
 
 const minipopup = (id,{ display = "none", left = 0, top = 0 }) => `
 <div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px">
+<div id="${id}prompt" style="cursor: text!important"></div>
+<br>
+<div id="${id}text" style="clear: left!;cursor: text!important"></div>
 </div>
 
 `;
@@ -51,14 +54,15 @@ const styled = `
     margin-right:10px!important;
     min-width: auto;!important;
     font-family: 'Roboto', sans-serif!important;
-    user-select: none;
+    // user-select: none;
   }
   .show {
     opacity: 0.9;
     -webkit-animation: fadeIn 1s;
     animation: fadeIn 1s;
-    z-index: 100;
+    z-index: 999;
     padding: 17px;
+    cursor: grab;
   }
   .minimize{
     font-size: 2px;
@@ -192,7 +196,11 @@ class CustomMiniPopup extends HTMLElement {
         };
     }
   
-
+  updatepopup_onlypromt(message){
+    const id2 = this.ids - 1; // which popup is the last one
+    //add the message to the popup in the element with id2+'prompt'
+    this.shadowRoot.getElementById(id2+'prompt').innerHTML = message;
+  }
 
   updatepopup(message, stream) {
 
@@ -209,13 +217,13 @@ class CustomMiniPopup extends HTMLElement {
       // if choiches is a key in message
       if (message.choices) {
         var text = message.choices[0].text
-        this.shadowRoot.getElementById(id2).innerHTML += text;
+        this.shadowRoot.getElementById(id2+"text").innerHTML += text;
       }
       // if message has a key "error"
       else if (message.error) {
         var text = message.error.message
         var type = message.error.type
-        this.shadowRoot.getElementById(id2).innerHTML += type + "<br>" + text;
+        this.shadowRoot.getElementById(id2+"text").innerHTML += type + "<br>" + text;
         this.shadowRoot.getElementById(id2).innerHTML += minimcloseButtons;
         this.buttonForPopUp()
       }
@@ -223,7 +231,7 @@ class CustomMiniPopup extends HTMLElement {
       
     }
     else {
-      var fullmessage = this.shadowRoot.getElementById(id2).innerHTML
+      var fullmessage = this.shadowRoot.getElementById(id2+"text").innerHTML
       this.shadowRoot.getElementById(id2).innerHTML += minimcloseButtons;
       this.buttonForPopUp(); // connect the buttons of the popup
       // this.shadowRoot.getElementById(id2).innerHTML += 
