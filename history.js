@@ -97,3 +97,42 @@ document.addEventListener('DOMContentLoaded', function () {
     );
 }
 );
+
+// add a filter to the history list based on value in <input> with id="myInput"
+function filterHistory() {
+    var input, filter, ul, li, a, i;
+    input = document.getElementById('myInput');
+    filter = input.value.toUpperCase();
+    ul = document.getElementById('history-of-prompts');
+    li = ul.getElementsByTagName('li');
+    for (i = 0; i < li.length; i++) {
+        a = li[i].getElementsByTagName('a')[0];
+        if (a.innerHTML.toUpperCase().indexOf(filter) > -1) {
+            li[i].style.display = '';
+        } else {
+            li[i].style.display = 'none';
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('promptsearch').addEventListener('keydown', filter, false)
+}
+    , false)
+
+// add a function called "filter" to filter the history list based on value in <input> with id="promptsearch"
+function filter() {
+    var input, filter, ul, li, a, i;
+    input = document.getElementById('promptsearch');
+    filter = input.value.toUpperCase();
+    ul = document.getElementById('history-of-prompts');
+    li = ul.getElementsByTagName('li');
+    for (i = 0; i < li.length; i++) {
+        a = li[i];
+        if (a.innerHTML.toUpperCase().indexOf(filter) > -1) {
+            li[i].style.display = '';
+        } else {
+            li[i].style.display = 'none';
+        }
+    }
+}
