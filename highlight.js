@@ -32,6 +32,7 @@ function symbolFromModel(model) {
 
 const minipopup = (id, { display = "none", left = 0, top = 0 }) => `
 <div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px">
+<hr style="margin-bottom: 12px; margin-inline-start: 45%; margin-inline-end: 45%; margin-top: -9px;">
 <div id="${id}prompt" style="cursor: text!important; display:flex!important"></div>
 <p id="${id}text" style="clear: left!;cursor: text!important"></p>
 </div>
@@ -216,7 +217,6 @@ class CustomMiniPopup extends HTMLElement {
     var minimcloseButtons = "<div style='width: 15%;min-width: 80px;text-align: right;'>\
     <button class='miniclose'style='margin-left:5px; font-size:15px' id='"+ id_minimize + "'>&#128469;&#xFE0E;</button>\
     <button class='miniclose' style='margin-left:5px; font-size:15px' id='" + id_close + "'>&#128473;&#xFE0E;</button> </div>";
-
     this.shadowRoot.getElementById(id2 + 'prompt').innerHTML = "<div style='width: 85%'>" + symbol + "<i> " + request.text + "</i></div>";
     this.shadowRoot.getElementById(id2 + "prompt").innerHTML += minimcloseButtons;
     this.buttonForPopUp(); // connect the buttons of the popup
