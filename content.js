@@ -69,14 +69,18 @@ chrome.runtime.onMessage.addListener(function (request) {
     //convert request.text to JSON
     // console.log(request.text);
     // split the request.text by the string 'data:'
-    var data = request.text.split('data: ');
-    console.log('split:', data.length);
+
+    // if error in request.text, show error message
+
+    console.log('split:', request);
     // var cleanmessage = request.text.replaceAll('data: ',''); // remove the "data: "
     //if text is not "[DONE]"
     // if the length of data is 2
+    var data = request.text.split('data: ');
     for (var m = 1; m < data.length; m++) {
 
-        if (data[m].indexOf("[DONE]") == -1) {
+        if (data[m].indexOf("[DONE]") == -1) { // if there is not "[DONE]" in the text
+          console.log('data:', data[m]);
           var json = JSON.parse(data[m]);
           customMiniPopup.updatepopup(json, true); // still the message, just multiple stream in one
           if (json.error) { addListeners(); }
@@ -86,9 +90,17 @@ chrome.runtime.onMessage.addListener(function (request) {
           addListeners();
         }
       }
+    if(data.length == 1){
+      //convert request.text to JSON
+      var json = JSON.parse(request.text);
+      if (json.error) {
+        customMiniPopup.updatepopup(json, true);
+        addListeners();
+      }
+    }
   }
   else if (request.message == 'GPTprompt') {
-    customMiniPopup.updatepopup_onlypromt(request.text);
+    customMiniPopup.updatepopup_onlypromt(request);
 
   }
   else {

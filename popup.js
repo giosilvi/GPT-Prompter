@@ -2,7 +2,7 @@
 function makePromptList (items) {
     var freshList = '';
     for (var i = 0; i < items.customprompt.length; i++) {
-        freshList += '<li class="list-group-item">' + items.customprompt[i]['prompt']+ " Model:"+items.customprompt[i]['model'] +" Temp:"+items.customprompt[i]['temperature'] +' <button id="del' + i.toString() + '" class="save" > Delete </button></li>';
+        freshList += '<li class="list-group-item">' + items.customprompt[i]['prompt']+ "<br> (Model: "+items.customprompt[i]['model'] +" ,Temp: "+items.customprompt[i]['temperature']+" , Max length:"+ items.customprompt[i]['max_tokens'] +') <button id="del' + i.toString() + '" class="save" > Delete </button></li>';
     }
     return freshList;
 }
@@ -66,7 +66,7 @@ function savePrompt() {
             var prompt_already_present = false;
             // check that the prompt is not already present, looping over every prompt in the array and comparing each values in the dictionary
             for (var i = 0; i < items.customprompt.length; i++) {
-                if (items.customprompt[i]['prompt'] == text && items.customprompt[i]['model'] == model && items.customprompt[i]['temperature'] == temp) {
+                if (items.customprompt[i]['prompt'] == text && items.customprompt[i]['model'] == model && items.customprompt[i]['temperature'] == temp && items.customprompt[i]['max_tokens'] == token) {
                     prompt_already_present = true;
                 }
             }

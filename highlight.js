@@ -21,8 +21,7 @@ function computeCost(tokens, model)
 
 const minipopup = (id,{ display = "none", left = 0, top = 0 }) => `
 <div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px">
-<div id="${id}prompt" style="cursor: text!important"></div>
-<br>
+<div id="${id}prompt" style="cursor: text!important; display:flex!important"></div>
 <div id="${id}text" style="clear: left!;cursor: text!important"></div>
 </div>
 
@@ -42,7 +41,7 @@ const styled = `
     border-radius: 20px;
     border: none;
     color: #fff;
-    display: flex;
+    display: block;
     justify-content:center;
     opacity:0;
     position:fixed;
@@ -58,11 +57,14 @@ const styled = `
   }
   .show {
     opacity: 0.9;
-    -webkit-animation: fadeIn 1s;
-    animation: fadeIn 1s;
+    // -webkit-animation: fadeIn 1s;
+    // animation: fadeIn 1s;
     z-index: 999;
-    padding: 17px;
+    padding: 20px;
     cursor: grab;
+  }
+  .hide {
+    display: none;
   }
   .minimize{
     font-size: 2px;
@@ -177,7 +179,7 @@ class CustomMiniPopup extends HTMLElement {
 
   minimizeButtons(id_target, id_button) {
     this.shadowRoot.getElementById(id_button).addEventListener("click", () => {
-      this.shadowRoot.getElementById(id_target).classList.toggle('minimize');
+      this.shadowRoot.getElementById(id_target+"text").classList.toggle('hide');
     });
   }
   closeButtons(id_target, id_button) {
@@ -196,19 +198,27 @@ class CustomMiniPopup extends HTMLElement {
         };
     }
   
-  updatepopup_onlypromt(message){
+  updatepopup_onlypromt(request){
     const id2 = this.ids - 1; // which popup is the last one
+    var id_close = "mclose" + id2
+    var id_minimize = "minimize" + id2
     //add the message to the popup in the element with id2+'prompt'
-    this.shadowRoot.getElementById(id2+'prompt').innerHTML = message;
+    console.log(request.body_data)
+    var symbol = symbolFromModel(request.body_data.model)
+    
+    var minimcloseButtons = "<div style='width: 15%;min-width: 80px;text-align: right;'><button class='miniclose'style='margin-left:5px; font-size:15px' id='"+id_minimize+"'>&#128469;&#xFE0E;</button><button class='miniclose' style='margin-left:5px; font-size:15px' id='" + id_close + "'>&#128473;&#xFE0E;</button> </div>";
+
+    this.shadowRoot.getElementById(id2+'prompt').innerHTML = "<div style='width: 85%'>"+symbol+"<i> "+request.text+"</i></div>";
+    this.shadowRoot.getElementById(id2+"prompt").innerHTML += minimcloseButtons;
+    this.buttonForPopUp(); // connect the buttons of the popup
   }
 
   updatepopup(message, stream) {
 
     const id2 = this.ids - 1;
-    var id_close = "mclose" + id2
-    var id_minimize = "minimize" + id2
+
     // TODO: Update the two buttons to two icons, one for minimize and one for close
-    var minimcloseButtons = "<div><button class='miniclose'style='margin-left:5px; font-size:20px' id='"+id_minimize+"'>v</button><button class='miniclose' style='margin-left:5px; font-size:20px' id='" + id_close + "'>x</button> </div>";
+    
     //if stream is true
     if (stream) {
       // if innerHTML is empty, add the text to it
@@ -224,33 +234,29 @@ class CustomMiniPopup extends HTMLElement {
         var text = message.error.message
         var type = message.error.type
         this.shadowRoot.getElementById(id2+"text").innerHTML += type + "<br>" + text;
-        this.shadowRoot.getElementById(id2).innerHTML += minimcloseButtons;
-        this.buttonForPopUp()
       }
       this.tokens++;
       
     }
     else {
-      var fullmessage = this.shadowRoot.getElementById(id2+"text").innerHTML
-      this.shadowRoot.getElementById(id2).innerHTML += minimcloseButtons;
-      this.buttonForPopUp(); // connect the buttons of the popup
+      var complete_answer = this.shadowRoot.getElementById(id2+"text").innerHTML
       // this.shadowRoot.getElementById(id2).innerHTML += 
       //loop over number of ids
      
       //save prompt to local storage 
       
-      var body_data = JSON.stringify(message.body_data)
-      var model = message.body_data.model
+      var body_data = JSON.parse(message.body_data)
+      var model = body_data.model
       var cost = computeCost(this.tokens,model)
       this.tokens = 0;
        // save the result.choices[0].text in the storage 
       chrome.storage.local.get('history', function (items) {
           if (typeof items.history !== 'undefined') {
-              items.history.push([body_data, fullmessage, cost]);// add the result to the history
+              items.history.push([message.body_data, complete_answer, cost]);// add the result to the history
               chrome.storage.local.set({ 'history': items.history });
           }
           else {
-              items.history = [[body_data, fullmessage, cost]]; // initialize the history array
+              items.history = [[message.body_data, complete_answer, cost]]; // initialize the history array
               chrome.storage.local.set({ 'history': items.history });
           }
       });
@@ -260,3 +266,17 @@ class CustomMiniPopup extends HTMLElement {
 
 window.customElements.define("mini-popup", CustomMiniPopup);
 
+
+function symbolFromModel(model)
+{
+    var symbol = '';
+    if (model == "text-davinci-002")
+        symbol = '🅳';
+    else if (model == "text-curie-001")
+        symbol = '🅲';
+    else if (model == "text-babbage-001")
+        symbol = '🅑';
+    else if (model == "text-ada-001")
+        symbol = '🅐';
+    return symbol
+}

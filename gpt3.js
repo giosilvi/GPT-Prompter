@@ -1,5 +1,5 @@
 //make a constat called DaVinci cost
-const DaVinciCost = 0.06 / 1000;
+// const DaVinciCost = 0.06 / 1000;
 
 // async function promptGPT3Prompting(prompt,items, tabs) {
 //     // var prompt =  "Tell me more about '" + info.selectionText + "':\n";
@@ -60,7 +60,7 @@ function sendStream(message, id, string, body_data) {
                                 body_data: body_data }); //send the answer to the content script
 }
 
-function checkTabs(message,tabs,string,body_data) {
+function checkTabsAndSendStream(message,tabs,string,body_data) {
   if (tabs.id == -1) { //pdf case
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       sendStream(message,tabs[0].id, string, body_data);
@@ -95,7 +95,7 @@ async function promptGPT3Prompting(prompt, items, tabs) {
   }
   ).then((response) => response.body)
     .then((body) => {
-      checkTabs("GPTprompt", tabs, text, body_data); // send the prompt to the content script, to be added to last mini popup
+      checkTabsAndSendStream("GPTprompt", tabs, text, body_data); // send the prompt to the content script, to be added to last mini popup
       const reader = body.getReader();
       return pump();
 
@@ -111,14 +111,14 @@ async function promptGPT3Prompting(prompt, items, tabs) {
           var stream = new TextDecoder().decode(value);//.substring(6);
           // console.log(string, typeof string);
           // if tabs.id == -1 then use querySelector to get the tab
-          checkTabs("GPTStream_answer", tabs, stream, str_body_data);
+          checkTabsAndSendStream("GPTStream_answer", tabs, stream, str_body_data);
           return pump();
         });
       }
     }
     ).catch(err => {
       console.log("error" + err);
-      checkTabs("GPTStream_answer", tabs, "Error:" + err, str_body_data);
+      checkTabsAndSendStream("GPTStream_answer", tabs, "Error:" + err, str_body_data);
 
     });
 }
