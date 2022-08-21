@@ -1,33 +1,37 @@
-function makeHistoryList (items) {
+function makeHistoryList(items) {
     var freshList = '';
     var totalCost = 0;
-    for (var i = items.history.length-1; i >= 0 ; i--) {
+    for (var i = items.history.length - 1; i >= 0; i--) {
         console.log(items.history[i][0]);
         freshList += '<li class="list-group-item list-group-item-action">'
         var prompt = JSON.parse(items.history[i][0]);
         console.log(prompt, typeof prompt, typeof items.history[i][0]);
         // print keys of the prompt
-        for (var key in prompt){
-            var value = prompt[key];
-            freshList+= key + ': ' + value + '<br>';
+        for (var key in prompt) {
+            // if key is not stream
+            if (key != 'stream') {
+                var value = prompt[key];
+                freshList += key + ': ' + value + '<br>';
+            }
         }
         // var cleanAns = items.history[i][1].replace(prompt["prompt"], '');
-        freshList += 'answer:'+ items.history[i][1]+'<br>' 
-        freshList +=  'Cost: '+ items.history[i][2] +'$  <button  class="save" id="eraseItem' + i.toString() + '" > Delete </button></li>';
+        freshList += 'answer:' + items.history[i][1] + '<br>'
+        freshList += 'Cost: ' + items.history[i][2] + '$  <button  class="save" id="eraseItem' + i.toString() + '" > Delete </button></li>';
         totalCost += parseFloat(items.history[i][2]);
     }
     document.getElementById('totCost').innerHTML = 'Total cost: ' + totalCost.toFixed(2) + '$';
-    return freshList;}
+    return freshList;
+}
 // in javascript, to return two values, use an array
 
 
-function update_del_buttons(items){
+function update_del_buttons(items) {
     for (var j = 0; j < items.history.length; j++) {
         document.getElementById('eraseItem' + j.toString()).addEventListener('click', function () {
             var id = this.id.substring(9);
             erasePrompt(id);
         }
-        , false)
+            , false)
     }
 }
 
@@ -68,10 +72,10 @@ function load_history() {
             }
         }
     }
-    )    
+    )
 }
 
-function delete_all(){
+function delete_all() {
     chrome.storage.local.get('history', function (items) {
         if (typeof items.history !== 'undefined') {
             items.history = [];
@@ -98,27 +102,10 @@ document.addEventListener('DOMContentLoaded', function () {
 }
 );
 
-// add a filter to the history list based on value in <input> with id="myInput"
-function filterHistory() {
-    var input, filter, ul, li, a, i;
-    input = document.getElementById('myInput');
-    filter = input.value.toUpperCase();
-    ul = document.getElementById('history-of-prompts');
-    li = ul.getElementsByTagName('li');
-    for (i = 0; i < li.length; i++) {
-        a = li[i].getElementsByTagName('a')[0];
-        if (a.innerHTML.toUpperCase().indexOf(filter) > -1) {
-            li[i].style.display = '';
-        } else {
-            li[i].style.display = 'none';
-        }
-    }
-}
-
 document.addEventListener('DOMContentLoaded', function () {
-    document.getElementById('promptsearch').addEventListener('keydown', filter, false)
-}
-    , false)
+    // add event listener to promptsearch for event keydown, and nest into it a listener for keyup
+    document.getElementById('promptsearch').addEventListener('keyup', filter, false);
+}, false)
 
 // add a function called "filter" to filter the history list based on value in <input> with id="promptsearch"
 function filter() {
@@ -135,4 +122,5 @@ function filter() {
             li[i].style.display = 'none';
         }
     }
+
 }
