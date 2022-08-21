@@ -5,8 +5,7 @@
  */
 import promptGPT3Prompting from './gpt3.js';
 
-function symbolFromModel(model)
-{
+function symbolFromModel(model) {
     var symbol = '';
     if (model == "text-davinci-002")
         symbol = '🅳';
@@ -34,14 +33,14 @@ function createContextMenu() {
         // Check that the prompt exists
         if (typeof items.customprompt !== 'undefined') {
             // get the model from customprompt["model"]
-            
+
             // add a context menu for each custom prompt
             for (var i = 0; i < items.customprompt.length; i++) {
                 var symbol = symbolFromModel(items.customprompt[i]["model"]);
                 chrome.contextMenus.create({
                     id: 'customprompt-' + i,
                     parentId: "GPT-Prompter",
-                    title: symbol+' '+items.customprompt[i]["prompt"].replaceAll('#TEXT#', '%s'), // here the text in the menu is created with selected text %s
+                    title: symbol + ' ' + items.customprompt[i]["prompt"].replaceAll('#TEXT#', '%s'), // here the text in the menu is created with selected text %s
                     contexts: ["selection"]
                 });
             }

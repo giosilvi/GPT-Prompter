@@ -1,19 +1,21 @@
 function sendStream(message, id, string, body_data) {
   console.log("sendStream");
   console.log(body_data);
-  chrome.tabs.sendMessage(id, { message: message,
-                                text: string,
-                                body_data: body_data }); //send the answer to the content script
+  chrome.tabs.sendMessage(id, {
+    message: message,
+    text: string,
+    body_data: body_data
+  }); //send the answer to the content script
 }
 
-function checkTabsAndSendStream(message,tabs,string,body_data) {
+function checkTabsAndSendStream(message, tabs, string, body_data) {
   if (tabs.id == -1) { //pdf case
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      sendStream(message,tabs[0].id, string, body_data);
+      sendStream(message, tabs[0].id, string, body_data);
     });
   }
   else {// html case
-    sendStream(message,tabs.id, string, body_data);
+    sendStream(message, tabs.id, string, body_data);
   }
 }
 
@@ -24,13 +26,13 @@ async function promptGPT3Prompting(prompt, items, tabs) {
   var temperature = prompt["temperature"]
   var max_tokens = prompt["max_tokens"]
   //send immediately text to the content script
-  console.log(text,model,temperature,max_tokens);
+  console.log(text, model, temperature, max_tokens);
   console.log('Tabs', tabs);
   const url = "https://api.openai.com/v1/completions";
   var body_data = { "model": model, "temperature": temperature, "max_tokens": max_tokens, "prompt": text, "stream": true };
   // remove stream from body_data
   var str_body_data = JSON.stringify(body_data);
-  
+
   fetch(url, {
     method: 'POST',
     headers: {

@@ -1,19 +1,19 @@
 // GENERAL FUNCTIONS
-function makePromptList (items) {
+function makePromptList(items) {
     var freshList = '';
     for (var i = 0; i < items.customprompt.length; i++) {
-        freshList += '<li class="list-group-item">' + items.customprompt[i]['prompt']+ "<br> (Model: "+items.customprompt[i]['model'] +" ,Temp: "+items.customprompt[i]['temperature']+" , Max length:"+ items.customprompt[i]['max_tokens'] +') <button id="del' + i.toString() + '" class="save" > Delete </button></li>';
+        freshList += '<li class="list-group-item">' + items.customprompt[i]['prompt'] + "<br> (Model: " + items.customprompt[i]['model'] + " ,Temp: " + items.customprompt[i]['temperature'] + " , Max length:" + items.customprompt[i]['max_tokens'] + ') <button id="del' + i.toString() + '" class="save" > Delete </button></li>';
     }
     return freshList;
 }
 
-function update_del_buttons(items){
+function update_del_buttons(items) {
     for (var j = 0; j < items.customprompt.length; j++) {
         document.getElementById('del' + j.toString()).addEventListener('click', function () {
             var id = this.id.substring(3);
             erasePrompt(id);
         }
-         , false)
+            , false)
     }
 }
 
@@ -33,8 +33,8 @@ function toggleSaveKeyButton() {
         document.getElementById('linktoAPI').style.display = 'none';
         document.getElementById('showKey').innerHTML = 'Show API';
     }
-   
-    
+
+
     // document.getElementById('showKey').style.display = 'none';
 }
 
@@ -58,7 +58,7 @@ function savePrompt() {
     var token = parseInt(document.getElementById("token").value);
     var text = document.getElementById("promptinput").value;
     console.log('Temp: ' + temp);
-    var body_data = { "model": model, "temperature": temp, "max_tokens": token, "prompt": text,"echo": true, "stream": true }
+    var body_data = { "model": model, "temperature": temp, "max_tokens": token, "prompt": text, "echo": true, "stream": true }
     // try to retrive the custom prompt from the storage API
     chrome.storage.sync.get('customprompt', function (items) {
         // Check that the prompt exists
@@ -70,8 +70,8 @@ function savePrompt() {
                     prompt_already_present = true;
                 }
             }
-            
-            if (prompt_already_present==false) {
+
+            if (prompt_already_present == false) {
                 items.customprompt.push(body_data);
                 document.getElementById('list-of-prompts').innerHTML = makePromptList(items) //update the list of prompts
                 update_del_buttons(items); // update right click menu
@@ -79,7 +79,7 @@ function savePrompt() {
                     // Notify that we saved
                     console.log('Your custom prompt was saved.');
                 })
-                chrome.runtime.sendMessage({text: "new prompt list"});
+                chrome.runtime.sendMessage({ text: "new prompt list" });
             }
         } else {
             // if the prompt does not exist, create a new array with the prompt
@@ -102,13 +102,13 @@ function erasePrompt(index) {
                 items.customprompt.splice(index, 1);
                 document.getElementById('list-of-prompts').innerHTML = makePromptList(items); //update the list of prompts
                 update_del_buttons(items);  // update the delete buttons
-                
+
                 chrome.storage.sync.set({ 'customprompt': items.customprompt }, function () {
                     // Notify that is erased
                     console.log('Your custom prompt was erased.');
                 })
-                chrome.runtime.sendMessage({text: "new prompt list"}); // new menu list
-            }    
+                chrome.runtime.sendMessage({ text: "new prompt list" }); // new menu list
+            }
         }
     });
 }
@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', function () {
 document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('history').addEventListener('click', function () {
         //access local history.html file, and modify the html
-        chrome.tabs.create({url: chrome.runtime.getURL('history.html'),active:true});
+        chrome.tabs.create({ url: chrome.runtime.getURL('history.html'), active: true });
     }
     );
 }
@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('saveKey').addEventListener('click', onclick, false)
     function onclick() {
         //send a message to background.js to check the API key
-        chrome.runtime.sendMessage({text: "checkAPIKey", apiKey: document.getElementById('apikey').value});
+        chrome.runtime.sendMessage({ text: "checkAPIKey", apiKey: document.getElementById('apikey').value });
     }
 }, false)
 //add Listenere to deleteKey button
@@ -200,12 +200,12 @@ document.addEventListener('DOMContentLoaded', function () {
         savePrompt();
         // store value of document.getElementById("promptinput").value
         var customprompt = document.getElementById('promptinput').value;
-        
+
         document.getElementById('promptinput').value = 'Prompt created! Available in right-click menu.';
         setTimeout(function () {
             document.getElementById('promptinput').value = customprompt
         }, 2000);
-        
+
     }
 }
     , false)
@@ -219,7 +219,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 }
     , false)
-    
+
 //to attach the link to the element "a"
 document.addEventListener('DOMContentLoaded', function () {
     var link = document.getElementById('linktoAPI');
@@ -252,10 +252,11 @@ document.addEventListener('DOMContentLoaded', function () {
         if (typeof items.APIKEY !== 'undefined') {
             // alert(items.APIKEY);
             document.getElementById('apikey').value = items.APIKEY;
-        }})
+        }
+    })
 
     checkAPIKeyatBeginning();
-    }
+}
     , false);
 
 
@@ -286,7 +287,6 @@ function checkAPIKeyatBeginning() {
         // Check that the API key exists
         if (typeof items.APIKEY !== 'undefined') {
             hideSaveKey();
-            
         }
         else {
             //hide show key button
@@ -301,9 +301,9 @@ function checkAPIKeyatBeginning() {
 
 // To get the value of the temperature and pass it to element with id temp
 function Temp() {
-    var t=document.getElementById("temperature").value;
+    var t = document.getElementById("temperature").value;
     document.getElementById("temp").value = t;
-    }
+}
 
 // add listener when the input is changed and activate the function Temp()
 document.addEventListener('DOMContentLoaded', function () {
@@ -311,9 +311,9 @@ document.addEventListener('DOMContentLoaded', function () {
 }, false)
 
 function Token() {
-    var k=document.getElementById("maxtoken").value;
+    var k = document.getElementById("maxtoken").value;
     document.getElementById("token").value = k;
-    }
+}
 
 // add listener when the input is changed and activate the function Token()
 document.addEventListener('DOMContentLoaded', function () {

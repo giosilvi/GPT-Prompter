@@ -8,65 +8,65 @@ Template: 42 is the answer to everything
 */
 
 body {
-    background-color: white;
-    font-family: helvetica, sans-serif;
-    color:#202123;
-    margin: 0!important;
-    font: 1rem/1.5 var(--bs-font-sans-serif);
-  }
-
-  a {
-    color: var(--bs-blue);
-  }
-
-  h1 h2{
-    color: #202123;
-    font-weight: 700;
-  }
-
-
-
-
-.save{
-    align-items: center;
-    justify-content: space-around;
-    margin:auto;
-    max-width: 700px;
-    font-size: 1rem;
-    background-color: transparent;
-    color:#10a37f;
-    padding: 10px 0;
-    border-width: 0px;
-    flex-wrap: wrap;
-    -webkit-box-pack: justify;
-    justify-content: space-between;
-    transition: all 100ms ease 0s;
-    box-sizing: border-box;
-    outline: 0px !important;
-    cursor: pointer;
+  background-color: white;
+  font-family: helvetica, sans-serif;
+  color: #202123;
+  margin: 0 !important;
+  font: 1rem/1.5 var(--bs-font-sans-serif);
 }
 
-.apikeybutton{
-    align-items: center;
-    justify-content: space-around;
-    margin: 0 10px 0 24px;
-    max-width: 700px;
-    font-size: 1rem;
-    background-color: transparent;
-    color:#6e6e80;
-    padding: 10px 0;
-    border-width: 0px;
-    flex-wrap: wrap;
-    -webkit-box-pack: justify;
-    justify-content: space-between;
-    transition: all 100ms ease 0s;
-    box-sizing: border-box;
-    outline: 0px !important;
-    cursor: pointer;
-    white-space: nowrap;
-    margin:auto;
+a {
+  color: var(--bs-blue);
+}
+
+h1 h2 {
+  color: #202123;
+  font-weight: 700;
+}
+
+
+
+
+.save {
+  align-items: center;
+  justify-content: space-around;
+  margin: auto;
+  max-width: 700px;
+  font-size: 1rem;
+  background-color: transparent;
+  color: #10a37f;
+  padding: 10px 0;
+  border-width: 0px;
+  flex-wrap: wrap;
+  -webkit-box-pack: justify;
+  justify-content: space-between;
+  transition: all 100ms ease 0s;
+  box-sizing: border-box;
+  outline: 0px !important;
+  cursor: pointer;
+}
+
+.apikeybutton {
+  align-items: center;
+  justify-content: space-around;
+  margin: 0 10px 0 24px;
+  max-width: 700px;
+  font-size: 1rem;
+  background-color: transparent;
+  color: #6e6e80;
+  padding: 10px 0;
+  border-width: 0px;
+  flex-wrap: wrap;
+  -webkit-box-pack: justify;
+  justify-content: space-between;
+  transition: all 100ms ease 0s;
+  box-sizing: border-box;
+  outline: 0px !important;
+  cursor: pointer;
+  white-space: nowrap;
+  margin: auto;
 }
 
 .form-control-dark {
-    border-color: var(--bs-gray);
-  }
+  border-color: var(--bs-gray);
+}

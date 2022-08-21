@@ -5,34 +5,32 @@ const BabbageCost = 0.0012 / 1000;
 const AdaCost = 0.0008 / 1000;
 
 
-function computeCost(tokens, model)
-{
-    var cost = 0;
-    if (model == "text-davinci-002")
-        cost = tokens * DaVinciCost;
-    else if (model == "text-curie-001")
-        cost = tokens * CurieCost;
-    else if (model == "text-babbage-001")
-        cost = tokens * BabbageCost;
-    else if (model == "text-ada-001")
-        cost = tokens * AdaCost;
-    return cost.toFixed(5);
+function computeCost(tokens, model) {
+  var cost = 0;
+  if (model == "text-davinci-002")
+    cost = tokens * DaVinciCost;
+  else if (model == "text-curie-001")
+    cost = tokens * CurieCost;
+  else if (model == "text-babbage-001")
+    cost = tokens * BabbageCost;
+  else if (model == "text-ada-001")
+    cost = tokens * AdaCost;
+  return cost.toFixed(5);
 }
-function symbolFromModel(model)
-{
-    var symbol = '';
-    if (model == "text-davinci-002")
-        symbol = '🅳';
-    else if (model == "text-curie-001")
-        symbol = '🅲';
-    else if (model == "text-babbage-001")
-        symbol = '🅑';
-    else if (model == "text-ada-001")
-        symbol = '🅐';
-    return symbol
+function symbolFromModel(model) {
+  var symbol = '';
+  if (model == "text-davinci-002")
+    symbol = '🅳';
+  else if (model == "text-curie-001")
+    symbol = '🅲';
+  else if (model == "text-babbage-001")
+    symbol = '🅑';
+  else if (model == "text-ada-001")
+    symbol = '🅐';
+  return symbol
 }
 
-const minipopup = (id,{ display = "none", left = 0, top = 0 }) => `
+const minipopup = (id, { display = "none", left = 0, top = 0 }) => `
 <div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px">
 <div id="${id}prompt" style="cursor: text!important; display:flex!important"></div>
 <p id="${id}text" style="clear: left!;cursor: text!important"></p>
@@ -150,7 +148,7 @@ class CustomMiniPopup extends HTMLElement {
       }
     }
   }
- 
+
 
 
   // // this function highlight the selected text
@@ -180,7 +178,7 @@ class CustomMiniPopup extends HTMLElement {
 
   // in case one is on the pdf page (or one where we can`t get the position of the selected text),
   // we just use a popup to show the text in a top left corner
-  defaultpopup(){
+  defaultpopup() {
     this.shadowRoot.innerHTML += minipopup(this.ids, { display: "flex", left: 0, top: 0 });
     this.shadowRoot.getElementById(this.ids).classList.toggle('show');
     this.ids++;
@@ -188,7 +186,7 @@ class CustomMiniPopup extends HTMLElement {
 
   minimizeButtons(id_target, id_button) {
     this.shadowRoot.getElementById(id_button).addEventListener("click", () => {
-      this.shadowRoot.getElementById(id_target+"text").classList.toggle('hide');
+      this.shadowRoot.getElementById(id_target + "text").classList.toggle('hide');
     });
   }
   closeButtons(id_target, id_button) {
@@ -198,29 +196,29 @@ class CustomMiniPopup extends HTMLElement {
   }
 
 
-  buttonForPopUp(){
+  buttonForPopUp() {
     for (let id_target = 0; id_target < this.ids; id_target++) {
-        const id_close = "mclose" + id_target;
-        const id_minimize = "minimize"+id_target;
-        this.minimizeButtons(id_target,id_minimize);
-        this.closeButtons(id_target,id_close);
-        };
-    }
-  
-  updatepopup_onlypromt(request){
+      const id_close = "mclose" + id_target;
+      const id_minimize = "minimize" + id_target;
+      this.minimizeButtons(id_target, id_minimize);
+      this.closeButtons(id_target, id_close);
+    };
+  }
+
+  updatepopup_onlypromt(request) {
     const id2 = this.ids - 1; // which popup is the last one
     var id_close = "mclose" + id2
     var id_minimize = "minimize" + id2
     //add the message to the popup in the element with id2+'prompt'
     // console.log(request.body_data)
     var symbol = symbolFromModel(request.body_data.model)
-    
+
     var minimcloseButtons = "<div style='width: 15%;min-width: 80px;text-align: right;'>\
-    <button class='miniclose'style='margin-left:5px; font-size:15px' id='"+id_minimize+"'>&#128469;&#xFE0E;</button>\
+    <button class='miniclose'style='margin-left:5px; font-size:15px' id='"+ id_minimize + "'>&#128469;&#xFE0E;</button>\
     <button class='miniclose' style='margin-left:5px; font-size:15px' id='" + id_close + "'>&#128473;&#xFE0E;</button> </div>";
 
-    this.shadowRoot.getElementById(id2+'prompt').innerHTML = "<div style='width: 85%'>"+symbol+"<i> "+request.text+"</i></div>";
-    this.shadowRoot.getElementById(id2+"prompt").innerHTML += minimcloseButtons;
+    this.shadowRoot.getElementById(id2 + 'prompt').innerHTML = "<div style='width: 85%'>" + symbol + "<i> " + request.text + "</i></div>";
+    this.shadowRoot.getElementById(id2 + "prompt").innerHTML += minimcloseButtons;
     this.buttonForPopUp(); // connect the buttons of the popup
   }
 
@@ -229,45 +227,45 @@ class CustomMiniPopup extends HTMLElement {
     const id2 = this.ids - 1;
 
     // TODO: Update the two buttons to two icons, one for minimize and one for close
-    
+
     //if stream is true
     if (stream) {
       // if choiches is a key in message, it means usual stream
       if (message.choices) {
         var text = message.choices[0].text
-        this.shadowRoot.getElementById(id2+"text").innerHTML += text;
+        this.shadowRoot.getElementById(id2 + "text").innerHTML += text;
       }
       // if message has a key "error"
       else if (message.error) {
         var text = message.error.message
         var type = message.error.type
-        this.shadowRoot.getElementById(id2+"text").innerHTML += type + "<br>" + text;
+        this.shadowRoot.getElementById(id2 + "text").innerHTML += type + "<br>" + text;
       }
       // each message should be 1 token
       this.tokens++;
-      
+
     }
     else {
-      var complete_answer = this.shadowRoot.getElementById(id2+"text").innerHTML
+      var complete_answer = this.shadowRoot.getElementById(id2 + "text").innerHTML
       // this.shadowRoot.getElementById(id2).innerHTML += 
       //loop over number of ids
-     
+
       //save prompt to local storage 
-      
+
       var body_data = JSON.parse(message.body_data)
       var model = body_data.model
-      var cost = computeCost(this.tokens,model)
+      var cost = computeCost(this.tokens, model)
       this.tokens = 0;
-       // save the result.choices[0].text in the storage 
+      // save the result.choices[0].text in the storage 
       chrome.storage.local.get('history', function (items) {
-          if (typeof items.history !== 'undefined') {
-              items.history.push([message.body_data, complete_answer, cost]);// add the result to the history
-              chrome.storage.local.set({ 'history': items.history });
-          }
-          else {
-              items.history = [[message.body_data, complete_answer, cost]]; // initialize the history array
-              chrome.storage.local.set({ 'history': items.history });
-          }
+        if (typeof items.history !== 'undefined') {
+          items.history.push([message.body_data, complete_answer, cost]);// add the result to the history
+          chrome.storage.local.set({ 'history': items.history });
+        }
+        else {
+          items.history = [[message.body_data, complete_answer, cost]]; // initialize the history array
+          chrome.storage.local.set({ 'history': items.history });
+        }
       });
     }
   }

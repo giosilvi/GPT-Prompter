@@ -68,19 +68,19 @@ chrome.runtime.onMessage.addListener(function (request) {
     // console.log('split:' + data.length);
     for (var m = 1; m < data.length; m++) {// in case of multiple stream in one, loop over them
 
-        if (data[m].indexOf("[DONE]") == -1) { // if there is not "[DONE]" in the text, it`s a stream
-          // console.log('data:', data[m]);
-          var json = JSON.parse(data[m]);
-          customMiniPopup.updatepopup(json, true); 
-          if (json.error) { addListenersForDrag(); } // just in case of error in a bundle of streams, not sure it`s needed
-        }
-        else {
-          customMiniPopup.updatepopup(request, false); // the end of the stream
-          addListenersForDrag();
-        }
+      if (data[m].indexOf("[DONE]") == -1) { // if there is not "[DONE]" in the text, it`s a stream
+        // console.log('data:', data[m]);
+        var json = JSON.parse(data[m]);
+        customMiniPopup.updatepopup(json, true);
+        if (json.error) { addListenersForDrag(); } // just in case of error in a bundle of streams, not sure it`s needed
       }
+      else {
+        customMiniPopup.updatepopup(request, false); // the end of the stream
+        addListenersForDrag();
+      }
+    }
     // in case of error, the split will not produce more than one element
-    if(data.length == 1){
+    if (data.length == 1) {
       //convert request.text to JSON
       var json = JSON.parse(request.text);
       if (json.error) {
@@ -146,38 +146,26 @@ function spanMove(e, id) {
   var mouse_y = e.clientY;
   var mouse_x = e.clientX;
   var mouse_x_position = mouse_x - object.offsetWidth / 2;
-  var mouse_y_position = mouse_y ;//- object.offsetHeight / 2;
+  var mouse_y_position = mouse_y - object.offsetHeight / 4;
 
   // console.log(x_position,e.clientX) // x position of the mouse pointer
   // console.log(y_position,e.clientY) // y position of the mouse pointer
 
   // for loop over distance between mouse position and object position
   if (mouse_y_position > y_position) {
-    for (var i = y_position; i < mouse_y_position; i++) {
-      // move the object
-      object.style.top = i + 'px';
-      // setTimeout(function(){object.style.top = i  +'px';}, 50);
-    }
+    object.style.top = mouse_y_position + 'px';
+
   }
   else {
-    for (var j = y_position; j > mouse_y_position; j--) {
-      // move the object
-      object.style.top = j + 'px';
-      // setTimeout(function(){object.style.top = j  +'px';}, 50);
-    }
+    object.style.top = mouse_y_position + 'px';
+
   }
   if (mouse_x_position > x_position) {
-    for (var k = x_position; k < mouse_x_position; k++) {
-      object.style.left = k + 'px';
-      // setTimeout(function(){object.style.left = k+'px';}, 50);
-    }
+    object.style.left = mouse_x_position + 'px';
   }
   else {
-    for (var l = x_position; l > mouse_x_position; l--) {
-      object.style.left = l + 'px';
-      // setTimeout(function(){object.style.left = l +'px';}, 50);
-    }
+    object.style.left = mouse_x_position + 'px';
   }
-  object.previous_x_position = x_position;
-  object.previous_y_position = y_position;
+  // object.previous_x_position = x_position;
+  // object.previous_y_position = y_position;
 }

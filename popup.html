@@ -1,22 +1,24 @@
 <!DOCTYPE HTML>
 <html lang="en">
-    <head>
+
+<head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <title>GPT-Prompter</title>
-    </head>
+</head>
 
 <body>
-    
-    
+
+
     <div class="container-sm" style="width: 600px;">
         <div class="card text-center" style="border-radius:0px; background-color: rgba(0,0,0,.03); border:0;">
             <div class="card-body">
-              <h5 class="card-title"><img src="icons\iconA48.png" alt="logo" class="logo"> GPT-Prompter<br></h5>
-              <!-- <p class="card-text">Here are the instructions to configure the plugin to work properly</p> -->
+                <h5 class="card-title"><img src="icons\iconA48.png" alt="logo" class="logo"> GPT-Prompter<br></h5>
+                <!-- <p class="card-text">Here are the instructions to configure the plugin to work properly</p> -->
             </div>
         </div>
         <div class="row" style="padding:10px;">
@@ -33,55 +35,70 @@
                 <button type="button" class="apikeybutton" style="margin-left: -20px" id="showKey">Show API</button>
             </div>
         </div>
-        <div  style="background-color: rgba(0,0,0,.0); padding-left:10px; margin-bottom:10px!important;"><a id="linktoAPI" href="https://beta.openai.com/account/api-keys">Where can I generate my API key?</a>
-        </div>      
-        
+        <div style="background-color: rgba(0,0,0,.0); padding-left:10px; margin-bottom:10px!important;"><a
+                id="linktoAPI" href="https://beta.openai.com/account/api-keys">Where can I generate my API key?</a>
+        </div>
+
         <div id="prompt_design" class="card text-bg-light" style="border-radius:0px; border:0">
-            <div class="card-header" style="border:0"><img src="icons\iconA16.png" alt="logo" class="logo"> <b> Prompt Design</b>
+            <div class="card-header" style="border:0"><img src="icons\iconA16.png" alt="logo" class="logo"> <b> Prompt
+                    Design</b>
             </div>
-                            <!--selector-->
+            <!--selector-->
             <div class="input-group mb-3">
                 <div class="input-group-prepend">
-                  <label class="input-group-text" for="inputmodel" style="border:0">Model</label>
+                    <label class="input-group-text" for="inputmodel" style="border:0">Model</label>
                 </div>
                 <select class="custom-select" id="inputmodel">
-                  <option selected value="text-davinci-002" title ="Most capable GPT-3 model, most expensive" >🅳 text-davinci-002</option>
-                  <option value="text-curie-001" title="Very capable, but faster and lower cost than Davinci.">🅲 text-curie-001</option>
-                  <option value="text-babbage-001" title="Capable of straightforward tasks, very fast, and lower cost.">🅑 text-babbage-001</option>
-                  <option value="text-ada-001" title="Capable of very simple tasks, fastest model and lowest cost">🅐 text-ada-001</option>
+                    <option selected value="text-davinci-002" title="Most capable GPT-3 model, most expensive">🅳
+                        text-davinci-002</option>
+                    <option value="text-curie-001" title="Very capable, but faster and lower cost than Davinci.">🅲
+                        text-curie-001</option>
+                    <option value="text-babbage-001"
+                        title="Capable of straightforward tasks, very fast, and lower cost.">🅑 text-babbage-001
+                    </option>
+                    <option value="text-ada-001" title="Capable of very simple tasks, fastest model and lowest cost">🅐
+                        text-ada-001</option>
                 </select>
             </div>
-            
-                  <!--temperature-->
+
+            <!--temperature-->
             <div class="row" style="margin-left:0px!important">
                 <label for="temperature" class="form-label col-sm-3">Temperature</label>
-                <input type="range" class="form-range col-sm-6" style="margin-right:30px; padding:0" id="temperature" min="0" max="1" step="0.01" value="0.1">
-                <input class="text-input col-sm-2" type="text" readonly="readonly" style="text-align:right;border: 0;" id="temp" value="0.1">
+                <input type="range" class="form-range col-sm-6" style="margin-right:30px; padding:0" id="temperature"
+                    min="0" max="1" step="0.01" value="0.1">
+                <input class="text-input col-sm-2" type="text" readonly="readonly" style="text-align:right;border: 0;"
+                    id="temp" value="0.1">
 
             </div>
 
-                <!--max token-->
+            <!--max token-->
             <div class="row" style="margin-left:0px!important">
-                    <label for="maxtoken" class="form-label col-sm-3">Maximum length</label>
-                    <input id="maxtoken" type="range" class="form-range col-sm-6" style="margin-right:30px;padding:0" min="0" max="2048" step="1" value="1024">
-                    <input class="text-input col-sm-2" type="text" readonly="readonly" style="text-align:right;border: 0;" id="token" value="1024">
+                <label for="maxtoken" class="form-label col-sm-3">Maximum length</label>
+                <input id="maxtoken" type="range" class="form-range col-sm-6" style="margin-right:30px;padding:0"
+                    min="0" max="2048" step="1" value="1024">
+                <input class="text-input col-sm-2" type="text" readonly="readonly" style="text-align:right;border: 0;"
+                    id="token" value="1024">
             </div>
             <div class="card-body">
                 <textarea class="form-control" id="promptinput" rows="3">Tell me more about "#TEXT#":</textarea>
-                <button type="button" id="createPrompt" class="list-group-item list-group-item-action text-center" style="background-color:#10a37f; color:white"><b>Create prompt</b></button>
+                <button type="button" id="createPrompt" class="list-group-item list-group-item-action text-center"
+                    style="background-color:#10a37f; color:white"><b>Create prompt</b></button>
             </div>
         </div>
 
         <div class="card text-bg-light" style="border-radius:0px; border:0">
-            <div class="card-header logo" style="border:0"><img src="icons\iconA16.png" alt="logo"> <b>  Your Prompts</b>    
-                <button type="button" id="history" class="save" style="margin-left:160px;">History of Your Prompts and Cost</button></div>
+            <div class="card-header logo" style="border:0"><img src="icons\iconA16.png" alt="logo"> <b> Your Prompts</b>
+                <button type="button" id="history" class="save" style="margin-left:160px;">History of Your Prompts and
+                    Cost</button>
+            </div>
             <div class="card-body" style="border:0">
                 <ol id="list-of-prompts" class="list-group"></ol>
             </div>
         </div>
     </div>
 
-        <script src="popup.js"></script>
+    <script src="popup.js"></script>
 
 </body>
+
 </html>
