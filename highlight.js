@@ -32,7 +32,7 @@ function symbolFromModel(model) {
 
 const minipopup = (id, { display = "none", left = 0, top = 0 }) => `
 <div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px">
-<div id="${id}prompt" style="cursor: text!important; display:flex!important"></div>
+<div id="${id}prompt" style="display:flex!important"></div>
 <p id="${id}text" style="clear: left!;cursor: text!important"></p>
 </div>
 

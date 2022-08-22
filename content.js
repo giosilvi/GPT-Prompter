@@ -119,8 +119,8 @@ function addListenersForDrag() {
 }
 
 function mouseDown(e) {
-  // this is to avoid the selection of a child, when the target is the parent
-  if (e.target !== this)
+  // this is to avoid the selection of the child text, when the target is the parent
+  if (e.target.id == this.id+'text')
     return;
   e.preventDefault();
   const id_target = this.id;
@@ -139,6 +139,7 @@ function mouseDown(e) {
 
 function spanMove(e, id) {
   var object = customMiniPopup.shadowRoot.getElementById(id)
+  var prompt_object = customMiniPopup.shadowRoot.getElementById(id + 'prompt')
 
   // variables 
   var y_position = object.offsetTop;
@@ -146,26 +147,13 @@ function spanMove(e, id) {
   var mouse_y = e.clientY;
   var mouse_x = e.clientX;
   var mouse_x_position = mouse_x - object.offsetWidth / 2;
-  var mouse_y_position = mouse_y - object.offsetHeight / 4;
+  var mouse_y_position = mouse_y - prompt_object.offsetHeight / 1.5;
 
   // console.log(x_position,e.clientX) // x position of the mouse pointer
   // console.log(y_position,e.clientY) // y position of the mouse pointer
+  object.style.top = mouse_y_position + 'px';
+  object.style.left = mouse_x_position + 'px';
 
-  // for loop over distance between mouse position and object position
-  if (mouse_y_position > y_position) {
-    object.style.top = mouse_y_position + 'px';
-
-  }
-  else {
-    object.style.top = mouse_y_position + 'px';
-
-  }
-  if (mouse_x_position > x_position) {
-    object.style.left = mouse_x_position + 'px';
-  }
-  else {
-    object.style.left = mouse_x_position + 'px';
-  }
   // object.previous_x_position = x_position;
   // object.previous_y_position = y_position;
 }
