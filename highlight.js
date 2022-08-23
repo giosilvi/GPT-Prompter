@@ -126,6 +126,8 @@ class CustomMiniPopup extends HTMLElement {
     this.shadowRoot.appendChild(style); // here append the style to the shadowRoot    
     this.ids = 0;
     this.tokens = 0;
+    //set attribute "default" to false
+    this.setAttribute("default", "false");
   }
 
   //   this function update the style in shadow DOM with the new markerPosition

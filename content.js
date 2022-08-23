@@ -54,11 +54,15 @@ function getMarkerPosition() {
 chrome.runtime.onMessage.addListener(function (request) {
   //  if attribute text in request exists, it's a gpt-3 response
   if (request.message == 'highlight') {
-    if (customMiniPopup.hasAttribute("markerPosition")) {
+    //check that attribute  in customMiniPopup default is false
+
+    if (customMiniPopup.hasAttribute("markerPosition") && customMiniPopup.default == false) {
       setMarkerPosition({ display: "flex" });
       //  customMiniPopup.highlightSelection(); // highlight the selection
     }
     else { // in case we can`t get the markerPosition, we use the default popup, at position 0,0
+      // set a boolean to true, to use the default popup
+      customMiniPopup.setAttribute("default", true);
       customMiniPopup.defaultpopup();
     }
   }
