@@ -114,16 +114,16 @@ console.log('GPT-prompter content script is running')
 function addListenersForDrag() {
   // add a listener to the mouse down event, to call the mouseDown function, to each popup in the shadowDOM
   for (var indice = 0; indice < customMiniPopup.ids; indice++) {
-    elem = customMiniPopup.shadowRoot.getElementById(indice).addEventListener('mousedown', mouseDown, false);
+    elem = customMiniPopup.shadowRoot.getElementById(indice+"prompt").addEventListener('mousedown', mouseDown, false);
   }
 }
 
 function mouseDown(e) {
   // this is to avoid the selection of the child text, when the target is the parent
-  if (e.target.id == this.id+'text')
-    return;
+  // if (e.target.id == this.id+'text')
+  //   return;
   e.preventDefault();
-  const id_target = this.id;
+  const id_target = this.id.replace('prompt', '');
   function wrapper(event) {
     spanMove(event, id_target)
   }
@@ -142,8 +142,8 @@ function spanMove(e, id) {
   var prompt_object = customMiniPopup.shadowRoot.getElementById(id + 'prompt')
 
   // variables 
-  var y_position = object.offsetTop;
-  var x_position = object.offsetLeft;
+  // var y_position = object.offsetTop;
+  // var x_position = object.offsetLeft;
   var mouse_y = e.clientY;
   var mouse_x = e.clientX;
   var mouse_x_position = mouse_x - object.offsetWidth / 2;

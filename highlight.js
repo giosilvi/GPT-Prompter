@@ -32,7 +32,7 @@ function symbolFromModel(model) {
 
 const minipopup = (id, { display = "none", left = 0, top = 0 }) => `
 <div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px">
-<div id="${id}prompt" style="display:flex!important"></div>
+<div id="${id}prompt" style="display:flex!important;cursor: grab!important"></div>
 <p id="${id}text" style="clear: left!;cursor: text!important"></p>
 </div>
 
@@ -64,7 +64,8 @@ const styled = `
     margin-right:10px!important;
     min-width: auto;!important;
     font-family: 'Roboto', sans-serif!important;
-    // user-select: none;
+    resize:both;
+    overflow:auto;
   }
   .show {
     opacity: 0.9;
@@ -72,7 +73,6 @@ const styled = `
     // animation: fadeIn 1s;
     z-index: 9999;
     padding: 20px;
-    cursor: grab;
   }
   .hide {
     display: none;
