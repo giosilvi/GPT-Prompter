@@ -56,7 +56,7 @@ chrome.runtime.onMessage.addListener(function (request) {
   if (request.message == 'highlight') {
     //check that attribute  in customMiniPopup default is false
 
-    if (customMiniPopup.hasAttribute("markerPosition") && customMiniPopup.default == false) {
+    if (customMiniPopup.hasAttribute("markerPosition") && customMiniPopup.default == "false") {
       setMarkerPosition({ display: "flex" });
       //  customMiniPopup.highlightSelection(); // highlight the selection
     }
