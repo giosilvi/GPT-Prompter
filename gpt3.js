@@ -9,14 +9,14 @@ function sendStream(message, id, string, body_data) {
 }
 
 function checkTabsAndSendStream(message, tabs, string, body_data) {
-  if (tabs.id == -1) { //pdf case
+  // if (tabs.id == -1) { //pdf case
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       sendStream(message, tabs[0].id, string, body_data);
     });
-  }
-  else {// html case
-    sendStream(message, tabs.id, string, body_data);
-  }
+  // }
+  // else {// html case
+  //   sendStream(message, tabs.id, string, body_data);
+  // }
 }
 
 

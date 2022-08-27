@@ -128,9 +128,9 @@ class CustomMiniPopup extends HTMLElement {
       if (this.markerPosition.left + 150 > window.innerWidth) {
         var position = this.markerPosition
         position.left = window.innerWidth - 150
-        this.lastpop = minipopup(this.ids, position);
+        this.lastpop = minipopup(this.ids+1, position);
       }
-      else { this.lastpop = minipopup(this.ids, this.markerPosition); }
+      else { this.lastpop = minipopup(this.ids+1, this.markerPosition); }
     }
   }
 
@@ -167,13 +167,13 @@ class CustomMiniPopup extends HTMLElement {
   defaultpopup() {
     this.shadowRoot.innerHTML += this.lastpop
     this.shadowRoot.getElementById(this.ids).classList.toggle('show');
-    this.ids++;
   }
 
   cornerpopup() {
+    this.usecornerPopUp = true;
     this.shadowRoot.innerHTML += minipopup(this.ids, { display: "flex", left: 0, top: 0 });
     this.shadowRoot.getElementById(this.ids).classList.toggle('show');
-    this.ids++;
+    
   }
 
   minimizeButtons(id_target, id_button) {
@@ -189,7 +189,7 @@ class CustomMiniPopup extends HTMLElement {
 
 
   buttonForPopUp() {
-    for (let id_target = 0; id_target < this.ids; id_target++) {
+    for (let id_target = 1; id_target <= this.ids; id_target++) {
       const id_close = "mclose" + id_target;
       const id_minimize = "minimize" + id_target;
       this.minimizeButtons(id_target, id_minimize);
@@ -198,7 +198,7 @@ class CustomMiniPopup extends HTMLElement {
   }
 
   updatepopup_onlypromt(request) {
-    const id2 = this.ids - 1; // which popup is the last one
+    const id2 = this.ids; // which popup is the last one
     var id_close = "mclose" + id2
     var id_minimize = "minimize" + id2
     //add the message to the popup in the element with id2+'prompt'
@@ -216,7 +216,7 @@ class CustomMiniPopup extends HTMLElement {
 
   updatepopup(message, stream) {
 
-    const id2 = this.ids - 1;
+    const id2 = this.ids;
 
     // TODO: Update the two buttons to two icons, one for minimize and one for close
 

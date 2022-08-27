@@ -153,12 +153,12 @@ chrome.contextMenus.onClicked.addListener((info, tabs) => {
                 // replace the selected text in the prompt
                 chrome.storage.sync.get('APIKEY', function (items) {
                     if (typeof items.APIKEY !== 'undefined') {
-                        (async () => {
-                            await promptGPT3Prompting(prompt, items, tabs)
-                        })();
                         chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
                             chrome.tabs.sendMessage(tabs[0].id, { message: 'showPopUp' });
                         });
+                        (async () => {
+                            await promptGPT3Prompting(prompt, items, tabs)
+                        })();
                     }
                     else {
                         chrome.tabs.sendMessage(tabs.id, 'APIKEY not found');

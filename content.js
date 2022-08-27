@@ -2,7 +2,7 @@
 
 window.addEventListener("scroll", function () {
   var x = window.scrollX, y = window.scrollY;
-  for (var i = 0; i < customMiniPopup.ids; i++) {
+  for (var i = 1; i <= customMiniPopup.ids; i++) {
     //
     elem = customMiniPopup.shadowRoot.getElementById(i);
     var elemTop = elem.offsetTop - (y - this.window.lastY);
@@ -49,16 +49,19 @@ function getMarkerPosition() {
 }
 
 
+
 // function to alert the message, like gpt-3 response. TODO: make it a popup, not an alert
 chrome.runtime.onMessage.addListener(function (request) {
   //  if attribute message in request exists, it's a gpt-3 response
   if (request.message == 'showPopUp') {
+    customMiniPopup.ids++; // increment the number of popups, and id of the new popup
+    // console.log('ID:',customMiniPopup.ids);
     if (customMiniPopup.hasAttribute("markerPosition") && customMiniPopup.usecornerPopUp == false) {
       customMiniPopup.defaultpopup(); // show the popup
       addListenersForDrag();
     }
     else { // in case we can`t get the markerPosition, we use the corner popup, at position 0,0
-      customMiniPopup.setAttribute("usecornerPopUp", true); // set to True, so every time we show the popup, it will be at 0,0 (for this page)
+       // set to True, so every time we show the popup, it will be at 0,0 (for this page)
       customMiniPopup.cornerpopup();
       addListenersForDrag();
     }
@@ -103,7 +106,7 @@ chrome.runtime.onMessage.addListener(function (request) {
 
 function addListenersForDrag() {
   // add a listener to the mouse down event, to call the mouseDown function, to each popup in the shadowDOM
-  for (var indice = 0; indice < customMiniPopup.ids; indice++) {
+  for (var indice = 1; indice <= customMiniPopup.ids; indice++) {
     elem = customMiniPopup.shadowRoot.getElementById(indice + "prompt").addEventListener('mousedown', mouseDown, false);
   }
 }
