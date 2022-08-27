@@ -1,22 +1,52 @@
-/*
- * bg.js -- a ManifestV3 service_worker that installs a context menu
- *          plus minimal framework for messaging between here and
- *          a content script.
- */
 import promptGPT3Prompting from './gpt3.js';
+import symbolFromModel from './sharedfunctions.js';
 
-function symbolFromModel(model) {
-    var symbol = '';
-    if (model == "text-davinci-002")
-        symbol = '🅳';
-    else if (model == "text-curie-001")
-        symbol = '🅲';
-    else if (model == "text-babbage-001")
-        symbol = '🅑';
-    else if (model == "text-ada-001")
-        symbol = '🅐';
-    return symbol
+
+// FUNCTIONS DECLARATION
+async function checkGPT(apikey) {
+    chrome.storage.sync.get('APIKEY', function (items) {
+        console.log(apikey);
+        var url = "https://api.openai.com/v1/models";
+        fetch(url, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json, text/plain, */*',
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + apikey
+            },
+        }
+        ).then(result => result.json())
+            .then((result) => {
+                console.log('Available models:',result);
+                // if result has data, then the API key is valid
+                if (result.data) {
+                    chrome.runtime.sendMessage({ message: 'API key is valid' });
+                }
+                else {
+                    console.log('Here')
+                    chrome.runtime.sendMessage({ message: 'API key is invalid' });
+                }
+
+            }).catch(err => {
+                console.log("error" + err);
+            });
+
+    })
 }
+
+
+//add a function to check if the API key is present in storage, if not set black icon
+function checkAPIKey() {
+    chrome.storage.sync.get('APIKEY', function (items) {
+        // Check that the API key exists
+        if (typeof items.APIKEY == 'undefined') {
+            // run your script from here
+            chrome.action.setIcon({ path: "icons/icon16.png" })
+        }
+    }
+    );
+}
+
 //Function to create context menu, erasing the previous one
 function createContextMenu() {
     // if the context menu already exists, erase it
@@ -48,9 +78,12 @@ function createContextMenu() {
     });
 }
 
+// LISTENER DECLARATION
 
 // Initial context menu creation, on install
 chrome.runtime.onInstalled.addListener(function () {
+    // check on installe if the API key is present in storage
+    checkAPIKey();
     // add one prompt to the storage
     chrome.storage.sync.get('customprompt', function (items) {
         // Check that the prompt exists
@@ -96,9 +129,9 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 
 
 chrome.contextMenus.onClicked.addListener((info, tabs) => {
-    console.log('context menu clicked');
-    console.log(info.selectionText);
-    console.log(tabs);
+    // console.log('context menu clicked');
+    // console.log(info.selectionText);
+    // console.log(tabs);
 
     // get the id of the context menu clicked
     // to transfort a string to int do: parseInt(string)
@@ -124,68 +157,27 @@ chrome.contextMenus.onClicked.addListener((info, tabs) => {
                             await promptGPT3Prompting(prompt, items, tabs)
                         })();
                         chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-                            chrome.tabs.sendMessage(tabs[0].id, { message: 'highlight' });
+                            chrome.tabs.sendMessage(tabs[0].id, { message: 'showPopUp' });
                         });
                     }
                     else {
                         chrome.tabs.sendMessage(tabs.id, 'APIKEY not found');
-                        console.log('No API key found.');
+                        console.log('Error: No API key found.');
                     }
                 })
 
             }
             else {
-                console.log('invalid prompt number');
+                chrome.tabs.sendMessage(tabs.id, 'Error: invalid prompt number');
+                console.log('Error: invalid prompt number');
             }
         }
         else {
-            console.log('no custom prompts');
+            chrome.tabs.sendMessage(tabs.id, 'Error: no prompt list found');
+            console.log('Error: no custom prompts');
         }
     });
 }
 );
 
 
-
-async function checkGPT(apikey) {
-    chrome.storage.sync.get('APIKEY', function (items) {
-        console.log(apikey);
-        var url = "https://api.openai.com/v1/models";
-        fetch(url, {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json, text/plain, */*',
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + apikey
-            },
-        }
-        ).then(result => result.json())
-            .then((result) => {
-                console.log(result);
-                // if result has data, then the API key is valid
-                if (result.data) { chrome.runtime.sendMessage({ message: 'API key is valid' }); }
-                else {
-                    console.log('Here')
-                    chrome.runtime.sendMessage({ message: 'API key is invalid' });
-                }
-
-            }).catch(err => {
-                console.log("error" + err);
-            });
-
-    })
-}
-
-
-//add a function to check if the API key is present in storage, if not set black icon
-function checkAPIKey() {
-    chrome.storage.sync.get('APIKEY', function (items) {
-        // Check that the API key exists
-        if (typeof items.APIKEY == 'undefined') {
-            // run your script from here
-            chrome.action.setIcon({ path: "icons/icon16.png" })
-        }
-    }
-    );
-}
-checkAPIKey();

@@ -42,7 +42,6 @@ function getMarkerPosition() {
     .getRangeAt(0)
     .getBoundingClientRect();
   return {
-    // Substract width of marker button -> 40px / 2 = 20
     left: rangeBounds.right + 5,
     top: rangeBounds.top,
     display: "none",
@@ -52,18 +51,16 @@ function getMarkerPosition() {
 
 // function to alert the message, like gpt-3 response. TODO: make it a popup, not an alert
 chrome.runtime.onMessage.addListener(function (request) {
-  //  if attribute text in request exists, it's a gpt-3 response
-  if (request.message == 'highlight') {
-    //check that attribute  in customMiniPopup default is false
-
-    if (customMiniPopup.hasAttribute("markerPosition") && customMiniPopup.default == "false") {
-      setMarkerPosition({ display: "flex" });
-      //  customMiniPopup.highlightSelection(); // highlight the selection
+  //  if attribute message in request exists, it's a gpt-3 response
+  if (request.message == 'showPopUp') {
+    if (customMiniPopup.hasAttribute("markerPosition") && customMiniPopup.usecornerPopUp == false) {
+      customMiniPopup.defaultpopup(); // show the popup
+      addListenersForDrag();
     }
-    else { // in case we can`t get the markerPosition, we use the default popup, at position 0,0
-      // set a boolean to true, to use the default popup
-      customMiniPopup.setAttribute("default", true);
-      customMiniPopup.defaultpopup();
+    else { // in case we can`t get the markerPosition, we use the corner popup, at position 0,0
+      customMiniPopup.setAttribute("usecornerPopUp", true); // set to True, so every time we show the popup, it will be at 0,0 (for this page)
+      customMiniPopup.cornerpopup();
+      addListenersForDrag();
     }
   }
   else if (request.message == 'GPTStream_answer') {
@@ -76,11 +73,9 @@ chrome.runtime.onMessage.addListener(function (request) {
         // console.log('data:', data[m]);
         var json = JSON.parse(data[m]);
         customMiniPopup.updatepopup(json, true);
-        if (json.error) { addListenersForDrag(); } // just in case of error in a bundle of streams, not sure it`s needed
       }
       else {
         customMiniPopup.updatepopup(request, false); // the end of the stream
-        addListenersForDrag();
       }
     }
     // in case of error, the split will not produce more than one element
@@ -89,7 +84,7 @@ chrome.runtime.onMessage.addListener(function (request) {
       var json = JSON.parse(request.text);
       if (json.error) {
         customMiniPopup.updatepopup(json, true);
-        addListenersForDrag();
+        // addListenersForDrag();
       }
     }
   }
@@ -103,22 +98,13 @@ chrome.runtime.onMessage.addListener(function (request) {
   }
 })
 
-console.log('GPT-prompter content script is running')
-
-// Obsolete, useful for debugging
-// chrome.runtime.onMessage.addListener((req, snd, rsp) => {
-//   console.log(snd.tab ? "another content script says:" : "the extension says:");
-//   console.log(req);
-//   rsp('a-response-object');
-// });
 
 
-// code to move the mini popup
 
 function addListenersForDrag() {
   // add a listener to the mouse down event, to call the mouseDown function, to each popup in the shadowDOM
   for (var indice = 0; indice < customMiniPopup.ids; indice++) {
-    elem = customMiniPopup.shadowRoot.getElementById(indice+"prompt").addEventListener('mousedown', mouseDown, false);
+    elem = customMiniPopup.shadowRoot.getElementById(indice + "prompt").addEventListener('mousedown', mouseDown, false);
   }
 }
 
@@ -145,9 +131,6 @@ function spanMove(e, id) {
   var object = customMiniPopup.shadowRoot.getElementById(id)
   var prompt_object = customMiniPopup.shadowRoot.getElementById(id + 'prompt')
 
-  // variables 
-  // var y_position = object.offsetTop;
-  // var x_position = object.offsetLeft;
   var mouse_y = e.clientY;
   var mouse_x = e.clientX;
   var mouse_x_position = mouse_x - object.offsetWidth / 2;
@@ -157,7 +140,6 @@ function spanMove(e, id) {
   // console.log(y_position,e.clientY) // y position of the mouse pointer
   object.style.top = mouse_y_position + 'px';
   object.style.left = mouse_x_position + 'px';
-
-  // object.previous_x_position = x_position;
-  // object.previous_y_position = y_position;
 }
+
+console.log('GPT-prompter content script is running')

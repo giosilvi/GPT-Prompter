@@ -1,6 +1,6 @@
 {
     "name": "GPT-Prompter",
-    "version": "0.0.0.2",
+    "version": "0.0.0.3",
     "description": "Fast custom prompts to GPT-3 API",
     "manifest_version": 3,
     "icons": {
@@ -20,6 +20,7 @@
             ],
             "js": [
                 "node_modules/@webcomponents/custom-elements/custom-elements.min.js",
+                "sharedfunctions.js",
                 "content.js",
                 "highlight.js"
             ]

@@ -1,0 +1,17 @@
+var models = {
+    "text-davinci-002": "🅳",
+    "text-curie-001": "🅲",
+    "text-babbage-001": "🅑",
+    "text-ada-001": "🅐",
+    "code-davinci-002": "🆇"
+  }
+  //the above function symbolFromModel can be rewritten as a dictionary
+  function symbolFromModel(model) {
+    // check if the model is in the dictionary
+    if (models.hasOwnProperty(model)) {
+      return models[model];
+    }
+    return "";
+  }
+
+  export default symbolFromModel;

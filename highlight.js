@@ -1,8 +1,26 @@
-const highlightColor = "#d2f4d3";//"rgb(16, 163, 255)";
-const DaVinciCost = 0.06 / 1000;
-const CurieCost = 0.006 / 1000;
-const BabbageCost = 0.0012 / 1000;
-const AdaCost = 0.0008 / 1000;
+// import symbolFromModel from './sharedfunctions.js'; //TODO:fix this
+var models = {
+  "text-davinci-002": "🅳",
+  "text-curie-001": "🅲",
+  "text-babbage-001": "🅑",
+  "text-ada-001": "🅐",
+  "code-davinci-002": "🆇"
+}
+//the above function symbolFromModel can be rewritten as a dictionary
+function symbolFromModel(model) {
+  // check if the model is in the dictionary
+  if (models.hasOwnProperty(model)) {
+    return models[model];
+  }
+  return "";
+}
+
+
+// const highlightColor = "#d2f4d3";//"rgb(16, 163, 255)";
+const DaVinciCost = 0.02 / 1000;
+const CurieCost = 0.002 / 1000;
+const BabbageCost = 0.0005 / 1000;
+const AdaCost = 0.0004 / 1000;
 
 
 function computeCost(tokens, model) {
@@ -17,18 +35,9 @@ function computeCost(tokens, model) {
     cost = tokens * AdaCost;
   return cost.toFixed(5);
 }
-function symbolFromModel(model) {
-  var symbol = '';
-  if (model == "text-davinci-002")
-    symbol = '🅳';
-  else if (model == "text-curie-001")
-    symbol = '🅲';
-  else if (model == "text-babbage-001")
-    symbol = '🅑';
-  else if (model == "text-ada-001")
-    symbol = '🅐';
-  return symbol
-}
+
+
+
 
 const minipopup = (id, { display = "none", left = 0, top = 0 }) => `
 <div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px">
@@ -37,12 +46,6 @@ const minipopup = (id, { display = "none", left = 0, top = 0 }) => `
 </div>
 
 `;
-
-// const template = (id) => `
-// <template id="highlightTemplate${id}">
-// <span class="highlight" id="asdjfhglk${id}"  style="background-color: ${highlightColor}; display: inline; cursor: pointer"></span>
-// </template>
-// `;
 
 
 const styled = `
@@ -69,8 +72,6 @@ const styled = `
   }
   .show {
     opacity: 0.9;
-    // -webkit-animation: fadeIn 1s;
-    // animation: fadeIn 1s;
     z-index: 9999;
     padding: 20px;
   }
@@ -81,15 +82,6 @@ const styled = `
     font-size: 2px;
   }
 
-  @-webkit-keyframes fadeIn {
-    from {opacity: 0;} 
-    to {opacity: 1;}
-  }
-
-  @keyframes fadeIn {
-    from {opacity: 0;}
-    to {opacity:1 ;}
-  }
   .miniclose{
     color: #fff;
     background-color: #000;
@@ -107,13 +99,13 @@ class CustomMiniPopup extends HTMLElement {
     return JSON.parse(this.getAttribute("markerPosition") || "{}");
   }
 
-  get styleElement() {
-    return this.shadowRoot.querySelector("style");
-  }
+  // get styleElement() {
+  //   return this.shadowRoot.querySelector("style");
+  // }
 
-  get highlightTemplate() {
-    return this.shadowRoot.getElementById("highlightTemplate" + (this.ids - 1));
-  }
+  // get highlightTemplate() {
+  //   return this.shadowRoot.getElementById("highlightTemplate" + (this.ids - 1));
+  // }
 
   static get observedAttributes() {
     return ["markerPosition"];
@@ -126,28 +118,19 @@ class CustomMiniPopup extends HTMLElement {
     this.shadowRoot.appendChild(style); // here append the style to the shadowRoot    
     this.ids = 0;
     this.tokens = 0;
-    //set attribute "default" to false
-    this.default = false;
+    //set attribute "usecornerPopUp" to false
+    this.usecornerPopUp = false;
   }
 
   //   this function update the style in shadow DOM with the new markerPosition
   attributeChangedCallback(name, oldValue, newValue) {
     if (name === "markerPosition") {
-      newValue = JSON.parse(newValue);
-      if (newValue["display"] == "flex") {
-        //if this has attribute lastpop
-        this.shadowRoot.innerHTML += this.lastpop
-        this.shadowRoot.getElementById(this.ids).classList.toggle('show');
-        this.ids++;
+      if (this.markerPosition.left + 150 > window.innerWidth) {
+        var position = this.markerPosition
+        position.left = window.innerWidth - 150
+        this.lastpop = minipopup(this.ids, position);
       }
-      else {
-        if (this.markerPosition.left + 150 > window.innerWidth) {
-          var position = this.markerPosition
-          position.left = window.innerWidth - 150
-          this.lastpop = minipopup(this.ids, position);
-        }
-        else { this.lastpop = minipopup(this.ids, this.markerPosition); }
-      }
+      else { this.lastpop = minipopup(this.ids, this.markerPosition); }
     }
   }
 
@@ -180,7 +163,14 @@ class CustomMiniPopup extends HTMLElement {
 
   // in case one is on the pdf page (or one where we can`t get the position of the selected text),
   // we just use a popup to show the text in a top left corner
+
   defaultpopup() {
+    this.shadowRoot.innerHTML += this.lastpop
+    this.shadowRoot.getElementById(this.ids).classList.toggle('show');
+    this.ids++;
+  }
+
+  cornerpopup() {
     this.shadowRoot.innerHTML += minipopup(this.ids, { display: "flex", left: 0, top: 0 });
     this.shadowRoot.getElementById(this.ids).classList.toggle('show');
     this.ids++;
