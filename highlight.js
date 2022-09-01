@@ -41,7 +41,7 @@ function computeCost(tokens, model) {
 
 const minipopup = (id, { display = "none", left = 0, top = 0 }) => `
 <div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px">
-<div id="${id}prompt" style="display:flex!important;cursor: grab!important"></div>
+<div id="${id}prompt" class="popupprompt"></div>
 <p id="${id}text" style="clear: left!;cursor: text!important"></p>
 </div>
 
@@ -49,6 +49,16 @@ const minipopup = (id, { display = "none", left = 0, top = 0 }) => `
 
 
 const styled = `
+  .popupprompt {
+    display: flex!important;
+    cursor: grab!important;
+    height: 2em;
+    overflow-y: hidden;
+  }
+  .expand {
+    height: auto;
+  }
+
   .popuptext {
     align-items: center;
     background-color: #202123;
@@ -63,10 +73,10 @@ const styled = `
     max-width:500px;
     z-index:-1;
     line-height:1.8;
-    font-size:18px;
+    // font-size:18px;
     margin-right:10px!important;
     min-width: auto;!important;
-    font-family: 'Roboto', sans-serif!important;
+    // font-family: 'Roboto', sans-serif!important;
     resize:both;
     overflow:auto;
   }
@@ -77,9 +87,6 @@ const styled = `
   }
   .hide {
     display: none;
-  }
-  .minimize{
-    font-size: 2px;
   }
 
   .miniclose{
@@ -187,6 +194,11 @@ class CustomMiniPopup extends HTMLElement {
     });
   }
 
+  doubleClick(id_target) {
+    this.shadowRoot.getElementById(id_target).addEventListener("dblclick", () => {
+      this.shadowRoot.getElementById(id_target).classList.toggle('expand');
+    });
+  }
 
   buttonForPopUp() {
     for (let id_target = 1; id_target <= this.ids; id_target++) {
@@ -194,6 +206,7 @@ class CustomMiniPopup extends HTMLElement {
       const id_minimize = "minimize" + id_target;
       this.minimizeButtons(id_target, id_minimize);
       this.closeButtons(id_target, id_close);
+      this.doubleClick(id_target+"prompt");
     };
   }
 

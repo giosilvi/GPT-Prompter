@@ -115,7 +115,7 @@ function mouseDown(e) {
   // this is to avoid the selection of the child text, when the target is the parent
   // if (e.target.id == this.id+'text')
   //   return;
-  e.preventDefault();
+  e.preventDefault(); // prevent the selection of the text below the popup
   const id_target = this.id.replace('prompt', '');
   function wrapper(event) {
     spanMove(event, id_target)
