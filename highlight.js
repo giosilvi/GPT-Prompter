@@ -225,7 +225,7 @@ class CustomMiniPopup extends HTMLElement {
           "prompt": this.shadowRoot.getElementById(id_target + "textarea").innerHTML,
           "model": "text-davinci-002",
           "temperature": 0.1,
-          "max_tokens": 10,
+          "max_tokens": 1000,
           "popupID": id_target,
         }
         chrome.runtime.sendMessage({ text: "launchGPT", prompt: promptDict});
