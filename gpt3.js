@@ -1,17 +1,18 @@
-function sendStream(message, id, string, body_data) {
-  console.log("sendStream");
-  console.log(body_data);
+function sendStream(message, id, string, body_data, idpopup) {
+  // console.log("sendStream");
+  // console.log(string);
   chrome.tabs.sendMessage(id, {
     message: message,
     text: string,
-    body_data: body_data
+    body_data: body_data,
+    id_popup: idpopup
   }); //send the answer to the content script
 }
 
-function checkTabsAndSendStream(message, tabs, string, body_data) {
+function checkTabsAndSendStream(message, tabs, string, body_data, idpopup) {
   // if (tabs.id == -1) { //pdf case
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      sendStream(message, tabs[0].id, string, body_data);
+      sendStream(message, tabs[0].id, string, body_data, idpopup);
     });
   // }
   // else {// html case
@@ -21,10 +22,18 @@ function checkTabsAndSendStream(message, tabs, string, body_data) {
 
 
 async function promptGPT3Prompting(prompt, items, tabs) {
+  console.log("promptGPT3Prompting ");
   var text = prompt["prompt"]
   var model = prompt["model"]
   var temperature = prompt["temperature"]
   var max_tokens = prompt["max_tokens"]
+  // check if prompt contains the key popupID
+  if (typeof prompt["popupID"] !== 'undefined') {
+    var popupID = prompt["popupID"]
+  }
+  else {
+    var popupID = -1
+  }
   //send immediately text to the content script
   console.log(text, model, temperature, max_tokens);
   console.log('Tabs', tabs);
@@ -44,7 +53,7 @@ async function promptGPT3Prompting(prompt, items, tabs) {
   }
   ).then((response) => response.body)
     .then((body) => {
-      checkTabsAndSendStream("GPTprompt", tabs, text, body_data); // send the prompt to the content script, to be added to last mini popup
+      checkTabsAndSendStream("GPTprompt", tabs, text, body_data, popupID); // send the prompt to the content script, to be added to last mini popup
       const reader = body.getReader();
       return pump();
 
@@ -60,14 +69,14 @@ async function promptGPT3Prompting(prompt, items, tabs) {
           var stream = new TextDecoder().decode(value);//.substring(6);
           // console.log(string, typeof string);
           // if tabs.id == -1 then use querySelector to get the tab
-          checkTabsAndSendStream("GPTStream_answer", tabs, stream, str_body_data);
+          checkTabsAndSendStream("GPTStream_answer", tabs, stream, str_body_data, popupID);
           return pump();
         });
       }
     }
     ).catch(err => {
       console.log("error" + err);
-      checkTabsAndSendStream("GPTStream_answer", tabs, "Error:" + err, str_body_data);
+      checkTabsAndSendStream("GPTStream_answer", tabs, "Error:" + err, str_body_data, popupID);
 
     });
 }

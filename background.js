@@ -17,7 +17,7 @@ async function checkGPT(apikey) {
         }
         ).then(result => result.json())
             .then((result) => {
-                console.log('Available models:',result);
+                console.log('Available models:', result);
                 // if result has data, then the API key is valid
                 if (result.data) {
                     chrome.runtime.sendMessage({ message: 'API key is valid' });
@@ -55,9 +55,19 @@ function createContextMenu() {
     chrome.contextMenus.create({
         id: 'GPT-Prompter',
         title: 'GPT-Prompter ',
-        contexts: ["selection"],
-        documentUrlPatterns: ["https://*/*", "http://*/*"]
+        documentUrlPatterns: ["https://*/*", "http://*/*"],
+        //add context with and without selection
+        contexts: ["selection", "page"]
     });
+
+    // create a sub-context menu
+    chrome.contextMenus.create({
+        id: 'On-the-fly',
+        title: 'On-the-fly',
+        parentId: 'GPT-Prompter',
+        contexts: ["selection", "page"]
+    });
+
     // retrieve from storage the list of custom prompts
     chrome.storage.sync.get('customprompt', function (items) {
         // Check that the prompt exists
@@ -105,7 +115,7 @@ chrome.runtime.onInstalled.addListener(function () {
         else { // if the prompt does not exist, create the default one
             items.customprompt = [{ "model": "text-davinci-002", "temperature": 0, "max_tokens": 1024, "prompt": 'Tell me more about "#TEXT#":' }];
         }
-        // save the new prompt list
+        // save the new_prompt_list
         chrome.storage.sync.set({ 'customprompt': items.customprompt });
         // create the context menu
         createContextMenu()
@@ -114,7 +124,7 @@ chrome.runtime.onInstalled.addListener(function () {
 
 // listen for a signal to refresh the context menu
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
-    if (message.text == "new prompt list") {
+    if (message.text == "new_prompt_list") {
         createContextMenu()
     }
     else if (message.text == "checkAPIKey") {
@@ -122,6 +132,20 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
             await checkGPT(message.apiKey);
         }
         )();
+    }
+    else if (message.text == "launchGPT") {
+        // get the tab from the sender
+
+        var tab = sender.tab;
+        console.log('launch GPT from', tab);
+        chrome.storage.sync.get('APIKEY', function (items) {
+            if (typeof items.APIKEY !== 'undefined') {
+                (async () => {
+                    await promptGPT3Prompting(message.prompt, items, tab);
+                }
+                )();
+            }
+        });
     }
     else { console.log(message); }
 });
@@ -135,49 +159,83 @@ chrome.contextMenus.onClicked.addListener((info, tabs) => {
 
     // get the id of the context menu clicked
     // to transfort a string to int do: parseInt(string)
-    var promptNumber = parseInt(info.menuItemId.replace('customprompt-', ''));
-    // retrieve from storage the list of custom prompts
-    chrome.storage.sync.get('customprompt', function (items) {
-        // Check that the prompt exists
-        if (typeof items.customprompt !== 'undefined') {
-            // check tha the prompt number is valid
-            if (promptNumber <= items.customprompt.length) {
-                // get the prompt
-                var prompt = items.customprompt[promptNumber]
-                // get element "prompt" from prompt object
-                var promptText = prompt["prompt"];
-                promptText = promptText.replaceAll('#TEXT#', info.selectionText);
-                // update prompt text in prompt
-                prompt["prompt"] = promptText;
 
-                // replace the selected text in the prompt
-                chrome.storage.sync.get('APIKEY', function (items) {
-                    if (typeof items.APIKEY !== 'undefined') {
-                        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-                            chrome.tabs.sendMessage(tabs[0].id, { message: 'showPopUp' });
-                        });
-                        (async () => {
-                            await promptGPT3Prompting(prompt, items, tabs)
-                        })();
-                    }
-                    else {
-                        chrome.tabs.sendMessage(tabs.id, 'APIKEY not found');
-                        console.log('Error: No API key found.');
-                    }
-                })
+    // if the context menu clicked is a custom prompt
+    if (info.menuItemId.includes('customprompt')) {
 
+        var promptNumber = parseInt(info.menuItemId.replace('customprompt-', ''));
+        // retrieve from storage the list of custom prompts
+        chrome.storage.sync.get('customprompt', function (items) {
+            // Check that the prompt exists
+            if (typeof items.customprompt !== 'undefined') {
+                // check tha the prompt number is valid
+                if (promptNumber <= items.customprompt.length) {
+                    // get the prompt
+                    var prompt = items.customprompt[promptNumber]
+                    // get element "prompt" from prompt object
+                    var promptText = prompt["prompt"];
+                    promptText = promptText.replaceAll('#TEXT#', info.selectionText);
+                    // update prompt text in prompt
+                    prompt["prompt"] = promptText;
+
+                    // replace the selected text in the prompt
+                    chrome.storage.sync.get('APIKEY', function (items) {
+                        if (typeof items.APIKEY !== 'undefined') {
+                            chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+                                chrome.tabs.sendMessage(tabs[0].id, { message: 'showPopUp' });
+                            });
+                            (async () => {
+                                await promptGPT3Prompting(prompt, items, tabs)
+                            })();
+                        }
+                        else {
+                            chrome.tabs.sendMessage(tabs.id, 'APIKEY not found');
+                            console.log('Error: No API key found.');
+                        }
+                    })
+
+                }
+                else {
+                    chrome.tabs.sendMessage(tabs.id, 'Error: invalid prompt number');
+                    console.log('Error: invalid prompt number');
+                }
             }
             else {
-                chrome.tabs.sendMessage(tabs.id, 'Error: invalid prompt number');
-                console.log('Error: invalid prompt number');
+                chrome.tabs.sendMessage(tabs.id, 'Error: no prompt list found');
+                console.log('Error: no custom prompts');
             }
+        });
+    }
+    // if the context menu clicked is the on-the-fly prompt
+    else if (info.menuItemId == 'On-the-fly') {
+        var selectionText = '';
+        if (typeof info.selectionText !== 'undefined') {
+            selectionText = info.selectionText;
         }
-        else {
-            chrome.tabs.sendMessage(tabs.id, 'Error: no prompt list found');
-            console.log('Error: no custom prompts');
-        }
-    });
+
+        // here we want to create a minipop-up to ask the user to insert the prompt
+        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+            chrome.tabs.sendMessage(tabs[0].id, { message: 'showPopUpOnTheFly', text: selectionText, body_data: { "model": "text-davinci-002", "temperature": 0, "max_tokens": 1024 } });
+        });
+        // check if there is a selection
+        // if (info.selectionText) {
+        //     // if there is a selection, use it as the prompt
+        //     var prompt = { "model": "text-davinci-002", "temperature": 0, "max_tokens": 1024, "prompt": info.selectionText };
+        //     chrome.storage.sync.get('APIKEY', function (items) {
+        //         if (typeof items.APIKEY !== 'undefined') {
+        //             (async () => {
+        //                 await promptGPT3Prompting(prompt, items, tabs)
+        //             })();
+        //         }
+        //         else {
+        //             chrome.tabs.sendMessage(tabs.id, 'APIKEY not found');
+        //             console.log('Error: No API key found.');
+        //         }
+        //     })
+        // }
+    }
 }
+
 );
 
 

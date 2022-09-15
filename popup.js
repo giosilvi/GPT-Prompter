@@ -79,7 +79,7 @@ function savePrompt() {
                     // Notify that we saved
                     console.log('Your custom prompt was saved.');
                 })
-                chrome.runtime.sendMessage({ text: "new prompt list" });
+                chrome.runtime.sendMessage({ text: "new_prompt_list" });
             }
         } else {
             // if the prompt does not exist, create a new array with the prompt
@@ -107,7 +107,7 @@ function erasePrompt(index) {
                     // Notify that is erased
                     console.log('Your custom prompt was erased.');
                 })
-                chrome.runtime.sendMessage({ text: "new prompt list" }); // new menu list
+                chrome.runtime.sendMessage({ text: "new_prompt_list" }); // new menu list
             }
         }
     });

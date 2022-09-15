@@ -53,6 +53,14 @@ function getMarkerPosition() {
 // function to alert the message, like gpt-3 response. TODO: make it a popup, not an alert
 chrome.runtime.onMessage.addListener(function (request) {
   //  if attribute message in request exists, it's a gpt-3 response
+  if (request.id_popup == undefined) {
+    var id_popup = -1;
+  }
+  else {
+    var id_popup = parseInt(request.id_popup);
+  }
+
+
   if (request.message == 'showPopUp') {
     customMiniPopup.ids++; // increment the number of popups, and id of the new popup
     // console.log('ID:',customMiniPopup.ids);
@@ -61,45 +69,55 @@ chrome.runtime.onMessage.addListener(function (request) {
       addListenersForDrag();
     }
     else { // in case we can`t get the markerPosition, we use the corner popup, at position 0,0
-       // set to True, so every time we show the popup, it will be at 0,0 (for this page)
+      // set to True, so every time we show the popup, it will be at 0,0 (for this page)
       customMiniPopup.cornerpopup();
       addListenersForDrag();
     }
   }
+  else if (request.message == 'showPopUpOnTheFly') {
+    customMiniPopup.ids++;
+    customMiniPopup.ontheflypopup(request.text)
+    customMiniPopup.updatepopup_onlypromt(request, id_popup, 'textarea');
+    addListenersForDrag();
+  }
   else if (request.message == 'GPTStream_answer') {
     // split over 'data: ' in case there are multiple streams concatenated
     var data = request.text.split('data: ');
-    // console.log('split:' + data.length);
+    
+      // console.log('split:' + data.length);
     for (var m = 1; m < data.length; m++) {// in case of multiple stream in one, loop over them
-
+      // console.log('data len: ',data.length);
       if (data[m].indexOf("[DONE]") == -1) { // if there is not "[DONE]" in the text, it`s a stream
-        // console.log('data:', data[m]);
-        var json = JSON.parse(data[m]);
-        customMiniPopup.updatepopup(json, true);
+          // console.log('data:', data[m]);
+          var json = JSON.parse(data[m]);
+          customMiniPopup.updatepopup(json, id_popup, true);
+        }
+        else {
+          customMiniPopup.updatepopup(request, id_popup, false); // the end of the stream
+        }
       }
-      else {
-        customMiniPopup.updatepopup(request, false); // the end of the stream
+      // in case of error, the split will not produce more than one element
+      if (data.length == 1) {
+        //convert request.text to JSON
+        var json = JSON.parse(request.text);
+        if (json.error) {
+          customMiniPopup.updatepopup(json, id_popup, true);
+          // addListenersForDrag();
+        }
       }
     }
-    // in case of error, the split will not produce more than one element
-    if (data.length == 1) {
-      //convert request.text to JSON
-      var json = JSON.parse(request.text);
-      if (json.error) {
-        customMiniPopup.updatepopup(json, true);
-        // addListenersForDrag();
-      }
-    }
-  }
   else if (request.message == 'GPTprompt') {
-    // for updating the prompt upper part of the popup
-    customMiniPopup.updatepopup_onlypromt(request);
+      // for updating the prompt upper part of the popup
+      // if request.id_popup is undefined, set it to -1
 
-  }
-  else {
-    alert(request)
-  }
-})
+      customMiniPopup.updatepopup_onlypromt(request, id_popup, 'prompt');
+      // addListenersForDrag();
+
+    }
+    else {
+      alert(request)
+    }
+  })
 
 
 

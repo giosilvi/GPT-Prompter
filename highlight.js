@@ -44,7 +44,17 @@ const minipopup = (id, { display = "none", left = 0, top = 0 }) => `
 <div id="${id}prompt" class="popupprompt"></div>
 <p id="${id}text" style="clear: left!;cursor: text!important"></p>
 </div>
+`;
 
+
+const flypopup = (id, { text = "none", left = 0, top = 0 }) => `
+<div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px; width:50%!important">
+<div id="${id}prompt" class="popupprompt" style=" justify-content: flex-end;">
+</div>
+<div contentEditable="true" id="${id}textarea">${text}</div>
+<button type="button", id="${id}run">Run</button>
+<p id="${id}text" style="clear: left!;cursor: text!important"></p>
+</div>
 `;
 
 
@@ -58,7 +68,6 @@ const styled = `
   .expand {
     height: auto;
   }
-
   .popuptext {
     align-items: center;
     background-color: #202123;
@@ -135,9 +144,9 @@ class CustomMiniPopup extends HTMLElement {
       if (this.markerPosition.left + 150 > window.innerWidth) {
         var position = this.markerPosition
         position.left = window.innerWidth - 150
-        this.lastpop = minipopup(this.ids+1, position);
+        this.lastpop = minipopup(this.ids + 1, position);
       }
-      else { this.lastpop = minipopup(this.ids+1, this.markerPosition); }
+      else { this.lastpop = minipopup(this.ids + 1, this.markerPosition); }
     }
   }
 
@@ -180,7 +189,12 @@ class CustomMiniPopup extends HTMLElement {
     this.usecornerPopUp = true;
     this.shadowRoot.innerHTML += minipopup(this.ids, { display: "flex", left: 0, top: 0 });
     this.shadowRoot.getElementById(this.ids).classList.toggle('show');
-    
+  }
+  ontheflypopup(selectionText) {
+    // const fixedId = this.ids;
+    this.shadowRoot.innerHTML += flypopup(this.ids, { text: selectionText, left: 0, top: 0 });
+    this.shadowRoot.getElementById(this.ids).classList.toggle('show');
+    // this.runClick(fixedId);
   }
 
   minimizeButtons(id_target, id_button) {
@@ -200,18 +214,60 @@ class CustomMiniPopup extends HTMLElement {
     });
   }
 
-  buttonForPopUp() {
+  runClick(id_target) {
+    // if id_target + "run" has no listener, add one
+    if (!this.shadowRoot.getElementById(id_target + "run").hasEventListener) {
+
+      this.shadowRoot.getElementById(id_target + "run").addEventListener("click", () => {
+        this.shadowRoot.getElementById(id_target + "text").innerHTML = "";
+        console.log('Prompt on-the-fly launched from',id_target)
+        var promptDict = {
+          "prompt": this.shadowRoot.getElementById(id_target + "textarea").innerHTML,
+          "model": "text-davinci-002",
+          "temperature": 0.1,
+          "max_tokens": 10,
+          "popupID": id_target,
+        }
+        chrome.runtime.sendMessage({ text: "launchGPT", prompt: promptDict});
+        
+        // erase the text in the popup
+        
+      });
+    }
+  
+  }
+
+
+  buttonForPopUp(do_also_runs) {
     for (let id_target = 1; id_target <= this.ids; id_target++) {
+      // const id_target =this.ids
       const id_close = "mclose" + id_target;
       const id_minimize = "minimize" + id_target;
       this.minimizeButtons(id_target, id_minimize);
       this.closeButtons(id_target, id_close);
-      this.doubleClick(id_target+"prompt");
+      this.doubleClick(id_target + "prompt");
+      //if the element with id id_target + "run" exists
+
+      //if the element with id id_target + "run" exists
+      
+
+      if (do_also_runs && this.shadowRoot.getElementById(id_target + "run")) {
+        this.runClick(id_target);
+      }
     };
   }
 
-  updatepopup_onlypromt(request) {
-    const id2 = this.ids; // which popup is the last one
+  updatepopup_onlypromt(request, target_id, upper_target) {
+    if (target_id < 0) {
+      var id2 = this.ids;
+      var do_also_run_button = true;
+    }
+    else {
+      var id2 = target_id;
+      var do_also_run_button = false;
+    }
+    console.log(id2)
+    // const id2 = this.ids; // which popup is the last one
     var id_close = "mclose" + id2
     var id_minimize = "minimize" + id2
     //add the message to the popup in the element with id2+'prompt'
@@ -221,16 +277,29 @@ class CustomMiniPopup extends HTMLElement {
     var minimcloseButtons = "<div style='width: 15%;min-width: 80px;text-align: right;'>\
     <button class='miniclose'style='margin-left:5px; font-size:15px' id='"+ id_minimize + "'>&#128469;&#xFE0E;</button>\
     <button class='miniclose' style='margin-left:5px; font-size:15px' id='" + id_close + "'>&#128473;&#xFE0E;</button> </div>";
+    if (upper_target == "prompt") {
+      var html_injection = "<div style='width: 85%'>" + symbol + "<i> " + request.text + "</i></div>";
+    }
+    else if (upper_target == "textarea") {
+      var html_injection = ' Fast prompt on-the-fly';
+    }
 
-    this.shadowRoot.getElementById(id2 + 'prompt').innerHTML = "<div style='width: 85%'>" + symbol + "<i> " + request.text + "</i></div>";
+    this.shadowRoot.getElementById(id2 + "prompt").innerHTML = html_injection
+
     this.shadowRoot.getElementById(id2 + "prompt").innerHTML += minimcloseButtons;
-    this.buttonForPopUp(); // connect the buttons of the popup
+    console.log(id2,do_also_run_button)
+    this.buttonForPopUp(do_also_run_button); // connect the buttons of the popup
+    
   }
 
-  updatepopup(message, stream) {
-
-    const id2 = this.ids;
-
+  updatepopup(message, target_id, stream) {
+    if (target_id < 0) {
+      var id2 = this.ids;
+    }
+    else {
+      var id2 = target_id;
+    }
+    // console.log("updatepopup", id2, target_id, this.ids)
     // TODO: Update the two buttons to two icons, one for minimize and one for close
 
     //if stream is true
