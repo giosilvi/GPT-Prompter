@@ -49,7 +49,7 @@ const minipopup = (id, { display = "none", left = 0, top = 0 }) => `
       <button class='miniclose' style='margin-left:5px; font-size:15px' id="mclose${id}">&#128473;&#xFE0E;</button>
     </div>
   </div>
-  <p id="${id}text" style="clear: left!;cursor: text!important">
+  <p id="${id}text" style="clear: left!;cursor: text!important; white-space: pre-wrap;">
   </p>
 </div>
 `;
