@@ -41,19 +41,35 @@ function computeCost(tokens, model) {
 
 const minipopup = (id, { display = "none", left = 0, top = 0 }) => `
 <div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px">
-<div id="${id}prompt" class="popupprompt"></div>
-<p id="${id}text" style="clear: left!;cursor: text!important"></p>
+  <div id="${id}prompt" class="popupprompt">
+    <div id="${id}header" style='width: 85%'>
+    </div>
+    <div style='width: 15%;min-width: 80px;'>
+      <button class='miniclose'style='margin-left:5px; font-size:15px' id="minimize${id}">&#128469;&#xFE0E;</button>
+      <button class='miniclose' style='margin-left:5px; font-size:15px' id="mclose${id}">&#128473;&#xFE0E;</button>
+    </div>
+  </div>
+  <p id="${id}text" style="clear: left!;cursor: text!important">
+  </p>
 </div>
 `;
 
 
 const flypopup = (id, { text = "none", left = 0, top = 0 }) => `
 <div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px; width:50%!important">
-<div id="${id}prompt" class="popupprompt" style=" justify-content: flex-end;">
-</div>
-<div contentEditable="true" id="${id}textarea">${text}</div>
-<button type="button", id="${id}run">Run</button>
-<p id="${id}text" style="clear: left!;cursor: text!important"></p>
+  <div id="${id}prompt" class="popupprompt">
+    <div id="${id}header" style='width: 85%'>
+    Fast prompt on-the-fly
+    </div>
+    <div style='width: 15%;min-width: 80px;'>
+      <button class='miniclose'style='margin-left:5px; font-size:15px' id="minimize${id}">&#128469;&#xFE0E;</button>
+      <button class='miniclose' style='margin-left:5px; font-size:15px' id="mclose${id}">&#128473;&#xFE0E;</button>
+    </div>
+  </div>
+  <div contentEditable="true" id="${id}textarea">${text}</div>
+  <button type="button", id="${id}run">Run</button>
+  <p id="${id}text" style="clear: left!;cursor: text!important">
+  </p>
 </div>
 `;
 
@@ -85,7 +101,7 @@ const styled = `
     // font-size:18px;
     margin-right:10px!important;
     min-width: auto;!important;
-    // font-family: 'Roboto', sans-serif!important;
+    font-family: 'Roboto', sans-serif!important;
     resize:both;
     overflow:auto;
   }
@@ -183,17 +199,22 @@ class CustomMiniPopup extends HTMLElement {
   defaultpopup() {
     this.shadowRoot.innerHTML += this.lastpop
     this.shadowRoot.getElementById(this.ids).classList.toggle('show');
+    this.buttonForPopUp();
   }
 
   cornerpopup() {
     this.usecornerPopUp = true;
     this.shadowRoot.innerHTML += minipopup(this.ids, { display: "flex", left: 0, top: 0 });
     this.shadowRoot.getElementById(this.ids).classList.toggle('show');
+    this.buttonForPopUp();
   }
   ontheflypopup(selectionText) {
     // const fixedId = this.ids;
     this.shadowRoot.innerHTML += flypopup(this.ids, { text: selectionText, left: 0, top: 0 });
     this.shadowRoot.getElementById(this.ids).classList.toggle('show');
+    // .focus() on the text area
+    this.buttonForPopUp();
+    this.shadowRoot.getElementById(this.ids + "textarea").focus();
     // this.runClick(fixedId);
   }
 
@@ -220,7 +241,7 @@ class CustomMiniPopup extends HTMLElement {
 
       this.shadowRoot.getElementById(id_target + "run").addEventListener("click", () => {
         this.shadowRoot.getElementById(id_target + "text").innerHTML = "";
-        console.log('Prompt on-the-fly launched from',id_target)
+        console.log('Prompt on-the-fly launched from', id_target)
         var promptDict = {
           "prompt": this.shadowRoot.getElementById(id_target + "textarea").innerHTML,
           "model": "text-davinci-002",
@@ -228,17 +249,15 @@ class CustomMiniPopup extends HTMLElement {
           "max_tokens": 1000,
           "popupID": id_target,
         }
-        chrome.runtime.sendMessage({ text: "launchGPT", prompt: promptDict});
-        
-        // erase the text in the popup
-        
+        chrome.runtime.sendMessage({ text: "launchGPT", prompt: promptDict });
+
       });
     }
-  
+
   }
 
 
-  buttonForPopUp(do_also_runs) {
+  buttonForPopUp() {
     for (let id_target = 1; id_target <= this.ids; id_target++) {
       // const id_target =this.ids
       const id_close = "mclose" + id_target;
@@ -246,62 +265,33 @@ class CustomMiniPopup extends HTMLElement {
       this.minimizeButtons(id_target, id_minimize);
       this.closeButtons(id_target, id_close);
       this.doubleClick(id_target + "prompt");
-      //if the element with id id_target + "run" exists
-
-      //if the element with id id_target + "run" exists
-      
-
-      if (do_also_runs && this.shadowRoot.getElementById(id_target + "run")) {
+      if (this.shadowRoot.getElementById(id_target + "run")) {
         this.runClick(id_target);
       }
     };
   }
 
-  updatepopup_onlypromt(request, target_id, upper_target) {
+  updatepopup_onlypromt(request, target_id) {
     if (target_id < 0) {
       var id2 = this.ids;
-      var do_also_run_button = true;
     }
     else {
       var id2 = target_id;
-      var do_also_run_button = false;
     }
-    console.log(id2)
     // const id2 = this.ids; // which popup is the last one
-    var id_close = "mclose" + id2
-    var id_minimize = "minimize" + id2
-    //add the message to the popup in the element with id2+'prompt'
-    // console.log(request.body_data)
     var symbol = symbolFromModel(request.body_data.model)
-
-    var minimcloseButtons = "<div style='width: 15%;min-width: 80px;text-align: right;'>\
-    <button class='miniclose'style='margin-left:5px; font-size:15px' id='"+ id_minimize + "'>&#128469;&#xFE0E;</button>\
-    <button class='miniclose' style='margin-left:5px; font-size:15px' id='" + id_close + "'>&#128473;&#xFE0E;</button> </div>";
-    if (upper_target == "prompt") {
-      var html_injection = "<div style='width: 85%'>" + symbol + "<i> " + request.text + "</i></div>";
-    }
-    else if (upper_target == "textarea") {
-      var html_injection = ' Fast prompt on-the-fly';
-    }
-
-    this.shadowRoot.getElementById(id2 + "prompt").innerHTML = html_injection
-
-    this.shadowRoot.getElementById(id2 + "prompt").innerHTML += minimcloseButtons;
-    console.log(id2,do_also_run_button)
-    this.buttonForPopUp(do_also_run_button); // connect the buttons of the popup
-    
+    var html_injection =  symbol + "<i> " + request.text + "</i>";
+    this.shadowRoot.getElementById(id2 + "header").innerHTML = html_injection
   }
+
 
   updatepopup(message, target_id, stream) {
     if (target_id < 0) {
-      var id2 = this.ids;
+      var id2 = this.ids; // get the last id
     }
     else {
       var id2 = target_id;
     }
-    // console.log("updatepopup", id2, target_id, this.ids)
-    // TODO: Update the two buttons to two icons, one for minimize and one for close
-
     //if stream is true
     if (stream) {
       // if choiches is a key in message, it means usual stream

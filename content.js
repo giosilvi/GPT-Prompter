@@ -60,24 +60,21 @@ chrome.runtime.onMessage.addListener(function (request) {
     var id_popup = parseInt(request.id_popup);
   }
 
-
   if (request.message == 'showPopUp') {
     customMiniPopup.ids++; // increment the number of popups, and id of the new popup
     // console.log('ID:',customMiniPopup.ids);
     if (customMiniPopup.hasAttribute("markerPosition") && customMiniPopup.usecornerPopUp == false) {
       customMiniPopup.defaultpopup(); // show the popup
-      addListenersForDrag();
     }
     else { // in case we can`t get the markerPosition, we use the corner popup, at position 0,0
       // set to True, so every time we show the popup, it will be at 0,0 (for this page)
       customMiniPopup.cornerpopup();
-      addListenersForDrag();
     }
+    addListenersForDrag();
   }
   else if (request.message == 'showPopUpOnTheFly') {
     customMiniPopup.ids++;
     customMiniPopup.ontheflypopup(request.text)
-    customMiniPopup.updatepopup_onlypromt(request, id_popup, 'textarea');
     addListenersForDrag();
   }
   else if (request.message == 'GPTStream_answer') {
@@ -110,7 +107,7 @@ chrome.runtime.onMessage.addListener(function (request) {
       // for updating the prompt upper part of the popup
       // if request.id_popup is undefined, set it to -1
 
-      customMiniPopup.updatepopup_onlypromt(request, id_popup, 'prompt');
+      customMiniPopup.updatepopup_onlypromt(request, id_popup);
       // addListenersForDrag();
 
     }

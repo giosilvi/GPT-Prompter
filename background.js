@@ -63,7 +63,7 @@ function createContextMenu() {
     // create a sub-context menu
     chrome.contextMenus.create({
         id: 'On-the-fly',
-        title: 'On-the-fly',
+        title: 'Prompt On-the-fly',
         parentId: 'GPT-Prompter',
         contexts: ["selection", "page"]
     });

@@ -21,7 +21,7 @@
             "js": [
                 "node_modules/@webcomponents/custom-elements/custom-elements.min.js",
                 "content.js",
-                "highlight.js"
+                "popup_world.js"
             ]
         }
     ],
