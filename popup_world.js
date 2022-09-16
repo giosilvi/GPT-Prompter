@@ -42,39 +42,43 @@ function computeCost(tokens, model) {
 const minipopup = (id, { display = "none", left = 0, top = 0 }) => `
 <div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px">
   <div id="${id}prompt" class="popupprompt">
-    <div id="${id}header" style='width: 85%'>
+    <div id="${id}header" style='width: 90%'>
     </div>
-    <div style='width: 15%;min-width: 80px;'>
-      <button class='miniclose'style='margin-left:5px; font-size:15px' id="minimize${id}">&#128469;&#xFE0E;</button>
-      <button class='miniclose' style='margin-left:5px; font-size:15px' id="mclose${id}">&#128473;&#xFE0E;</button>
+    <div style='min-width: 80px; width:10%; justify-content: flex-end;'>
+      <button class='miniclose' id="minimize${id}">&#128469;&#xFE0E;</button>
+      <button class='miniclose' id="mclose${id}">&#128473;&#xFE0E;</button>
     </div>
   </div>
-  <p id="${id}text" style="clear: left!;cursor: text!important; white-space: pre-wrap;">
-  </p>
+  <p id="${id}text" class='popupanswer'></p>
 </div>
 `;
 
 
 const flypopup = (id, { text = "none", left = 0, top = 0 }) => `
-<div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px; width:50%!important">
+<div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px; width: 400px">
   <div id="${id}prompt" class="popupprompt">
-    <div id="${id}header" style='width: 85%'>
+    <div id="${id}header" style='width: 90%'>
     Fast prompt on-the-fly
     </div>
-    <div style='width: 15%;min-width: 80px;'>
-      <button class='miniclose'style='margin-left:5px; font-size:15px' id="minimize${id}">&#128469;&#xFE0E;</button>
-      <button class='miniclose' style='margin-left:5px; font-size:15px' id="mclose${id}">&#128473;&#xFE0E;</button>
+    <div style='min-width: 80px; width:10%; justify-content: flex-end;'>
+      <button class='miniclose' id="minimize${id}">&#128469;&#xFE0E;</button>
+      <button class='miniclose' id="mclose${id}">&#128473;&#xFE0E;</button>
     </div>
   </div>
   <div contentEditable="true" id="${id}textarea">${text}</div>
-  <button type="button", id="${id}run">Run</button>
-  <p id="${id}text" style="clear: left!;cursor: text!important">
-  </p>
+  <button type="button" id="${id}run" style="background-color:#10a37f; color:white">Submit</button>
+  <p id="${id}text" class='popupanswer'></p>
 </div>
 `;
 
 
 const styled = `
+
+  .popupanswer {
+    clear: left;
+    cursor: text;
+    white-space: pre-wrap;
+  }
   .popupprompt {
     display: flex!important;
     cursor: grab!important;
@@ -95,12 +99,12 @@ const styled = `
     opacity:0;
     position:fixed;
     width:auto;
-    max-width:500px;
+    min-width:200px;
+    max-width:600px;
     z-index:-1;
     line-height:1.8;
     // font-size:18px;
     margin-right:10px!important;
-    min-width: auto;!important;
     font-family: 'Roboto', sans-serif!important;
     resize:both;
     overflow:auto;
@@ -118,6 +122,8 @@ const styled = `
     color: #fff;
     background-color: #000;
     cursor: pointer;
+    margin-left:5px; 
+    font-size:15px;
   }
 `;
 
@@ -152,6 +158,7 @@ class CustomMiniPopup extends HTMLElement {
     this.tokens = 0;
     //set attribute "usecornerPopUp" to false
     this.usecornerPopUp = false;
+    this.clearnewlines = true;
   }
 
   //   this function update the style in shadow DOM with the new markerPosition
@@ -280,7 +287,7 @@ class CustomMiniPopup extends HTMLElement {
     }
     // const id2 = this.ids; // which popup is the last one
     var symbol = symbolFromModel(request.body_data.model)
-    var html_injection =  symbol + "<i> " + request.text + "</i>";
+    var html_injection = symbol + "<i> " + request.text + "</i>";
     this.shadowRoot.getElementById(id2 + "header").innerHTML = html_injection
   }
 
@@ -295,15 +302,24 @@ class CustomMiniPopup extends HTMLElement {
     //if stream is true
     if (stream) {
       // if choiches is a key in message, it means usual stream
+
       if (message.choices) {
         var text = message.choices[0].text
-        this.shadowRoot.getElementById(id2 + "text").innerHTML += text;
+        // if self.tokens is the first or second and text is a new line character, we don't add it
+        if (this.clearnewlines && text == "\n") {
+          console.log('new line \\n skipped')
+        }
+        else {
+          this.clearnewlines = false;
+          this.shadowRoot.getElementById(id2 + "text").innerHTML += text;
+        }
       }
       // if message has a key "error"
       else if (message.error) {
         var text = message.error.message
         var type = message.error.type
         this.shadowRoot.getElementById(id2 + "text").innerHTML += type + "<br>" + text;
+        this.tokens = 0;
       }
       // each message should be 1 token
       this.tokens++;
@@ -319,6 +335,7 @@ class CustomMiniPopup extends HTMLElement {
       var body_data = JSON.parse(message.body_data)
       var model = body_data.model
       var cost = computeCost(this.tokens, model)
+      this.clearnewlines = true;
       this.tokens = 0;
       // save the result.choices[0].text in the storage 
       chrome.storage.local.get('history', function (items) {
