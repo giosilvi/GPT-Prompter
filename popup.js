@@ -202,8 +202,10 @@ document.addEventListener('DOMContentLoaded', function () {
         var customprompt = document.getElementById('promptinput').value;
 
         document.getElementById('promptinput').value = 'Prompt created! Available in right-click menu.';
+        document.getElementById("promptinput").style.color = "#10a37f"; //green color for the prompt created
         setTimeout(function () {
             document.getElementById('promptinput').value = customprompt
+            document.getElementById("promptinput").style.color = "#495057"  //exadecimal standard color
         }, 2000);
 
     }
