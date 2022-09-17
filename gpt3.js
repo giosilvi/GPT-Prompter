@@ -10,14 +10,14 @@ function sendStream(message, id, string, body_data, idpopup) {
 }
 
 function checkTabsAndSendStream(message, tabs, string, body_data, idpopup) {
-  // if (tabs.id == -1) { //pdf case
+  if (tabs.id == -1) { //pdf case
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       sendStream(message, tabs[0].id, string, body_data, idpopup);
     });
-  // }
-  // else {// html case
-  //   sendStream(message, tabs.id, string, body_data);
-  // }
+  }
+  else {// html case
+    sendStream(message, tabs.id, string, body_data, idpopup);
+  }
 }
 
 
@@ -27,13 +27,8 @@ async function promptGPT3Prompting(prompt, items, tabs) {
   var model = prompt["model"]
   var temperature = prompt["temperature"]
   var max_tokens = prompt["max_tokens"]
-  // check if prompt contains the key popupID
-  if (typeof prompt["popupID"] !== 'undefined') {
-    var popupID = prompt["popupID"]
-  }
-  else {
-    var popupID = -1
-  }
+  var popupID = prompt["popupID"] // may be undefined
+
   //send immediately text to the content script
   console.log(text, model, temperature, max_tokens);
   console.log('Tabs', tabs);

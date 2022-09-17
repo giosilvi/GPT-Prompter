@@ -56,24 +56,21 @@ function createContextMenu() {
         id: 'GPT-Prompter',
         title: 'GPT-Prompter ',
         documentUrlPatterns: ["https://*/*", "http://*/*"],
-        //add context with and without selection
-        contexts: ["selection", "page"]
+        contexts: ["selection", "page","frame"]
     });
 
     // create a sub-context menu
     chrome.contextMenus.create({
         id: 'On-the-fly',
-        title: 'Prompt On-the-fly',
+        title: '★ (NEW!) Prompt On-the-fly',
         parentId: 'GPT-Prompter',
-        contexts: ["selection", "page"]
+        contexts: ["selection", "page","frame"]
     });
 
     // retrieve from storage the list of custom prompts
     chrome.storage.sync.get('customprompt', function (items) {
         // Check that the prompt exists
         if (typeof items.customprompt !== 'undefined') {
-            // get the model from customprompt["model"]
-
             // add a context menu for each custom prompt
             for (var i = 0; i < items.customprompt.length; i++) {
                 var symbol = symbolFromModel(items.customprompt[i]["model"]);

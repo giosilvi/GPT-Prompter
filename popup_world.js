@@ -39,10 +39,10 @@ function computeCost(tokens, model) {
 
 
 
-const minipopup = (id, { display = "none", left = 0, top = 0 }) => `
+const minipopup = (id, {left = 0, top = 0 }) => `
 <div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px">
   <div id="${id}prompt" class="popupprompt">
-    <div id="${id}header" style='width: 90%'>
+    <div id="${id}header" class="grabbable" style='width: 90%;'>
     </div>
     <div style='min-width: 80px; width:10%; justify-content: flex-end;'>
       <button class='miniclose' id="minimize${id}">&#128469;&#xFE0E;</button>
@@ -55,25 +55,47 @@ const minipopup = (id, { display = "none", left = 0, top = 0 }) => `
 
 
 const flypopup = (id, { text = "none", left = 0, top = 0 }) => `
-<div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px; width: 400px">
+<div class="popuptext onylonthefly" id="${id}" style="left: ${left}px; top:${top}px">
   <div id="${id}prompt" class="popupprompt">
-    <div id="${id}header" style='width: 90%'>
-    Fast prompt on-the-fly
+    <div id="${id}header" class="grabbable" style='width: 90%;'>
+    <b>Prompt on-the-fly</b>: type below and submit to GPT
     </div>
     <div style='min-width: 80px; width:10%; justify-content: flex-end;'>
       <button class='miniclose' id="minimize${id}">&#128469;&#xFE0E;</button>
       <button class='miniclose' id="mclose${id}">&#128473;&#xFE0E;</button>
     </div>
   </div>
-  <div contentEditable="true" id="${id}textarea">${text}</div>
-  <button type="button" id="${id}run" style="background-color:#10a37f; color:white">Submit</button>
+  <div contentEditable="true" id="${id}textarea" style="border: 1px solid #ffffff;">${text}</div>
+  <button type="button" id="${id}submit" class="submitbutton">Submit</button>
   <p id="${id}text" class='popupanswer'></p>
 </div>
 `;
 
 
 const styled = `
+  .grabbable {
+    cursor: move; /* fallback if grab cursor is unsupported */
+    cursor: grab;
+    cursor: -moz-grab;
+    cursor: -webkit-grab;
+  }
 
+  /* (Optional) Apply a "closed-hand" cursor during drag operation. */
+  .grabbable:active {
+    cursor: grabbing;
+    cursor: -moz-grabbing;
+    cursor: -webkit-grabbing;
+  }
+  .submitbutton {
+    background-color: #10a37f;
+    color: white;
+    border: white;
+    border-radius: 5px;
+    font-size: 18px;
+  }
+  .onylonthefly{
+    border: 3px solid rgb(16, 163, 127);
+  }
   .popupanswer {
     clear: left;
     cursor: text;
@@ -81,7 +103,6 @@ const styled = `
   }
   .popupprompt {
     display: flex!important;
-    cursor: grab!important;
     height: 2em;
     overflow-y: hidden;
   }
@@ -92,7 +113,6 @@ const styled = `
     align-items: center;
     background-color: #202123;
     border-radius: 20px;
-    border: none;
     color: #fff;
     display: block;
     justify-content:center;
@@ -124,29 +144,22 @@ const styled = `
     cursor: pointer;
     margin-left:5px; 
     font-size:15px;
+    border-radius: 8px;
   }
 `;
 
-class CustomMiniPopup extends HTMLElement {
+class popUpClass extends HTMLElement {
   constructor() {
     super();
     this.render();
   }
 
-  get markerPosition() {
-    return JSON.parse(this.getAttribute("markerPosition") || "{}");
+  get mousePosition() {
+    return JSON.parse(this.getAttribute("mousePosition") || "{}");
   }
 
-  // get styleElement() {
-  //   return this.shadowRoot.querySelector("style");
-  // }
-
-  // get highlightTemplate() {
-  //   return this.shadowRoot.getElementById("highlightTemplate" + (this.ids - 1));
-  // }
-
   static get observedAttributes() {
-    return ["markerPosition"];
+    return ["mousePosition"];
   }
 
   render() {
@@ -161,68 +174,27 @@ class CustomMiniPopup extends HTMLElement {
     this.clearnewlines = true;
   }
 
-  //   this function update the style in shadow DOM with the new markerPosition
+  //   this function update the style in shadow DOM with the new mousePosition
   attributeChangedCallback(name, oldValue, newValue) {
-    if (name === "markerPosition") {
-      if (this.markerPosition.left + 150 > window.innerWidth) {
-        var position = this.markerPosition
+    if (name === "mousePosition") {
+      if (this.mousePosition.left + 150 > window.innerWidth) {
+        var position = this.mousePosition
         position.left = window.innerWidth - 150
-        this.lastpop = minipopup(this.ids + 1, position);
+        this.lastpop = minipopup(this.ids, position);
       }
-      else { this.lastpop = minipopup(this.ids + 1, this.markerPosition); }
+      else { this.lastpop = minipopup(this.ids, this.mousePosition); }
     }
   }
-
-
-
-  // // this function highlight the selected text
-  // highlightSelection() {
-  //   var userSelection = window.getSelection();
-  //   for (let i = 0; i < userSelection.rangeCount; i++) {
-  //     this.highlightRange(userSelection.getRangeAt(i));
-  //   }
-  //   window.getSelection().empty();
-  //   //add event listerer to element "buttontest" to send an alert when the user click on it
-
-  //   //convert this.ids-1 to string and use it as id of the element
-  //   const id = this.ids - 1;
-  //   document.getElementById('asdjfhglk' + id).addEventListener("click", () => {
-  //     this.shadowRoot.getElementById(id).classList.toggle('show');
-  //   });
-
-  // }
-
-  // highlightRange(range) {
-  //   this.shadowRoot.innerHTML += template(this.ids - 1);
-  //   const clone =
-  //     this.highlightTemplate.cloneNode(true).content.firstElementChild;
-  //   clone.appendChild(range.extractContents()); // extract the selected text and append it to the clone
-  //   range.insertNode(clone);
-  // }
-
-  // in case one is on the pdf page (or one where we can`t get the position of the selected text),
-  // we just use a popup to show the text in a top left corner
-
   defaultpopup() {
     this.shadowRoot.innerHTML += this.lastpop
     this.shadowRoot.getElementById(this.ids).classList.toggle('show');
     this.buttonForPopUp();
   }
-
-  cornerpopup() {
-    this.usecornerPopUp = true;
-    this.shadowRoot.innerHTML += minipopup(this.ids, { display: "flex", left: 0, top: 0 });
-    this.shadowRoot.getElementById(this.ids).classList.toggle('show');
-    this.buttonForPopUp();
-  }
   ontheflypopup(selectionText) {
-    // const fixedId = this.ids;
-    this.shadowRoot.innerHTML += flypopup(this.ids, { text: selectionText, left: 0, top: 0 });
+    this.shadowRoot.innerHTML += flypopup(this.ids, { text: selectionText, left: this.mousePosition.left, top: this.mousePosition.top });
     this.shadowRoot.getElementById(this.ids).classList.toggle('show');
-    // .focus() on the text area
     this.buttonForPopUp();
     this.shadowRoot.getElementById(this.ids + "textarea").focus();
-    // this.runClick(fixedId);
   }
 
   minimizeButtons(id_target, id_button) {
@@ -243,10 +215,8 @@ class CustomMiniPopup extends HTMLElement {
   }
 
   runClick(id_target) {
-    // if id_target + "run" has no listener, add one
-    if (!this.shadowRoot.getElementById(id_target + "run").hasEventListener) {
-
-      this.shadowRoot.getElementById(id_target + "run").addEventListener("click", () => {
+    // if id_target + "submit" has no listener, add one
+      this.shadowRoot.getElementById(id_target + "submit").addEventListener("click", () => {
         this.shadowRoot.getElementById(id_target + "text").innerHTML = "";
         console.log('Prompt on-the-fly launched from', id_target)
         var promptDict = {
@@ -259,7 +229,14 @@ class CustomMiniPopup extends HTMLElement {
         chrome.runtime.sendMessage({ text: "launchGPT", prompt: promptDict });
 
       });
-    }
+      // make the same listener, but for the ctrl+enter key combination
+      this.shadowRoot.getElementById(id_target + "textarea").addEventListener("keydown", (e) => {
+        if (e.ctrlKey && e.key === 'Enter') {
+          this.shadowRoot.getElementById(id_target + "submit").click();
+        }
+      }
+      );
+    
 
   }
 
@@ -272,33 +249,21 @@ class CustomMiniPopup extends HTMLElement {
       this.minimizeButtons(id_target, id_minimize);
       this.closeButtons(id_target, id_close);
       this.doubleClick(id_target + "prompt");
-      if (this.shadowRoot.getElementById(id_target + "run")) {
+      if (this.shadowRoot.getElementById(id_target + "submit")) {
         this.runClick(id_target);
       }
     };
   }
 
-  updatepopup_onlypromt(request, target_id) {
-    if (target_id < 0) {
-      var id2 = this.ids;
-    }
-    else {
-      var id2 = target_id;
-    }
+  updatePopupHeader(request, target_id) {
     // const id2 = this.ids; // which popup is the last one
     var symbol = symbolFromModel(request.body_data.model)
     var html_injection = symbol + "<i> " + request.text + "</i>";
-    this.shadowRoot.getElementById(id2 + "header").innerHTML = html_injection
+    this.shadowRoot.getElementById(target_id + "header").innerHTML = html_injection
   }
 
 
   updatepopup(message, target_id, stream) {
-    if (target_id < 0) {
-      var id2 = this.ids; // get the last id
-    }
-    else {
-      var id2 = target_id;
-    }
     //if stream is true
     if (stream) {
       // if choiches is a key in message, it means usual stream
@@ -311,14 +276,14 @@ class CustomMiniPopup extends HTMLElement {
         }
         else {
           this.clearnewlines = false;
-          this.shadowRoot.getElementById(id2 + "text").innerHTML += text;
+          this.shadowRoot.getElementById(target_id + "text").innerHTML += text;
         }
       }
       // if message has a key "error"
       else if (message.error) {
         var text = message.error.message
         var type = message.error.type
-        this.shadowRoot.getElementById(id2 + "text").innerHTML += type + "<br>" + text;
+        this.shadowRoot.getElementById(target_id + "text").innerHTML += type + "<br>" + text;
         this.tokens = 0;
       }
       // each message should be 1 token
@@ -326,9 +291,7 @@ class CustomMiniPopup extends HTMLElement {
 
     }
     else {
-      var complete_answer = this.shadowRoot.getElementById(id2 + "text").innerHTML
-      // this.shadowRoot.getElementById(id2).innerHTML += 
-      //loop over number of ids
+      var complete_answer = this.shadowRoot.getElementById(target_id + "text").innerHTML
 
       //save prompt to local storage 
 
@@ -352,6 +315,6 @@ class CustomMiniPopup extends HTMLElement {
   }
 }
 
-window.customElements.define("mini-popup", CustomMiniPopup);
+window.customElements.define("mini-popup", popUpClass);
 
 
