@@ -58,7 +58,7 @@ const flypopup = (id, { text = "none", left = 0, top = 0 }) => `
 <div class="popuptext onylonthefly" id="${id}" style="left: ${left}px; top:${top}px">
   <div id="${id}prompt" class="popupprompt">
     <div id="${id}header" class="grabbable" style='width: 90%;'>
-    <b>Prompt on-the-fly</b>: type below and submit to GPT
+    <b>Prompt on-the-fly</b>:  (Ctrl+Enter to submit to GPT)
     </div>
     <div style='min-width: 80px; width:10%; justify-content: flex-end;'>
       <button class='miniclose' id="minimize${id}">&#128469;&#xFE0E;</button>
@@ -66,7 +66,7 @@ const flypopup = (id, { text = "none", left = 0, top = 0 }) => `
     </div>
   </div>
   <div contentEditable="true" id="${id}textarea" style="border: 1px solid #ffffff;">${text}</div>
-  <button type="button" id="${id}submit" class="submitbutton">Submit</button>
+  <button type="button" id="${id}submit" class="submitbutton"><b>Submit</b></button>
   <p id="${id}text" class='popupanswer'></p>
 </div>
 `;
@@ -91,10 +91,9 @@ const styled = `
     color: white;
     border: white;
     border-radius: 5px;
-    font-size: 18px;
   }
   .onylonthefly{
-    border: 3px solid rgb(16, 163, 127);
+    border: 2px solid rgb(16, 163, 127);
   }
   .popupanswer {
     clear: left;
