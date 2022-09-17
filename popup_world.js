@@ -136,6 +136,12 @@ const styled = `
   }
   .hide {
     display: none;
+    height: auto;
+  }
+  .resetresize {
+    resize: none!important;
+    height: auto!important;
+    width: auto!important;
   }
 
   .miniclose{
@@ -169,9 +175,8 @@ class popUpClass extends HTMLElement {
     this.shadowRoot.appendChild(style); // here append the style to the shadowRoot    
     this.ids = 0;
     this.tokens = 0;
-    //set attribute "usecornerPopUp" to false
-    this.usecornerPopUp = false;
     this.clearnewlines = true;
+    this.listOfActivePopups = [];
   }
 
   //   this function update the style in shadow DOM with the new mousePosition
@@ -200,11 +205,21 @@ class popUpClass extends HTMLElement {
   minimizeButtons(id_target, id_button) {
     this.shadowRoot.getElementById(id_button).addEventListener("click", () => {
       this.shadowRoot.getElementById(id_target + "text").classList.toggle('hide');
+      this.shadowRoot.getElementById(id_target).classList.toggle('resetresize');
+      // toggle html in minimize button
+      if (this.shadowRoot.getElementById(id_button).innerHTML == "🗕︎") {
+        this.shadowRoot.getElementById(id_button).innerHTML = "&#128470;&#xFE0E;";
+      }
+      else {
+        this.shadowRoot.getElementById(id_button).innerHTML = "&#128469;&#xFE0E;";
+      }
     });
   }
   closeButtons(id_target, id_button) {
     this.shadowRoot.getElementById(id_button).addEventListener("click", () => {
       this.shadowRoot.getElementById(id_target).classList.toggle('show');
+      this.shadowRoot.getElementById(id_target).remove();
+      this.listOfActivePopups = this.listOfActivePopups.filter(item => item !== id_target);
     });
   }
 
@@ -236,13 +251,13 @@ class popUpClass extends HTMLElement {
         }
       }
       );
-    
-
   }
 
 
   buttonForPopUp() {
-    for (let id_target = 1; id_target <= this.ids; id_target++) {
+    for (var i = 0; i < popUpShadow.listOfActivePopups.length; i++) {
+      //
+      var id_target = popUpShadow.listOfActivePopups[i];
       // const id_target =this.ids
       const id_close = "mclose" + id_target;
       const id_minimize = "minimize" + id_target;

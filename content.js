@@ -2,9 +2,10 @@
 
 window.addEventListener("scroll", function () {
   var x = window.scrollX, y = window.scrollY;
-  for (var i = 1; i <= popUpShadow.ids; i++) {
+  for (var i = 0; i < popUpShadow.listOfActivePopups.length; i++) {
     //
-    elem = popUpShadow.shadowRoot.getElementById(i);
+    var id = popUpShadow.listOfActivePopups[i];
+    elem = popUpShadow.shadowRoot.getElementById(parseInt(id));
     var elemTop = elem.offsetTop - (y - this.window.lastY);
     var elemLeft = elem.offsetLeft - (x - this.window.lastX);
 
@@ -16,6 +17,8 @@ window.addEventListener("scroll", function () {
   // console.log(this.window.lastY);
 }
 );
+
+
 
 const popUpShadow = document.createElement("mini-popup");
 document.body.appendChild(popUpShadow); //attach the shadowDOM to body
@@ -68,13 +71,13 @@ document.addEventListener("click", () => {
   }
 });
 
-// document.addEventListener('contextmenu', function (e) {
-//   var mousePos = getMousePosition(e);
-//   setmousePosition("mousePosition_support",{
-//     left: mousePos.x,
-//     top: mousePos.y,
-//   });
-// });
+document.addEventListener('contextmenu', function (e) {
+  var mousePos = getMousePosition(e);
+  setmousePosition("mousePosition_support",{
+    left: mousePos.x,
+    top: mousePos.y,
+  });
+});
 
 // document.addEventListener('mousemove', function (e) {
 //   var mousePos = getMousePosition(e);
@@ -92,8 +95,10 @@ function setmousePositionToPopup() {
     //remove the attribute mousePosition_primary
     popUpShadow.removeAttribute("mousePosition_primary");
   }
-  // else if (popUpShadow.hasAttribute("mousePosition_support")) 
-  // {popUpShadow.setAttribute("mousePosition", popUpShadow.getAttribute("mousePosition_support"));}
+  else if (popUpShadow.hasAttribute("mousePosition_support")) 
+  {popUpShadow.setAttribute("mousePosition", popUpShadow.getAttribute("mousePosition_support"));
+  //remove the attribute mousePosition_support
+  popUpShadow.removeAttribute("mousePosition_support");}
   else { popUpShadow.setAttribute("mousePosition", JSON.stringify({ left: 0, top: 0 })) }
 }
 
@@ -116,12 +121,14 @@ chrome.runtime.onMessage.addListener(function (request) {
 
   if (request.message == 'showPopUp') {
     popUpShadow.ids++; // increment the number of popups, and id of the new popup
+    popUpShadow.listOfActivePopups.push(popUpShadow.ids);
     setmousePositionToPopup();
     popUpShadow.defaultpopup(); // show the popup
     addListenersForDrag();
   }
   else if (request.message == 'showPopUpOnTheFly') {
     popUpShadow.ids++;
+    popUpShadow.listOfActivePopups.push(popUpShadow.ids);
     setmousePositionToPopup();
     popUpShadow.ontheflypopup(request.text)
     addListenersForDrag();
@@ -165,8 +172,10 @@ chrome.runtime.onMessage.addListener(function (request) {
 
 function addListenersForDrag() {
   // add a listener to the mouse down event, to call the mouseDown function, to each popup in the shadowDOM
-  for (var indice = 1; indice <= popUpShadow.ids; indice++) {
-    elem = popUpShadow.shadowRoot.getElementById(indice + "header").addEventListener('mousedown', mouseDown, false);
+  for (var i = 0; i < popUpShadow.listOfActivePopups.length; i++) {
+    //
+    var id = popUpShadow.listOfActivePopups[i];
+    elem = popUpShadow.shadowRoot.getElementById(id + "header").addEventListener('mousedown', mouseDown, false);
   }
 }
 
