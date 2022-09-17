@@ -91,6 +91,11 @@ const styled = `
     color: white;
     border: white;
     border-radius: 5px;
+    padding: 6px 12px;
+    padding-top: 6px;
+    padding-right: 12px;
+    padding-bottom: 6px;
+    padding-left: 12px;
   }
   .onylonthefly{
     border: 2px solid rgb(16, 163, 127);
