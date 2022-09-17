@@ -66,7 +66,7 @@ const flypopup = (id, { text = "none", left = 0, top = 0 }) => `
     </div>
   </div>
   <div contentEditable="true" id="${id}textarea" style="border: 1px solid #ffffff;">${text}</div>
-  <button type="button" id="${id}submit" class="submitbutton"><b>Submit</b></button>
+  <button type="button" id="${id}submit" class="submitbutton">Submit</button>
   <p id="${id}text" class='popupanswer'></p>
 </div>
 `;
