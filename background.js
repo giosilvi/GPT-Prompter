@@ -56,7 +56,7 @@ function createContextMenu() {
         id: 'GPT-Prompter',
         title: 'GPT-Prompter ',
         documentUrlPatterns: ["https://*/*", "http://*/*"],
-        contexts: ["selection", "all","frame"]
+        contexts: ["selection", "page","frame"]
     });
 
     // create a sub-context menu
@@ -64,7 +64,7 @@ function createContextMenu() {
         id: 'On-the-fly',
         title: '★ (NEW!) Prompt On-the-fly',
         parentId: 'GPT-Prompter',
-        contexts: ["selection", "all","frame"]
+        contexts: ["selection", "page","frame"]
     });
 
     // retrieve from storage the list of custom prompts

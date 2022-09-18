@@ -65,7 +65,7 @@ const flypopup = (id, { text = "none", left = 0, top = 0 }) => `
       <button class='miniclose' id="mclose${id}">&#128473;&#xFE0E;</button>
     </div>
   </div>
-  <div contentEditable="true" id="${id}textarea" style="border: 1px solid #ffffff; margin-bottom:20px; margin-top:20px"> ${text}</div>
+  <div contentEditable="true" id="${id}textarea" class='textarea'> ${text}</div>
   <button type="button" id="${id}submit" class="submitbutton">Submit</button>
   <p id="${id}text" class='popupanswer'></p>
 </div>
@@ -73,6 +73,11 @@ const flypopup = (id, { text = "none", left = 0, top = 0 }) => `
 
 
 const styled = `
+  .textarea{
+    border: 1px solid #ffffff;
+    margin-bottom:10px;
+    margin-top:10px;
+  }
   .grabbable {
     cursor: move; /* fallback if grab cursor is unsupported */
     cursor: grab;
