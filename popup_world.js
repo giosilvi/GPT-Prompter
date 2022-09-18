@@ -58,14 +58,14 @@ const flypopup = (id, { text = "none", left = 0, top = 0 }) => `
 <div class="popuptext onylonthefly" id="${id}" style="left: ${left}px; top:${top}px">
   <div id="${id}prompt" class="popupprompt">
     <div id="${id}header" class="grabbable" style='width: 90%;'>
-    <b>Prompt on-the-fly</b>:  (Ctrl+Enter to submit to GPT)
+    <b>Prompt on-the-fly</b>:  (Ctrl+Enter to submit to GPT)  
     </div>
     <div style='min-width: 80px; width:10%; justify-content: flex-end;'>
       <button class='miniclose' id="minimize${id}">&#128469;&#xFE0E;</button>
       <button class='miniclose' id="mclose${id}">&#128473;&#xFE0E;</button>
     </div>
   </div>
-  <div contentEditable="true" id="${id}textarea" style="border: 1px solid #ffffff;">${text}</div>
+  <div contentEditable="true" id="${id}textarea" style="border: 1px solid #ffffff; margin-bottom:20px; margin-top:20px"> ${text}</div>
   <button type="button" id="${id}submit" class="submitbutton">Submit</button>
   <p id="${id}text" class='popupanswer'></p>
 </div>
@@ -109,6 +109,7 @@ const styled = `
     display: flex!important;
     height: 2em;
     overflow-y: hidden;
+    min-width: 500px;
   }
   .expand {
     height: auto;
