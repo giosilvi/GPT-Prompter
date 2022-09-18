@@ -109,7 +109,6 @@ const styled = `
     display: flex!important;
     height: 2em;
     overflow-y: hidden;
-    min-width: 500px;
   }
   .expand {
     height: auto;
