@@ -2,9 +2,9 @@
 
 window.addEventListener("scroll", function () {
   var x = window.scrollX, y = window.scrollY;
-  for (var i = 0; i < popUpShadow.listOfActivePopups.length; i++) {
+  for (var i = 0; i < popUpShadow.listOfUnpinnedPopups.length; i++) {
     //
-    var id = popUpShadow.listOfActivePopups[i];
+    var id = popUpShadow.listOfUnpinnedPopups[i];
     elem = popUpShadow.shadowRoot.getElementById(parseInt(id));
     var elemTop = elem.offsetTop - (y - this.window.lastY);
     var elemLeft = elem.offsetLeft - (x - this.window.lastX);
@@ -60,7 +60,7 @@ function getMarkerPosition() {
   };
 }
 
-document.addEventListener("click", () => {
+document.addEventListener("contextmenu", () => {
   // console.log(getSelectedText().length)
   if (getSelectedText().length > 0) {
     setmousePosition("mousePosition_primary", getMarkerPosition());
@@ -118,6 +118,7 @@ chrome.runtime.onMessage.addListener(function (request) {
   if (request.message == 'showPopUp') {
     popUpShadow.ids++; // increment the number of popups, and id of the new popup
     popUpShadow.listOfActivePopups.push(popUpShadow.ids);
+    popUpShadow.listOfUnpinnedPopups.push(popUpShadow.ids);
     setmousePositionToPopup();
     popUpShadow.defaultpopup(); // show the popup
     addListenersForDrag();
@@ -125,6 +126,7 @@ chrome.runtime.onMessage.addListener(function (request) {
   else if (request.message == 'showPopUpOnTheFly') {
     popUpShadow.ids++;
     popUpShadow.listOfActivePopups.push(popUpShadow.ids);
+    popUpShadow.listOfUnpinnedPopups.push(popUpShadow.ids);
     setmousePositionToPopup();
     popUpShadow.ontheflypopup(request.text)
     addListenersForDrag();

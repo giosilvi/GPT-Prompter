@@ -44,9 +44,10 @@ const minipopup = (id, {left = 0, top = 0 }) => `
   <div id="${id}prompt" class="popupprompt">
     <div id="${id}header" class="grabbable" style='width: 90%;'>
     </div>
-    <div style='min-width: 80px; width:10%; justify-content: flex-end;'>
-      <button class='miniclose' id="minimize${id}">&#128469;&#xFE0E;</button>
-      <button class='miniclose' id="mclose${id}">&#128473;&#xFE0E;</button>
+    <div style='min-width: 120px; width:10%; justify-content: flex-end;'>
+      <button class='minibuttons' id="pin${id}">&#128204;&#xFE0E;</button>
+      <button class='minibuttons' id="minimize${id}">&#128469;&#xFE0E;</button>
+      <button class='minibuttons' id="mclose${id}">&#128473;&#xFE0E;</button>
     </div>
   </div>
   <p id="${id}text" class='popupanswer'></p>
@@ -60,9 +61,10 @@ const flypopup = (id, { text = "none", left = 0, top = 0 }) => `
     <div id="${id}header" class="grabbable" style='width: 90%;'>
     <b>Prompt on-the-fly</b>:  (Ctrl+Enter to submit to GPT)  
     </div>
-    <div style='min-width: 80px; width:10%; justify-content: flex-end;'>
-      <button class='miniclose' id="minimize${id}">&#128469;&#xFE0E;</button>
-      <button class='miniclose' id="mclose${id}">&#128473;&#xFE0E;</button>
+    <div style='min-width: 120px; width:10%; justify-content: flex-end;'>
+      <button class='minibuttons' id="pin${id}">&#128204;&#xFE0E;</button>
+      <button class='minibuttons' id="minimize${id}">&#128469;&#xFE0E;</button>
+      <button class='minibuttons' id="mclose${id}">&#128473;&#xFE0E;</button>
     </div>
   </div>
   <div contentEditable="true" id="${id}textarea" class='textarea'> ${text}</div>
@@ -129,7 +131,8 @@ const styled = `
     position:fixed;
     width:auto;
     min-width:200px;
-    max-width:600px;
+    max-width:700px;
+    max-height: -webkit-fill-available;
     z-index:-1;
     line-height:1.8;
     // font-size:18px;
@@ -153,13 +156,17 @@ const styled = `
     width: auto!important;
   }
 
-  .miniclose{
+  .minibuttons{
     color: #fff;
     background-color: #000;
     cursor: pointer;
     margin-left:5px; 
     font-size:15px;
     border-radius: 8px;
+  }
+  .invertcolor{
+    color:  #000;
+    background-color:#fff;
   }
 `;
 
@@ -186,6 +193,7 @@ class popUpClass extends HTMLElement {
     this.tokens = 0;
     this.clearnewlines = true;
     this.listOfActivePopups = [];
+    this.listOfUnpinnedPopups = [];
   }
 
   //   this function update the style in shadow DOM with the new mousePosition
@@ -211,6 +219,21 @@ class popUpClass extends HTMLElement {
     this.shadowRoot.getElementById(this.ids + "textarea").focus();
   }
 
+  pinButtons(id_target,id_button) {
+    this.shadowRoot.getElementById(id_button).addEventListener("click", () => {
+      // if the element is in listOfUnpinnedPopups, remove it from there. If not, add it to the list
+      if (this.listOfUnpinnedPopups.includes(id_target)) {
+        this.listOfUnpinnedPopups.splice(this.listOfUnpinnedPopups.indexOf(id_target), 1);
+
+      } else {
+        this.listOfUnpinnedPopups.push(id_target);
+      }
+      //toggle class to invertcolor
+      this.shadowRoot.getElementById(id_button).classList.toggle('invertcolor');
+    });
+    }
+      
+   
   minimizeButtons(id_target, id_button) {
     this.shadowRoot.getElementById(id_button).addEventListener("click", () => {
       this.shadowRoot.getElementById(id_target + "text").classList.toggle('hide');
@@ -268,8 +291,10 @@ class popUpClass extends HTMLElement {
       //
       var id_target = popUpShadow.listOfActivePopups[i];
       // const id_target =this.ids
+      const id_pin = "pin"+id_target;
       const id_close = "mclose" + id_target;
       const id_minimize = "minimize" + id_target;
+      this.pinButtons(id_target,id_pin);
       this.minimizeButtons(id_target, id_minimize);
       this.closeButtons(id_target, id_close);
       this.doubleClick(id_target + "prompt");
