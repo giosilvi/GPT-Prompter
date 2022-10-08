@@ -33,7 +33,11 @@ async function promptGPT3Prompting(prompt, items, tabs) {
   console.log(text, model, temperature, max_tokens);
   console.log('Tabs', tabs);
   const url = "https://api.openai.com/v1/completions";
-  var body_data = { "model": model, "temperature": temperature, "max_tokens": max_tokens, "prompt": text, "stream": true };
+  var body_data = { "model": model, 
+                    "temperature": temperature,
+                    "max_tokens": max_tokens, 
+                    "prompt": text, 
+                    "stream": true };
   // remove stream from body_data
   var str_body_data = JSON.stringify(body_data);
 

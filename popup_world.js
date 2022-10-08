@@ -59,7 +59,7 @@ const flypopup = (id, { text = "none", left = 0, top = 0 }) => `
 <div class="popuptext onylonthefly" id="${id}" style="left: ${left}px; top:${top}px">
   <div id="${id}prompt" class="popupprompt">
     <div id="${id}header" class="grabbable" style='width: 90%;'>
-    <b>Prompt on-the-fly</b>:  (Ctrl+Enter to submit to GPT)  
+    <b>Prompt on-the-fly</b>: type below and press submit 
     </div>
     <div style='min-width: 120px; width:10%; justify-content: flex-end;'>
       <button class='minibuttons' id="pin${id}">&#128204;&#xFE0E;</button>
@@ -69,6 +69,7 @@ const flypopup = (id, { text = "none", left = 0, top = 0 }) => `
   </div>
   <div contentEditable="true" id="${id}textarea" class='textarea'> ${text}</div>
   <button type="button" id="${id}submit" class="submitbutton">Submit</button>
+  <button type="button" id="${id}stop" class="submitbutton hide" style='background-color: red;'>Stop</button>
   <p id="${id}text" class='popupanswer'></p>
 </div>
 `;
@@ -194,6 +195,9 @@ class popUpClass extends HTMLElement {
     this.clearnewlines = true;
     this.listOfActivePopups = [];
     this.listOfUnpinnedPopups = [];
+    this.listOfUndesiredStreams = [];
+    this.stop_stream = false;
+    this.ignore_next_stop = false;
   }
 
   //   this function update the style in shadow DOM with the new mousePosition
@@ -264,6 +268,9 @@ class popUpClass extends HTMLElement {
   runClick(id_target) {
     // if id_target + "submit" has no listener, add one
       this.shadowRoot.getElementById(id_target + "submit").addEventListener("click", () => {
+        // show stop button and hide run button
+        this.toggleRunStop(id_target);
+        
         this.shadowRoot.getElementById(id_target + "text").innerHTML = "";
         console.log('Prompt on-the-fly launched from', id_target)
         var promptDict = {
@@ -285,6 +292,29 @@ class popUpClass extends HTMLElement {
       );
   }
 
+  stopButton(id_target) {
+    this.shadowRoot.getElementById(id_target + "stop").addEventListener("click", () => {
+      console.log('Prompt on-the-fly stopped from', id_target)
+      this.stop_stream=true;
+      this.toggleRunStop(id_target);
+      
+    });
+    // // make the same listener, but for the ctrl+enter key combination
+    // this.shadowRoot.getElementById(id_target + "textarea").addEventListener("keydown", (e) => {
+    //   if (e.ctrlKey && e.key === 'Enter') {
+    //     this.shadowRoot.getElementById(id_target + "stop").click();
+    //   }
+    // }
+    // );
+  }
+
+  toggleRunStop(id_target) {
+    if (this.shadowRoot.getElementById(id_target + "submit")) {
+    this.shadowRoot.getElementById(id_target + "submit").classList.toggle('hide');
+    this.shadowRoot.getElementById(id_target + "stop").classList.toggle('hide');
+    }
+  }
+
 
   buttonForPopUp() {
     for (var i = 0; i < popUpShadow.listOfActivePopups.length; i++) {
@@ -300,6 +330,7 @@ class popUpClass extends HTMLElement {
       this.doubleClick(id_target + "prompt");
       if (this.shadowRoot.getElementById(id_target + "submit")) {
         this.runClick(id_target);
+        this.stopButton(id_target);
       }
     };
   }
@@ -313,6 +344,7 @@ class popUpClass extends HTMLElement {
 
 
   updatepopup(message, target_id, stream) {
+    // console.log('updatepopup', message, target_id, stream)
     //if stream is true
     if (stream) {
       // if choiches is a key in message, it means usual stream
@@ -321,7 +353,7 @@ class popUpClass extends HTMLElement {
         var text = message.choices[0].text
         // if self.tokens is the first or second and text is a new line character, we don't add it
         if (this.clearnewlines && text == "\n") {
-          console.log('new line \\n skipped')
+          console.log('new line \\n skipped from GPT stream')
         }
         else {
           this.clearnewlines = false;
@@ -334,12 +366,16 @@ class popUpClass extends HTMLElement {
         var type = message.error.type
         this.shadowRoot.getElementById(target_id + "text").innerHTML += type + "<br>" + text;
         this.tokens = 0;
+        // show stop button and hide run button
+        this.toggleRunStop(target_id);
       }
       // each message should be 1 token
       this.tokens++;
 
     }
     else {
+      // show stop button and hide run button
+      this.toggleRunStop(target_id);
       var complete_answer = this.shadowRoot.getElementById(target_id + "text").innerHTML
 
       //save prompt to local storage 
