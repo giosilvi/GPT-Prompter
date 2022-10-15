@@ -1,35 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <title>History of prompts.</title>
 </head>
+
 <body>
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-md-2 ml-auto" style="display:flex; padding: 40px;"><img src="icons\iconA128.png"></div>
-                <div class="col-md-10 mr-auto" style="margin: top 20px; text-align: left; margin:auto;"><h1 style="margin-bottom: -1.5rem;">History: Prompts & Answer </h1><br><span style="margin: top -50px;">Here you can see your prompt & answers, as well as costs</span></div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2 ml-auto" style="display:flex; padding: 40px;"><img src="icons\iconA128.png"></div>
+            <div class="col-md-10 mr-auto" style="margin: top 20px; text-align: left; margin:auto;">
+                <h1 style="margin-bottom: -1.5rem;">History: Prompts & Answer </h1><br><span
+                    style="margin: top -50px;">Here you can see your prompt & answers, as well as costs</span>
             </div>
-            <ol id="custom-prompts" ></ol>
-        
+        </div>
+
+
+        <div style="padding-left: 50px" class="btn-group" role="group" aria-label="button_option">
+            <div class="row" style="margin-bottom:10px !important;">
+                <button type="button", id="export_to_json" class="save" style="white-space: nowrap; font-size: 1rem; padding:0px">Export 
+                    as JSON file</button>
+            </div>
+        </div>
+        <ol id="custom-prompts"></ol>
         <div style="padding-left: 30px" class="btn-group" role="group" aria-label="button_option">
             <div class="row" style="margin-bottom:10px !important;">
-            <button type="button" id="delete-all" class="save" style="white-space: nowrap; font-size: 1rem; padding:0px">Delete All</button>
-            <!-- <button type="button" class="btn btn-secondary">Save as PDF</button> -->
-            <!-- <button type="button" class="btn btn-secondary">Export All as JSON file</button> -->
-            <span class="col-sm-6" style="white-space: nowrap;" id="totCost"></div>
-
+                <button type="button" id="delete-all" class="save"
+                    style="white-space: nowrap; font-size: 1rem; padding:0px">Delete All</button>
+                <!-- <button type="button" class="btn btn-secondary">Save as PDF</button> -->
+                <span class="col-sm-6" style="white-space: nowrap;" id="totCost">
             </div>
-                </div>
-                
-                <input id="promptsearch" type="text" class="form-control form-control-dark text-bg-dark list-group-item" placeholder="Search inside your prompts..." aria-label="Search">
-                <div style="height:30px"></div>
-        <ul id="history-of-prompts" class="list-group-item" style="padding-left:30px; padding-right:30px;"> No prompts executed.</ul>
+
+        </div>
     </div>
-    <script src="history.js"></script>    
+
+    <input id="promptsearch" type="text" class="form-control form-control-dark text-bg-dark list-group-item"
+        placeholder="Search inside your prompts..." aria-label="Search">
+    <div style="height:30px"></div>
+    <ul id="history-of-prompts" class="list-group-item" style="padding-left:30px; padding-right:30px;"> No prompts
+        executed.</ul>
+    </div>
+    <script src="history.js"></script>
 </body>
+
 </html>

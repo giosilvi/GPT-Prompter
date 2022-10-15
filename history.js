@@ -91,22 +91,6 @@ function delete_all() {
     )
 
 }
-// execute the load function when the page is loaded
-document.addEventListener('DOMContentLoaded', load_history, false);
-
-document.addEventListener('DOMContentLoaded', function () {
-    document.getElementById('delete-all').addEventListener('click', function () {
-        delete_all();
-    }
-    );
-}
-);
-
-document.addEventListener('DOMContentLoaded', function () {
-    // add event listener to promptsearch for event keydown, and nest into it a listener for keyup
-    document.getElementById('promptsearch').addEventListener('keyup', filter, false);
-}, false)
-
 // add a function called "filter" to filter the history list based on value in <input> with id="promptsearch"
 function filter() {
     var input, filter, ul, li, a, i;
@@ -124,3 +108,52 @@ function filter() {
     }
 
 }
+
+//create a function to export the history list shown to a json file
+function export_history() {
+    ul = document.getElementById('history-of-prompts');
+    li = ul.getElementsByTagName('li');
+    var history_to_save = [];
+    for (var i = 0; i < li.length; i++) {
+        // if li element is not hidden
+        if (li[i].style.display != 'none') {
+            // from li[i].innerHTML get the prompt, answer , and remove any <br> element
+            var prompt = li[i].innerHTML.split('prompt:')[1].split('answer:')[0].replace(/<br>/g, '');
+            var answer = li[i].innerHTML.split('answer:')[1].split('Cost:')[0].replace(/<br>/g, '');
+            // combine the prompt and answer to dictionary
+            var prompt_answer = { 'prompt': prompt, 'answer': answer };
+            // add the dictionary to the history_to_save array
+            history_to_save.push(prompt_answer);
+        }
+
+    }
+    // if the history_to_save array is not empty
+    if (history_to_save.length > 0) {
+        var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(history_to_save));
+        var search_term = document.getElementById('promptsearch').value;
+        let exportFileDefaultName = 'PrompterHistory_'+search_term+'.json';
+
+        let linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataStr);
+        linkElement.setAttribute('download', exportFileDefaultName);
+        linkElement.click();
+    }
+}
+
+
+
+
+// execute the load function when the page is loaded
+document.addEventListener('DOMContentLoaded', load_history, false);
+
+document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('delete-all').addEventListener('click', function () {
+        delete_all();
+    });
+     // add event listener to promptsearch for event keydown, and nest into it a listener for keyup
+    document.getElementById('promptsearch').addEventListener('keyup', filter, false);
+    // add event listener to export button
+    document.getElementById('export_to_json').addEventListener('click', export_history, false);
+});
+
+

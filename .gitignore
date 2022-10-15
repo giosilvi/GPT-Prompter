@@ -1,3 +1,4 @@
 *.ico
 *.zip
 makezip.sh
+PrompterHistory*
