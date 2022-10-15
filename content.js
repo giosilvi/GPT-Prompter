@@ -142,14 +142,12 @@ chrome.runtime.onMessage.addListener(function (request) {
 
     // console.log('split:' + data.length);
     for (var m = 1; m < data.length; m++) {// in case of multiple stream in one, loop over them
-      if (data[m].indexOf("[DONE]") == -1) 
-      { // if there is not "[DONE]" in the text, it`s a stream
+      if (data[m].indexOf("[DONE]") == -1) { // if there is not "[DONE]" in the text, it`s a stream
         var json = JSON.parse(data[m]);
         var stream_id = json.id;
         // in case has been asked to stop the stream, add the id to the list,
         // if the stream is not in the list of undesired streams
-        if (popUpShadow.stop_stream == true && popUpShadow.listOfUndesiredStreams.indexOf(stream_id) == -1) 
-        {
+        if (popUpShadow.stop_stream == true && popUpShadow.listOfUndesiredStreams.indexOf(stream_id) == -1) {
           popUpShadow.listOfUndesiredStreams.push(stream_id);
           console.log('stop stream', stream_id);
           popUpShadow.stop_stream = false;
@@ -157,22 +155,18 @@ chrome.runtime.onMessage.addListener(function (request) {
           popUpShadow.ignore_next_stop = true;
         }
         // if the stream id is not in the list of undesired streams, add the text to the popup
-        if (popUpShadow.listOfUndesiredStreams.indexOf(stream_id) == -1) 
-        {
+        if (popUpShadow.listOfUndesiredStreams.indexOf(stream_id) == -1) {
           popUpShadow.updatepopup(json, id_popup, true);
         }
       }
-      else 
-      {
-          if (popUpShadow.ignore_next_stop == false)
-          {
-            popUpShadow.updatepopup(request, id_popup, false); // the end of the stream
-          }
-          else
-          {
-            popUpShadow.ignore_next_stop = false;
-          }
+      else {
+        if (popUpShadow.ignore_next_stop == false) {
+          popUpShadow.updatepopup(request, id_popup, false); // the end of the stream
         }
+        else {
+          popUpShadow.ignore_next_stop = false;
+        }
+      }
     }
     // in case of error, the split will not produce more than one element
     if (data.length == 1) {

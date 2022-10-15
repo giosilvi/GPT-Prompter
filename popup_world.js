@@ -39,7 +39,7 @@ function computeCost(tokens, model) {
 
 
 
-const minipopup = (id, {left = 0, top = 0 }) => `
+const minipopup = (id, { left = 0, top = 0 }) => `
 <div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px">
   <div id="${id}prompt" class="popupprompt">
     <div id="${id}header" class="grabbable" style='width: 90%;'>
@@ -223,7 +223,7 @@ class popUpClass extends HTMLElement {
     this.shadowRoot.getElementById(this.ids + "textarea").focus();
   }
 
-  pinButtons(id_target,id_button) {
+  pinButtons(id_target, id_button) {
     this.shadowRoot.getElementById(id_button).addEventListener("click", () => {
       // if the element is in listOfUnpinnedPopups, remove it from there. If not, add it to the list
       if (this.listOfUnpinnedPopups.includes(id_target)) {
@@ -235,9 +235,9 @@ class popUpClass extends HTMLElement {
       //toggle class to invertcolor
       this.shadowRoot.getElementById(id_button).classList.toggle('invertcolor');
     });
-    }
-      
-   
+  }
+
+
   minimizeButtons(id_target, id_button) {
     this.shadowRoot.getElementById(id_button).addEventListener("click", () => {
       this.shadowRoot.getElementById(id_target + "text").classList.toggle('hide');
@@ -267,37 +267,37 @@ class popUpClass extends HTMLElement {
 
   runClick(id_target) {
     // if id_target + "submit" has no listener, add one
-      this.shadowRoot.getElementById(id_target + "submit").addEventListener("click", () => {
-        // show stop button and hide run button
-        this.toggleRunStop(id_target);
-        
-        this.shadowRoot.getElementById(id_target + "text").innerHTML = "";
-        console.log('Prompt on-the-fly launched from', id_target)
-        var promptDict = {
-          "prompt": this.shadowRoot.getElementById(id_target + "textarea").innerHTML,
-          "model": "text-davinci-002",
-          "temperature": 0.1,
-          "max_tokens": 1000,
-          "popupID": id_target,
-        }
-        chrome.runtime.sendMessage({ text: "launchGPT", prompt: promptDict });
+    this.shadowRoot.getElementById(id_target + "submit").addEventListener("click", () => {
+      // show stop button and hide run button
+      this.toggleRunStop(id_target);
 
-      });
-      // make the same listener, but for the ctrl+enter key combination
-      this.shadowRoot.getElementById(id_target + "textarea").addEventListener("keydown", (e) => {
-        if (e.ctrlKey && e.key === 'Enter') {
-          this.shadowRoot.getElementById(id_target + "submit").click();
-        }
+      this.shadowRoot.getElementById(id_target + "text").innerHTML = "";
+      console.log('Prompt on-the-fly launched from', id_target)
+      var promptDict = {
+        "prompt": this.shadowRoot.getElementById(id_target + "textarea").innerHTML,
+        "model": "text-davinci-002",
+        "temperature": 0.1,
+        "max_tokens": 1000,
+        "popupID": id_target,
       }
-      );
+      chrome.runtime.sendMessage({ text: "launchGPT", prompt: promptDict });
+
+    });
+    // make the same listener, but for the ctrl+enter key combination
+    this.shadowRoot.getElementById(id_target + "textarea").addEventListener("keydown", (e) => {
+      if (e.ctrlKey && e.key === 'Enter') {
+        this.shadowRoot.getElementById(id_target + "submit").click();
+      }
+    }
+    );
   }
 
   stopButton(id_target) {
     this.shadowRoot.getElementById(id_target + "stop").addEventListener("click", () => {
       console.log('Prompt on-the-fly stopped from', id_target)
-      this.stop_stream=true;
+      this.stop_stream = true;
       this.toggleRunStop(id_target);
-      
+
     });
     // // make the same listener, but for the ctrl+enter key combination
     // this.shadowRoot.getElementById(id_target + "textarea").addEventListener("keydown", (e) => {
@@ -310,8 +310,8 @@ class popUpClass extends HTMLElement {
 
   toggleRunStop(id_target) {
     if (this.shadowRoot.getElementById(id_target + "submit")) {
-    this.shadowRoot.getElementById(id_target + "submit").classList.toggle('hide');
-    this.shadowRoot.getElementById(id_target + "stop").classList.toggle('hide');
+      this.shadowRoot.getElementById(id_target + "submit").classList.toggle('hide');
+      this.shadowRoot.getElementById(id_target + "stop").classList.toggle('hide');
     }
   }
 
@@ -321,10 +321,10 @@ class popUpClass extends HTMLElement {
       //
       var id_target = popUpShadow.listOfActivePopups[i];
       // const id_target =this.ids
-      const id_pin = "pin"+id_target;
+      const id_pin = "pin" + id_target;
       const id_close = "mclose" + id_target;
       const id_minimize = "minimize" + id_target;
-      this.pinButtons(id_target,id_pin);
+      this.pinButtons(id_target, id_pin);
       this.minimizeButtons(id_target, id_minimize);
       this.closeButtons(id_target, id_close);
       this.doubleClick(id_target + "prompt");
