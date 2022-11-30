@@ -1,4 +1,5 @@
 var models = {
+    "text-davinci-003": "ↁ",
     "text-davinci-002": "🅳",
     "text-curie-001": "🅲",
     "text-babbage-001": "🅑",

@@ -6,7 +6,7 @@ function sendStream(message, id, string, body_data, idpopup) {
     text: string,
     body_data: body_data,
     id_popup: idpopup
-  }); //send the answer to the content script
+  }); //send the completion to the content script
 }
 
 function checkTabsAndSendStream(message, tabs, string, body_data, idpopup) {
@@ -70,14 +70,14 @@ async function promptGPT3Prompting(prompt, items, tabs) {
           var stream = new TextDecoder().decode(value);//.substring(6);
           // console.log(string, typeof string);
           // if tabs.id == -1 then use querySelector to get the tab
-          checkTabsAndSendStream("GPTStream_answer", tabs, stream, str_body_data, popupID);
+          checkTabsAndSendStream("GPTStream_completion", tabs, stream, str_body_data, popupID);
           return pump();
         });
       }
     }
     ).catch(err => {
       console.log("error" + err);
-      checkTabsAndSendStream("GPTStream_answer", tabs, "Error:" + err, str_body_data, popupID);
+      checkTabsAndSendStream("GPTStream_completion", tabs, "Error:" + err, str_body_data, popupID);
 
     });
 }

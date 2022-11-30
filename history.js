@@ -15,8 +15,8 @@ function makeHistoryList(items) {
             }
         }
         // var cleanAns = items.history[i][1].replace(prompt["prompt"], '');
-        freshList += 'answer:' + items.history[i][1] + '<br>'
-        freshList += 'Cost: ' + items.history[i][2] + '$  <button  class="save" id="eraseItem' + i.toString() + '" > Delete </button></li>';
+        freshList += 'completion:' + items.history[i][1] + '<br>'
+        freshList += 'cost: ' + items.history[i][2] + '$  <button  class="save" id="eraseItem' + i.toString() + '" > Delete </button></li>';
         totalCost += parseFloat(items.history[i][2]);
     }
     document.getElementById('totCost').innerHTML = 'Total cost: ' + totalCost.toFixed(2) + '$';
@@ -117,13 +117,13 @@ function export_history() {
     for (var i = 0; i < li.length; i++) {
         // if li element is not hidden
         if (li[i].style.display != 'none') {
-            // from li[i].innerHTML get the prompt, answer , and remove any <br> element
-            var prompt = li[i].innerHTML.split('prompt:')[1].split('answer:')[0].replace(/<br>/g, '');
-            var answer = li[i].innerHTML.split('answer:')[1].split('Cost:')[0].replace(/<br>/g, '');
-            // combine the prompt and answer to dictionary
-            var prompt_answer = { 'prompt': prompt, 'answer': answer };
+            // from li[i].innerHTML get the prompt, completion , and remove any <br> element
+            var prompt = li[i].innerHTML.split('prompt:')[1].split('completion:')[0].replace(/<br>/g, '');
+            var completion = li[i].innerHTML.split('completion:')[1].split('Cost:')[0].replace(/<br>/g, '');
+            // combine the prompt and completion to dictionary
+            var prompt_completion = { 'prompt': prompt, 'completion': completion };
             // add the dictionary to the history_to_save array
-            history_to_save.push(prompt_answer);
+            history_to_save.push(prompt_completion);
         }
 
     }

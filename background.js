@@ -101,7 +101,7 @@ chrome.runtime.onInstalled.addListener(function () {
                 for (var i = 0; i < items.customprompt.length; i++) {
                     // modify each one of them to become a dictionary
                     items.customprompt[i] = {
-                        "model": "text-davinci-002",
+                        "model": "text-davinci-003",
                         "temperature": 0,
                         "max_tokens": 1024,
                         "prompt": items.customprompt[i],
@@ -110,7 +110,7 @@ chrome.runtime.onInstalled.addListener(function () {
             }
         }
         else { // if the prompt does not exist, create the default one
-            items.customprompt = [{ "model": "text-davinci-002", "temperature": 0, "max_tokens": 1024, "prompt": 'Tell me more about "#TEXT#":' }];
+            items.customprompt = [{ "model": "text-davinci-003", "temperature": 0, "max_tokens": 1024, "prompt": 'Tell me more about "#TEXT#":' }];
         }
         // save the new_prompt_list
         chrome.storage.sync.set({ 'customprompt': items.customprompt });
@@ -212,7 +212,7 @@ chrome.contextMenus.onClicked.addListener((info, tabs) => {
 
         // here we want to create a minipop-up to ask the user to insert the prompt
         chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-            chrome.tabs.sendMessage(tabs[0].id, { message: 'showPopUpOnTheFly', text: selectionText, body_data: { "model": "text-davinci-002", "temperature": 0, "max_tokens": 1024 } });
+            chrome.tabs.sendMessage(tabs[0].id, { message: 'showPopUpOnTheFly', text: selectionText, body_data: { "model": "text-davinci-003", "temperature": 0, "max_tokens": 2048 } });
         });
         // check if there is a selection
         // if (info.selectionText) {

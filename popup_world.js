@@ -1,5 +1,6 @@
 // import symbolFromModel from './sharedfunctions.js'; //TODO:fix this
 var models = {
+  "text-davinci-003": "ↁ",
   "text-davinci-002": "🅳",
   "text-curie-001": "🅲",
   "text-babbage-001": "🅑",
@@ -25,7 +26,9 @@ const AdaCost = 0.0004 / 1000;
 
 function computeCost(tokens, model) {
   var cost = 0;
-  if (model == "text-davinci-002")
+  if (model == "text-davinci-003")
+    cost = tokens * DaVinciCost;
+  else if (model == "text-davinci-002")
     cost = tokens * DaVinciCost;
   else if (model == "text-curie-001")
     cost = tokens * CurieCost;
@@ -50,7 +53,7 @@ const minipopup = (id, { left = 0, top = 0 }) => `
       <button class='minibuttons' id="mclose${id}">&#128473;&#xFE0E;</button>
     </div>
   </div>
-  <p id="${id}text" class='popupanswer'></p>
+  <p id="${id}text" class='popupcompletion'></p>
 </div>
 `;
 
@@ -70,7 +73,7 @@ const flypopup = (id, { text = "none", left = 0, top = 0 }) => `
   <div contentEditable="true" id="${id}textarea" class='textarea'> ${text}</div>
   <button type="button" id="${id}submit" class="submitbutton">Submit</button>
   <button type="button" id="${id}stop" class="submitbutton hide" style='background-color: red;'>Stop</button>
-  <p id="${id}text" class='popupanswer'></p>
+  <p id="${id}text" class='popupcompletion'></p>
 </div>
 `;
 
@@ -108,7 +111,7 @@ const styled = `
   .onylonthefly{
     border: 2px solid rgb(16, 163, 127);
   }
-  .popupanswer {
+  .popupcompletion {
     clear: left;
     cursor: text;
     white-space: pre-wrap;
@@ -275,7 +278,7 @@ class popUpClass extends HTMLElement {
       console.log('Prompt on-the-fly launched from', id_target)
       var promptDict = {
         "prompt": this.shadowRoot.getElementById(id_target + "textarea").innerHTML,
-        "model": "text-davinci-002",
+        "model": "text-davinci-003",
         "temperature": 0.1,
         "max_tokens": 1000,
         "popupID": id_target,
@@ -366,7 +369,7 @@ class popUpClass extends HTMLElement {
         var type = message.error.type
         this.shadowRoot.getElementById(target_id + "text").innerHTML += type + "<br>" + text;
         this.tokens = 0;
-        // show stop button and hide run button
+        //show run button and hide stop button
         this.toggleRunStop(target_id);
       }
       // each message should be 1 token
@@ -374,9 +377,9 @@ class popUpClass extends HTMLElement {
 
     }
     else {
-      // show stop button and hide run button
+      // show run button and hide stop button
       this.toggleRunStop(target_id);
-      var complete_answer = this.shadowRoot.getElementById(target_id + "text").innerHTML
+      var complete_completion = this.shadowRoot.getElementById(target_id + "text").innerHTML
 
       //save prompt to local storage 
 
@@ -388,11 +391,11 @@ class popUpClass extends HTMLElement {
       // save the result.choices[0].text in the storage 
       chrome.storage.local.get('history', function (items) {
         if (typeof items.history !== 'undefined') {
-          items.history.push([message.body_data, complete_answer, cost]);// add the result to the history
+          items.history.push([message.body_data, complete_completion, cost]);// add the result to the history
           chrome.storage.local.set({ 'history': items.history });
         }
         else {
-          items.history = [[message.body_data, complete_answer, cost]]; // initialize the history array
+          items.history = [[message.body_data, complete_completion, cost]]; // initialize the history array
           chrome.storage.local.set({ 'history': items.history });
         }
       });

@@ -136,7 +136,7 @@ chrome.runtime.onMessage.addListener(function (request) {
   else if (request.message == 'GPTprompt') {
     popUpShadow.updatePopupHeader(request, id_popup);
   }
-  else if (request.message == 'GPTStream_answer') {
+  else if (request.message == 'GPTStream_completion') {
     // split over 'data: ' in case there are multiple streams concatenated
     var data = request.text.split('data: ');
 
@@ -164,7 +164,7 @@ chrome.runtime.onMessage.addListener(function (request) {
           popUpShadow.updatepopup(request, id_popup, false); // the end of the stream
         }
         else {
-          popUpShadow.ignore_next_stop = false;
+          popUpShadow.ignore_next_stop = false; // reset the flag
         }
       }
     }
