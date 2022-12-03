@@ -222,6 +222,9 @@ class popUpClass extends HTMLElement {
     this.shadowRoot.innerHTML += flypopup(this.ids, { text: selectionText, left: this.mousePosition.left, top: this.mousePosition.top });
     this.shadowRoot.getElementById(this.ids).classList.toggle('show');
     this.buttonForPopUp();
+    const id_textarea = this.shadowRoot.getElementById(this.ids + 'textarea');
+    // stop Propagation of the event for keydown to avoid the background to be selected
+    id_textarea.addEventListener('keydown', (e) => { e.stopPropagation(); });
     this.shadowRoot.getElementById(this.ids + "textarea").focus();
   }
 
