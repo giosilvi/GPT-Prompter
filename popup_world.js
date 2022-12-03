@@ -7,7 +7,7 @@ var models = {
   "text-ada-001": "🅐",
   "code-davinci-002": "🆇"
 }
-//the above function symbolFromModel can be rewritten as a dictionary
+
 function symbolFromModel(model) {
   // check if the model is in the dictionary
   if (models.hasOwnProperty(model)) {
@@ -48,9 +48,9 @@ const minipopup = (id, { left = 0, top = 0 }) => `
     <div id="${id}header" class="grabbable" style='width: 90%;'>
     </div>
     <div style='min-width: 120px; width:10%; justify-content: flex-end;'>
-      <button class='minibuttons' id="pin${id}">&#128204;&#xFE0E;</button>
-      <button class='minibuttons' id="minimize${id}">&#128469;&#xFE0E;</button>
-      <button class='minibuttons' id="mclose${id}">&#128473;&#xFE0E;</button>
+      <button class='minibuttons' id="pin${id}" title="Pin the popup">&#128204;&#xFE0E;</button>
+      <button class='minibuttons' id="minimize${id}" title="Minimize/maximize completion">&#128469;&#xFE0E;</button>
+      <button class='minibuttons' id="mclose${id}" title="Close popup">&#128473;&#xFE0E;</button>
     </div>
   </div>
   <p id="${id}text" class='popupcompletion'></p>
@@ -200,7 +200,6 @@ class popUpClass extends HTMLElement {
     this.listOfUnpinnedPopups = [];
     this.listOfUndesiredStreams = [];
     this.stop_stream = false;
-    this.ignore_next_stop = false;
   }
 
   //   this function update the style in shadow DOM with the new mousePosition
@@ -339,24 +338,30 @@ class popUpClass extends HTMLElement {
   }
 
   updatePopupHeader(request, target_id) {
-    // const id2 = this.ids; // which popup is the last one
     var symbol = symbolFromModel(request.body_data.model)
-    var html_injection = symbol + "<i> " + request.text + "</i>";
-    this.shadowRoot.getElementById(target_id + "header").innerHTML = html_injection
+    this.shadowRoot.getElementById(target_id + "header").innerHTML = symbol + "<i> " + request.text + "</i>";
   }
-
+  copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      console.log('Text copied to clipboard');
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+    }
+  };
 
   updatepopup(message, target_id, stream) {
     // console.log('updatepopup', message, target_id, stream)
     //if stream is true
-    if (stream) {
-      // if choiches is a key in message, it means usual stream
-
+    if (stream) 
+    {
+      // if choices is a key in message, it means usual stream
       if (message.choices) {
         var text = message.choices[0].text
         // if self.tokens is the first or second and text is a new line character, we don't add it
         if (this.clearnewlines && text == "\n") {
-          console.log('new line \\n skipped from GPT stream')
+          // console.log('new line \\n skipped from GPT stream')
+          return
         }
         else {
           this.clearnewlines = false;
@@ -380,6 +385,8 @@ class popUpClass extends HTMLElement {
       // show run button and hide stop button
       this.toggleRunStop(target_id);
       var complete_completion = this.shadowRoot.getElementById(target_id + "text").innerHTML
+      // add a button to copy the text to clipboard
+      this.addCopyToClipboardBtn(target_id, complete_completion);
 
       //save prompt to local storage 
 
@@ -400,6 +407,18 @@ class popUpClass extends HTMLElement {
         }
       });
     }
+  }
+
+  addCopyToClipboardBtn(target_id, complete_completion) {
+    this.shadowRoot.getElementById(target_id + "text").innerHTML += "<button class='minibuttons' id='copy_to_clipboard" + target_id + "' title='Copy to clipboard'>&#x2398;&#xFE0E;</button>"; //
+    this.shadowRoot.getElementById("copy_to_clipboard" + target_id).addEventListener("click", () => {
+      this.copyToClipboard(complete_completion);
+      // invert color for 1 second
+      this.shadowRoot.getElementById("copy_to_clipboard" + target_id).classList.toggle('invertcolor');
+      setTimeout(() => {
+        this.shadowRoot.getElementById("copy_to_clipboard" + target_id).classList.toggle('invertcolor');
+      }, 500);
+    });
   }
 }
 

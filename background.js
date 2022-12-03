@@ -5,7 +5,6 @@ import symbolFromModel from './sharedfunctions.js';
 // FUNCTIONS DECLARATION
 async function checkGPT(apikey) {
     chrome.storage.sync.get('APIKEY', function (items) {
-        console.log(apikey);
         var url = "https://api.openai.com/v1/models";
         fetch(url, {
             method: 'GET',
@@ -23,7 +22,6 @@ async function checkGPT(apikey) {
                     chrome.runtime.sendMessage({ message: 'API key is valid' });
                 }
                 else {
-                    console.log('Here')
                     chrome.runtime.sendMessage({ message: 'API key is invalid' });
                 }
 
@@ -150,9 +148,6 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 
 
 chrome.contextMenus.onClicked.addListener((info, tabs) => {
-    // console.log('context menu clicked');
-    // console.log(info.selectionText);
-    // console.log(tabs);
 
     // get the id of the context menu clicked
     // to transfort a string to int do: parseInt(string)
@@ -186,7 +181,7 @@ chrome.contextMenus.onClicked.addListener((info, tabs) => {
                             })();
                         }
                         else {
-                            chrome.tabs.sendMessage(tabs.id, 'APIKEY not found');
+                            chrome.tabs.sendMessage(tabs.id, 'APIKEY not found. Click on the GPT-prompter icon to set it.');
                             console.log('Error: No API key found.');
                         }
                     })

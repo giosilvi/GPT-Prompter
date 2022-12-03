@@ -1,9 +1,9 @@
 
-
+//LISTENERS
+// Listen to scroll event
 window.addEventListener("scroll", function () {
   var x = window.scrollX, y = window.scrollY;
   for (var i = 0; i < popUpShadow.listOfUnpinnedPopups.length; i++) {
-    //
     var id = popUpShadow.listOfUnpinnedPopups[i];
     elem = popUpShadow.shadowRoot.getElementById(parseInt(id));
     var elemTop = elem.offsetTop - (y - this.window.lastY);
@@ -14,12 +14,66 @@ window.addEventListener("scroll", function () {
   }
   this.window.lastY = y;
   this.window.lastX = x;
-  // console.log(this.window.lastY);
-}
-);
+  });
 
 
+const getSelectedText = () => window.getSelection().toString();
 
+document.addEventListener("contextmenu", () => {
+    // console.log(getSelectedText().length)
+    if (getSelectedText().length > 0) {
+      setmousePosition("mousePosition_primary", getMarkerPosition());
+    }
+  });
+  
+document.addEventListener('contextmenu', function (e) {
+    var mousePos = getMousePosition(e);
+    setmousePosition("mousePosition_support", {
+      left: mousePos.x,
+      top: mousePos.y,
+    });
+  });
+
+function addListenersForDrag() {
+    // add a listener to the mouse down event, to call the mouseDown function, to each popup in the shadowDOM
+    for (var i = 0; i < popUpShadow.listOfActivePopups.length; i++) {
+      //
+      var id = popUpShadow.listOfActivePopups[i];
+      elem = popUpShadow.shadowRoot.getElementById(id + "header").addEventListener('mousedown', mouseDown, false);
+    }
+  }
+  
+function spanMove(e, id_target) {
+    var simpleid = id_target.replace('header', '')
+    var fullpopup = popUpShadow.shadowRoot.getElementById(simpleid)
+    var header = popUpShadow.shadowRoot.getElementById(id_target)
+  
+    var mouse_y_position = e.clientY - header.offsetHeight / 2 - 20; //20 is the radius of the border I think
+    var mouse_x_position = e.clientX - fullpopup.offsetWidth / 2;
+  
+    fullpopup.style.top = mouse_y_position + 'px';
+    fullpopup.style.left = mouse_x_position + 'px';
+  }
+  
+function mouseDown(e) {
+    // this is to avoid the selection of the child text, when the target is the parent
+    // if (e.target.id == this.id+'text')
+    //   return;
+    e.preventDefault(); // prevent the selection of the text below the popup
+    const id_target = this.id;
+    function wrapper(event) {
+      spanMove(event, id_target)
+    }
+    window.addEventListener('mousemove', wrapper, true);
+    // add a listener to the mouse up event, to remove the wrapper function when the mouse is up
+    window.addEventListener('mouseup', function () {
+      window.removeEventListener('mousemove', wrapper, true);
+    }
+      , false);
+  }
+
+
+// POPUP FUNCTIONS
 const popUpShadow = document.createElement("mini-popup");
 document.body.appendChild(popUpShadow); //attach the shadowDOM to body
 
@@ -43,11 +97,8 @@ const setmousePosition = (name_attribute, mousePosition) =>
     name_attribute,
     JSON.stringify(mousePosition)
   );
-//call the function getMousePosition when the mouse is clicked
 
 
-
-const getSelectedText = () => window.getSelection().toString();
 
 function getMarkerPosition() {
   const rangeBounds = window
@@ -59,29 +110,6 @@ function getMarkerPosition() {
     top: rangeBounds.top,
   };
 }
-
-document.addEventListener("contextmenu", () => {
-  // console.log(getSelectedText().length)
-  if (getSelectedText().length > 0) {
-    setmousePosition("mousePosition_primary", getMarkerPosition());
-  }
-});
-
-document.addEventListener('contextmenu', function (e) {
-  var mousePos = getMousePosition(e);
-  setmousePosition("mousePosition_support", {
-    left: mousePos.x,
-    top: mousePos.y,
-  });
-});
-
-// document.addEventListener('mousemove', function (e) {
-//   var mousePos = getMousePosition(e);
-//   setmousePosition("mousePosition_support",{
-//     left: mousePos.x,
-//     top: mousePos.y,
-//   });
-// });
 
 
 // function that set mousePosition to the popup
@@ -111,11 +139,11 @@ function checkIdPopup(id) {
 
 
 
-// function to alert the message, like gpt-3 response. TODO: make it a popup, not an alert
 chrome.runtime.onMessage.addListener(function (request) {
   //  if attribute message in request exists, it's a gpt-3 response
   var id_popup = checkIdPopup(request.id_popup);
-
+  // check if request.uuid exists
+ 
   if (request.message == 'showPopUp') {
     popUpShadow.ids++; // increment the number of popups, and id of the new popup
     popUpShadow.listOfActivePopups.push(popUpShadow.ids);
@@ -139,33 +167,25 @@ chrome.runtime.onMessage.addListener(function (request) {
   else if (request.message == 'GPTStream_completion') {
     // split over 'data: ' in case there are multiple streams concatenated
     var data = request.text.split('data: ');
-
-    // console.log('split:' + data.length);
-    for (var m = 1; m < data.length; m++) {// in case of multiple stream in one, loop over them
-      if (data[m].indexOf("[DONE]") == -1) { // if there is not "[DONE]" in the text, it`s a stream
-        var json = JSON.parse(data[m]);
-        var stream_id = json.id;
-        // in case has been asked to stop the stream, add the id to the list,
-        // if the stream is not in the list of undesired streams
-        if (popUpShadow.stop_stream == true && popUpShadow.listOfUndesiredStreams.indexOf(stream_id) == -1) {
-          popUpShadow.listOfUndesiredStreams.push(stream_id);
-          console.log('stop stream', stream_id);
-          popUpShadow.stop_stream = false;
-          popUpShadow.clearnewlines = true;
-          popUpShadow.ignore_next_stop = true;
-        }
-        // if the stream id is not in the list of undesired streams, add the text to the popup
-        if (popUpShadow.listOfUndesiredStreams.indexOf(stream_id) == -1) {
-          popUpShadow.updatepopup(json, id_popup, true);
-        }
-      }
-      else {
-        if (popUpShadow.ignore_next_stop == false) {
-          popUpShadow.updatepopup(request, id_popup, false); // the end of the stream
-        }
-        else {
-          popUpShadow.ignore_next_stop = false; // reset the flag
-        }
+    if (popUpShadow.stop_stream == true && popUpShadow.listOfUndesiredStreams.indexOf(request.uuid) == -1) {
+      console.log('Stop stream with uuid',request.uuid)
+      popUpShadow.listOfUndesiredStreams.push(request.uuid);
+      popUpShadow.stop_stream = false;
+      popUpShadow.clearnewlines = true;
+    }
+    // if the stream is not in the list of undesired streams, then add it to the popup
+    if (popUpShadow.listOfUndesiredStreams.indexOf(request.uuid) == -1) 
+    {
+      for (var m = 1; m < data.length; m++) 
+      {// in case of multiple stream in one, loop over them
+        if (data[m].indexOf("[DONE]") == -1) 
+          { // if there is not "[DONE]" in the text, it`s a stream
+            var json = JSON.parse(data[m]);
+            // var stream_id = json.id;
+            popUpShadow.updatepopup(json, id_popup, true);
+          }
+        else 
+          {popUpShadow.updatepopup(request, id_popup, false); }// the end of the stream, [DONE]
       }
     }
     // in case of error, the split will not produce more than one element
@@ -181,49 +201,11 @@ chrome.runtime.onMessage.addListener(function (request) {
   else {
     alert(request)
   }
-})
+});
+  
 
 
 
 
-function addListenersForDrag() {
-  // add a listener to the mouse down event, to call the mouseDown function, to each popup in the shadowDOM
-  for (var i = 0; i < popUpShadow.listOfActivePopups.length; i++) {
-    //
-    var id = popUpShadow.listOfActivePopups[i];
-    elem = popUpShadow.shadowRoot.getElementById(id + "header").addEventListener('mousedown', mouseDown, false);
-  }
-}
-
-function mouseDown(e) {
-  // this is to avoid the selection of the child text, when the target is the parent
-  // if (e.target.id == this.id+'text')
-  //   return;
-  e.preventDefault(); // prevent the selection of the text below the popup
-  const id_target = this.id;
-  function wrapper(event) {
-    spanMove(event, id_target)
-  }
-  window.addEventListener('mousemove', wrapper, true);
-  // add a listener to the mouse up event, to remove the wrapper function when the mouse is up
-  window.addEventListener('mouseup', function () {
-    window.removeEventListener('mousemove', wrapper, true);
-  }
-    , false);
-}
-
-
-
-function spanMove(e, id_target) {
-  var simpleid = id_target.replace('header', '')
-  var fullpopup = popUpShadow.shadowRoot.getElementById(simpleid)
-  var header = popUpShadow.shadowRoot.getElementById(id_target)
-
-  var mouse_y_position = e.clientY - header.offsetHeight / 2 - 20; //20 is the radius of the border I think
-  var mouse_x_position = e.clientX - fullpopup.offsetWidth / 2;
-
-  fullpopup.style.top = mouse_y_position + 'px';
-  fullpopup.style.left = mouse_x_position + 'px';
-}
 
 console.log('GPT-prompter content script is running')

@@ -94,7 +94,6 @@ function erasePrompt(index) {
     console.log('erasePrompt: ' + index);
     chrome.storage.sync.get('customprompt', function (items) {
         // Check that the prompt exists
-        console.log('Erasing.');
         if (typeof items.customprompt !== 'undefined') {
             // check that the index is valid
             if (index <= items.customprompt.length) {
