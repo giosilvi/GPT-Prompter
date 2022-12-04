@@ -2,10 +2,10 @@ function makeHistoryList(items) {
     var freshList = '';
     var totalCost = 0;
     for (var i = items.history.length - 1; i >= 0; i--) {
-        console.log(items.history[i][0]);
+        // console.log(items.history[i][0]);
         freshList += '<li class="list-group-item list-group-item-action" style="white-space: pre-wrap;">'
         var prompt = JSON.parse(items.history[i][0]);
-        console.log(prompt, typeof prompt, typeof items.history[i][0]);
+        // console.log(prompt, typeof prompt, typeof items.history[i][0]);
         // print keys of the prompt
         for (var key in prompt) {
             // if key is not stream

@@ -15,8 +15,7 @@
     "content_scripts": [
         {
             "matches": [
-                "https://*/*",
-                "http://*/*"
+               "<all_urls>"
             ],
             "js": [
                 "node_modules/@webcomponents/custom-elements/custom-elements.min.js",

@@ -53,7 +53,8 @@ function createContextMenu() {
     chrome.contextMenus.create({
         id: 'GPT-Prompter',
         title: 'GPT-Prompter ',
-        documentUrlPatterns: ["https://*/*", "http://*/*"],
+        // documentUrlPatterns: ["<all_urls>"], // this will make it work on local chrome pages, but the content script will not work
+        documentUrlPatterns: ["https://*/*", "http://*/*", "file:///*"],
         contexts: ["selection", "page", "frame"]
     });
 
