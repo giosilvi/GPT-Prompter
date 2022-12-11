@@ -27,7 +27,7 @@ h1 h2 {
 .save {
   align-items: center;
   justify-content: space-around;
-  margin: auto;
+  margin: 3px;
   max-width: 700px;
   font-size: 1rem;
   background-color: transparent;
@@ -41,6 +41,7 @@ h1 h2 {
   box-sizing: border-box;
   outline: 0px !important;
   cursor: pointer;
+  
 }
 
 .apikeybutton {
@@ -66,4 +67,78 @@ h1 h2 {
 
 .form-control-dark {
   border-color: var(--bs-gray);
+}
+
+body .list {
+  position: relative;
+  width: 250px;
+  margin: 0px auto;
+  display: block;
+}
+body .list ::-webkit-input-placeholder {
+  color: #cecece;
+}
+body .list .input {
+  outline: none;
+  border: 1px solid white;
+  background-color: #53a8e6;
+  color: white;
+  height: 50px;
+  width: 250px;
+  padding-left: 10px;
+  font-family: "Raleway", sans-serif;
+  font-weight: 800;
+  font-size: 16px;
+  margin-left: -5px;
+} 
+body .list span {
+  position: absolute;
+  right: 0;
+  top: 0;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.8;
+  cursor: pointer;
+  transition: all 200ms;
+  color: white;
+  will-change: transform;
+}
+body .list span:hover {
+  transform: rotate(180deg);
+}
+body ul {
+  padding: 0px;
+}
+body ul .draggable {
+  will-change: transform;
+  font-family: "Raleway", sans-serif;
+  list-style-type: none;
+  margin: 10px;
+  background-color: white;
+  color: #212121;
+  line-height: 3.5;
+  cursor: move;
+  transition: all 200ms;
+  user-select: none;
+  position: relative;
+}
+body ul .draggable:after {
+  content: 'drag me';
+  right: 7px;
+  font-size: 10px;
+  position: absolute;
+  cursor: pointer;
+  line-height: 5;
+  transition: all 200ms;
+  transition-timing-function: cubic-bezier(0.48, 0.72, 0.62, 1.5);
+  transform: translateX(120%);
+  opacity: 0;
+}
+body ul .draggable:hover:after {
+  opacity: 1;
+  transform: translate(0);
+}
+ 
+.over {
+  transform: scale(1.1, 1.1);
 }

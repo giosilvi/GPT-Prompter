@@ -40,11 +40,12 @@ function computeCost(tokens, model) {
 }
 
 
-
+// <button class='minibuttons' id="regenerate${id}" title="Regenerate prompt">&#8635;&#xFE0E;</button>
 
 const minipopup = (id, { left = 0, top = 0 }) => `
 <div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px">
   <div id="${id}prompt" class="popupprompt">
+  
     <div id="${id}header" class="grabbable" style='width: 90%;'>
     </div>
     <div style='min-width: 120px; width:10%; justify-content: flex-end;'>
@@ -297,6 +298,8 @@ class popUpClass extends HTMLElement {
     );
   }
 
+ 
+
   stopButton(id_target) {
     this.shadowRoot.getElementById(id_target + "stop").addEventListener("click", () => {
       console.log('Prompt on-the-fly stopped from', id_target)
@@ -337,13 +340,38 @@ class popUpClass extends HTMLElement {
         this.runClick(id_target);
         this.stopButton(id_target);
       }
+     
     };
   }
+
+ 
+    
 
   updatePopupHeader(request, target_id) {
     var symbol = symbolFromModel(request.body_data.model)
     this.shadowRoot.getElementById(target_id + "header").innerHTML = symbol + "<i> " + request.text + "</i>";
+    // if (this.shadowRoot.getElementById("regenerate" + target_id)) {
+    //   this.regenerateButton(target_id, request);
+    // }
   }
+
+  //to be finished
+   regenerateButton(id_target,request) {
+    this.shadowRoot.getElementById("regenerate" + id_target).addEventListener("click", () => {
+      this.shadowRoot.getElementById(id_target + "text").innerHTML = "";
+      console.log('Prompt on-the-fly launched from', id_target)
+      var promptDict = {
+        "prompt": request.text,
+        "model":  request.body_data.model,
+        "temperature":  request.body_data.temperature,
+        "max_tokens":  request.body_data.max_tokens,
+        "popupID": id_target,
+      }
+      chrome.runtime.sendMessage({ text: "launchGPT", prompt: promptDict });
+
+    });
+  };
+
   copyToClipboard = async (text) => {
     try {
       await navigator.clipboard.writeText(text);
