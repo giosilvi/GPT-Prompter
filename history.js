@@ -1,27 +1,72 @@
+/**
+ * Creates an HTML list of items in the 'items.history' array.
+ *
+ * @param {object} items - The list of items to create the list from.
+ * @return {string} - The HTML list.
+ */
 function makeHistoryList(items) {
-    var freshList = '';
+    // create empty list and total cost variables
+    var list = '';
     var totalCost = 0;
+    // loop through items.history array in reverse order
     for (var i = items.history.length - 1; i >= 0; i--) {
-        // console.log(items.history[i][0]);
-        freshList += '<li class="list-group-item list-group-item-action" style="white-space: pre-wrap;">'
-        var prompt = JSON.parse(items.history[i][0]);
-        // console.log(prompt, typeof prompt, typeof items.history[i][0]);
-        // print keys of the prompt
-        for (var key in prompt) {
-            // if key is not stream
-            if (key != 'stream') {
-                var value = prompt[key];
-                freshList += key + ': ' + value + '<br>';
-            }
-        }
-        // var cleanAns = items.history[i][1].replace(prompt["prompt"], '');
-        freshList += 'completion:' + items.history[i][1] + '<br>'
-        freshList += 'cost: ' + items.history[i][2] + '$  <button  class="save" id="eraseItem' + i.toString() + '" > Delete </button></li>';
+        // create list item for current item
+        list += createListItem(items.history[i], i);
+        // add cost of current item to total cost
         totalCost += parseFloat(items.history[i][2]);
     }
-    document.getElementById('totCost').innerHTML = 'Total cost: ' + totalCost.toFixed(2) + '$';
-    return freshList;
+    // update total cost display
+    updateTotalCostDisplay(totalCost);
+    return list;
 }
+
+
+/**
+ * Creates an HTML list item for a single item.
+ *
+ * @param {object} item - The item to create the list item for.
+ * @param {number} index - The index of the item in the list.
+ * @return {string} - The HTML list item.
+ */
+function createListItem(item, index) {
+    // create list item element
+    var listItem = '<li class="list-group-item list-group-item-action" style="white-space: pre-wrap;">';
+    // parse prompt object from item
+    var prompt = JSON.parse(item[0]);
+    // create empty prompt content string
+    var promptContent = '';
+    // add key and value pairs from prompt object to prompt content string
+    for (var key in prompt) {
+        if (key !== 'stream') {
+            var value = prompt[key];
+            // wrap key in 'strong' element
+            promptContent += `<strong>${key}:</strong> ${value}<br>`;
+        }
+    }
+    // create completion content string
+    var completionContent = `<strong>completion:</strong> ${item[1]}<br>`;
+    // create cost content string with delete button
+    var costContent = `<strong>cost:</strong> ${item[2]}$  <button  class="save" id="eraseItem${index}" > Delete </button>`;
+    // add content strings to list item element
+    listItem += `${promptContent}${completionContent}${costContent}`;
+    // close list item element
+    listItem += '</li>';
+    return listItem;
+}
+
+
+
+/**
+ * Updates the total cost display element with the provided total cost.
+ *
+ * @param {number} totalCost - The total cost to display.
+ */
+function updateTotalCostDisplay(totalCost) {
+    document.getElementById('totCost').innerHTML = `<strong>Total cost:</strong> ${totalCost.toFixed(2)}$`;
+}
+
+
+
 // in javascript, to return two values, use an array
 
 
