@@ -1,14 +1,13 @@
-
-function checkTabsAndSendStream(message, tabs, string, body_data, idpopup) {
+function checkTabsAndSendStream(message, tabs, string, body_data, idpopup, uuid) {
     if (tabs.id == -1) { //pdf case
       console.log("pdf case");
       chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-          sendStream(message, tabs[0].id, string, body_data, idpopup);
+          sendStream(message, tabs[0].id, string, body_data, idpopup, uuid);
         });
       }
       else {// html case
         console.log("html case");
-        sendStream(message, tabs.id, string, body_data, idpopup);
+        sendStream(message, tabs.id, string, body_data, idpopup, uuid);
       }
     }
     
@@ -30,7 +29,6 @@ async function promptGPT3Prompting(prompt, items, tabs) {
   var max_tokens = prompt["max_tokens"]
   var popupID = prompt["popupID"] // may be undefined
   var uuid = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-
   //send immediately text to the content script
   console.log(text, model, temperature, max_tokens);
   const url = "https://api.openai.com/v1/completions";

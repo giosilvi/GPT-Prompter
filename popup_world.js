@@ -201,6 +201,7 @@ class popUpClass extends HTMLElement {
     this.listOfActivePopups = [];
     this.listOfUnpinnedPopups = [];
     this.listOfUndesiredStreams = [];
+    this.stream_on = false;
     this.stop_stream = false;
     this.alreadyCalled = {};
   }
@@ -217,19 +218,40 @@ class popUpClass extends HTMLElement {
     }
   }
   defaultpopup() {
-    this.shadowRoot.innerHTML += this.lastpop
+    // Create a new element to hold the pop-up
+    const popUpElement = document.createElement('div');
+    popUpElement.innerHTML = this.lastpop;
+
+    // Append the new element to the shadow root
+    this.shadowRoot.appendChild(popUpElement);
+
+    // Toggle the 'show' class on the element with the ID specified in this.ids
     this.shadowRoot.getElementById(this.ids).classList.toggle('show');
-    this.buttonForPopUp();
-  }
-  ontheflypopup(selectionText) {
-    this.shadowRoot.innerHTML += flypopup(this.ids, { text: selectionText, left: this.mousePosition.left, top: this.mousePosition.top });
-    this.shadowRoot.getElementById(this.ids).classList.toggle('show');
-    this.buttonForPopUp();
-    const id_textarea = this.shadowRoot.getElementById(this.ids + 'textarea');
-    // stop Propagation of the event for keydown to avoid the background to be selected
-    id_textarea.addEventListener('keydown', (e) => { e.stopPropagation(); });
-    this.shadowRoot.getElementById(this.ids + "textarea").focus();
-  }
+
+    // Set up event listeners for the buttons and other actions
+    this.buttonForPopUp(this.ids);
+    }
+    ontheflypopup(selectionText) {
+      // Create a new element to hold the pop-up
+      const popUpElement = document.createElement('div');
+      popUpElement.innerHTML = flypopup(this.ids, { text: selectionText, left: this.mousePosition.left, top: this.mousePosition.top });
+    
+      // Append the new element to the shadow root
+      this.shadowRoot.appendChild(popUpElement);
+    
+      // Toggle the 'show' class on the element with the ID specified in this.ids
+      this.shadowRoot.getElementById(this.ids).classList.toggle('show');
+    
+      // Set up event listeners for the buttons and other actions
+      this.buttonForPopUp(this.ids);
+    
+      // Get the textarea element and add a keydown event listener to it
+      const id_textarea = this.shadowRoot.getElementById(this.ids + 'textarea');
+      id_textarea.addEventListener('keydown', (e) => { e.stopPropagation(); });
+    
+      // Focus on the textarea element
+      this.shadowRoot.getElementById(this.ids + "textarea").focus();
+    }
 
   pinButtons(id_target, id_button) {
     this.shadowRoot.getElementById(id_button).addEventListener("click", () => {
@@ -264,6 +286,11 @@ class popUpClass extends HTMLElement {
       this.shadowRoot.getElementById(id_target).classList.toggle('show');
       this.shadowRoot.getElementById(id_target).remove();
       this.listOfActivePopups = this.listOfActivePopups.filter(item => item !== id_target);
+      // remove from listOfUnpinnedPopups if it is there
+      if (this.listOfUnpinnedPopups.includes(id_target)) {
+        this.listOfUnpinnedPopups.splice(this.listOfUnpinnedPopups.indexOf(id_target), 1);
+      }
+      
     });
   }
 
@@ -309,13 +336,6 @@ class popUpClass extends HTMLElement {
       this.toggleRunStop(id_target);
 
     });
-    // // make the same listener, but for the ctrl+enter key combination
-    // this.shadowRoot.getElementById(id_target + "textarea").addEventListener("keydown", (e) => {
-    //   if (e.ctrlKey && e.key === 'Enter') {
-    //     this.shadowRoot.getElementById(id_target + "stop").click();
-    //   }
-    // }
-    // );
   }
 
   toggleRunStop(id_target) {
@@ -326,24 +346,18 @@ class popUpClass extends HTMLElement {
   }
 
 
-  buttonForPopUp() {
-    for (var i = 0; i < popUpShadow.listOfActivePopups.length; i++) {
-      //
-      var id_target = popUpShadow.listOfActivePopups[i];
-      // const id_target =this.ids
-      const id_pin = "pin" + id_target;
-      const id_close = "mclose" + id_target;
-      const id_minimize = "minimize" + id_target;
-      this.pinButtons(id_target, id_pin);
-      this.minimizeButtons(id_target, id_minimize);
-      this.closeButtons(id_target, id_close);
-      this.doubleClick(id_target + "prompt");
-      if (this.shadowRoot.getElementById(id_target + "submit")) {
-        this.runClick(id_target);
-        this.stopButton(id_target);
-      }
-     
-    };
+  buttonForPopUp(id_target) {
+    const id_pin = "pin" + id_target;
+    const id_close = "mclose" + id_target;
+    const id_minimize = "minimize" + id_target;
+    this.pinButtons(id_target, id_pin);
+    this.minimizeButtons(id_target, id_minimize);
+    this.closeButtons(id_target, id_close);
+    this.doubleClick(id_target + "prompt");
+    if (this.shadowRoot.getElementById(id_target + "submit")) {
+      this.runClick(id_target);
+      this.stopButton(id_target);
+    }
   }
 
  
@@ -363,8 +377,8 @@ class popUpClass extends HTMLElement {
   //to be finished
    regenerateButton(id_target,request) {
     this.shadowRoot.getElementById("regenerate" + id_target).addEventListener("click", () => {
+      if (this.stream_on == true) { this.stop_stream = true;} //stop the actual stream if it is on, and then restart it (remains on)
       this.shadowRoot.getElementById(id_target + "text").innerHTML = "";
-      console.log('Prompt on-the-fly launched from', id_target)
       var promptDict = {
         "prompt": request.text,
         "model":  request.body_data.model,
@@ -387,10 +401,9 @@ class popUpClass extends HTMLElement {
   };
 
   updatepopup(message, target_id, stream) {
-    // console.log('updatepopup', message, target_id, stream)
     //if stream is true
     if (stream) 
-    {
+    {this.stream_on = true;
       // if choices is a key in message, it means usual stream
       if (message.choices) {
         var text = message.choices[0].text
@@ -410,14 +423,18 @@ class popUpClass extends HTMLElement {
         var type = message.error.type
         this.shadowRoot.getElementById(target_id + "text").innerHTML += type + "<br>" + text;
         this.tokens = 0;
+        this.stream_on = false;
         //show run button and hide stop button
         this.toggleRunStop(target_id);
+
       }
       // each message should be 1 token
       this.tokens++;
 
     }
     else {
+      // if stream is false, it means that the stream is over
+      this.stream_on = false;
       // show run button and hide stop button
       this.toggleRunStop(target_id);
       var complete_completion = this.shadowRoot.getElementById(target_id + "text").innerHTML
@@ -425,7 +442,6 @@ class popUpClass extends HTMLElement {
       this.addCopyToClipboardBtn(target_id, complete_completion);
 
       //save prompt to local storage 
-
       var body_data = JSON.parse(message.body_data)
       var model = body_data.model
       var cost = computeCost(this.tokens, model)
