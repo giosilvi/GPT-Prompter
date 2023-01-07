@@ -40,7 +40,7 @@ function computeCost(tokens, model) {
 }
 
 
-// <button class='minibuttons' id="regenerate${id}" title="Regenerate prompt">&#8635;&#xFE0E;</button>
+// 
 
 const minipopup = (id, { left = 0, top = 0 }) => `
 <div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px">
@@ -48,7 +48,8 @@ const minipopup = (id, { left = 0, top = 0 }) => `
   
     <div id="${id}header" class="grabbable" style='width: 90%;'>
     </div>
-    <div style='min-width: 120px; width:10%; justify-content: flex-end;'>
+    <div style='min-width: 160px; width:10%; justify-content: flex-end;'>
+      <button class='minibuttons' id="regenerate${id}" title="Regenerate prompt">&#8635;&#xFE0E;</button>
       <button class='minibuttons' id="pin${id}" title="Pin the popup">&#128204;&#xFE0E;</button>
       <button class='minibuttons' id="minimize${id}" title="Minimize/maximize completion">&#128469;&#xFE0E;</button>
       <button class='minibuttons' id="mclose${id}" title="Close popup">&#128473;&#xFE0E;</button>
@@ -201,6 +202,7 @@ class popUpClass extends HTMLElement {
     this.listOfUnpinnedPopups = [];
     this.listOfUndesiredStreams = [];
     this.stop_stream = false;
+    this.alreadyCalled = {};
   }
 
   //   this function update the style in shadow DOM with the new mousePosition
@@ -350,9 +352,12 @@ class popUpClass extends HTMLElement {
   updatePopupHeader(request, target_id) {
     var symbol = symbolFromModel(request.body_data.model)
     this.shadowRoot.getElementById(target_id + "header").innerHTML = symbol + "<i> " + request.text + "</i>";
-    // if (this.shadowRoot.getElementById("regenerate" + target_id)) {
-    //   this.regenerateButton(target_id, request);
-    // }
+    
+    if (!this.alreadyCalled[target_id] && 
+      this.shadowRoot.getElementById("regenerate" + target_id)) {
+      this.regenerateButton(target_id, request);
+      this.alreadyCalled[target_id] = true;
+    }
   }
 
   //to be finished
