@@ -8,11 +8,12 @@
 // }
 
 function makePromptList(items) {
-    // clear the node 'list-of-prompts'
+    // Clear the node 'list-of-prompts'.
     var ul = document.getElementById('list-of-prompts');
     while (ul.firstChild) {
         ul.removeChild(ul.firstChild);
     }
+
     for (var i = 0; i < items.customprompt.length; i++) {
         var li = document.createElement('li');
         var attr = document.createAttribute('draggable');
@@ -22,13 +23,23 @@ function makePromptList(items) {
         li.className = 'list-group-item draggable';
         attr.value = 'true';
         li.setAttributeNode(attr);
-        // add to li a button with the id 'del' + i.toString()
-        li.innerHTML = items.customprompt[i]['prompt'] + "<br> (Model: " + items.customprompt[i]['model'] + ",Temp: " + items.customprompt[i]['temperature'] + ", Max tokens:" + items.customprompt[i]['max_tokens'] + ')  <button id="edit' + i.toString() + '" class="save" > Edit </button>    <button id="del' + i.toString() + '" class="save" > Delete </button>';
-        // li.innerHTML = items.customprompt[i]['prompt'] + "<br> (Model: " + items.customprompt[i]['model'] + ",Temp: " + items.customprompt[i]['temperature'] + ", Max tokens:" + items.customprompt[i]['max_tokens'] + ')   <button id="del' + i.toString() + '" class="save" > Delete </button>';
+
+        // Add to li a button with the id 'del' + i.toString().
+        var promptText = `<span class="prompt-text">${items.customprompt[i]['prompt']}</span>`;
+        var modelText = `<span class="feature-text">Model:</span> ${items.customprompt[i]['model']}`;
+        var tempText = `<span class="feature-text" style="margin-left: 25px;">Temp:</span> ${items.customprompt[i]['temperature']}`;
+        var maxTokensText = `<span class="feature-text" style="margin-left: 25px;">Max tokens:</span> ${items.customprompt[i]['max_tokens']}`;
+        var editButton = `<button id="edit${i}" class="save">Edit</button>`;
+        var deleteButton = `<button id="del${i}" class="save">Delete</button>`;
+        // combine all the text and buttons
+        //   li.innerHTML = `${promptText}<br>${modelText}${tempText}${maxTokensText}${editButton}${deleteButton}`;
+        li.innerHTML = `${promptText}<br>${modelText}${tempText}${maxTokensText}<br>${editButton}${deleteButton}`;
+
         ul.appendChild(li);
         addEventsDragAndDrop(li);
     }
 }
+
 
 function update_del_buttons(items) {
     for (var j = 0; j < items.customprompt.length; j++) {
@@ -40,18 +51,27 @@ function update_del_buttons(items) {
         document.getElementById('edit' + j.toString()).addEventListener('click', function () {
             var id = this.id.substring(4);
             editPrompt(id);
-        }   , false)
+        }, false)
     }
 }
 
 function toggleSaveKeyButton() {
     //display the element with id 'apikey' and the 'saveKey' button
     if (document.getElementById('apikey').style.display == 'none') {
+
         document.getElementById('apikey').style.display = 'block';
         document.getElementById('saveKey').style.display = 'block';
         document.getElementById('deleteKey').style.display = 'block';
         document.getElementById('linktoAPI').style.display = 'block';
         document.getElementById('showKey').innerHTML = 'Hide API';
+        // show the API key if it exists
+        chrome.storage.sync.get('APIKEY', function (items) {
+            if (typeof items.APIKEY !== 'undefined') {
+                // alert(items.APIKEY);
+                document.getElementById('apikey').value = items.APIKEY;
+            }
+        }
+        )
     }
     else {
         document.getElementById('apikey').style.display = 'none';
@@ -61,8 +81,6 @@ function toggleSaveKeyButton() {
         document.getElementById('showKey').innerHTML = 'Show API';
     }
 
-
-    // document.getElementById('showKey').style.display = 'none';
 }
 
 
@@ -73,8 +91,7 @@ function hideSaveKey() {
     document.getElementById('deleteKey').style.display = 'none';
     document.getElementById('linktoAPI').style.display = 'none';
     document.getElementById('showKey').style.display = 'block';
-    //show the element with id 'showKey'
-    // document.getElementById('showKey').style.display = 'block';
+    document.getElementById('showKey').innerHTML = 'Show API';
 }
 
 //add function to save the the custom prompt in storage
@@ -116,7 +133,7 @@ function savePrompt() {
                 var customprompt = document.getElementById('promptinput').value;
 
                 document.getElementById('promptinput').value = 'Prompt already present! Available in right-click menu.';
-                 //yellow color for the prompt created
+                //yellow color for the prompt created
                 document.getElementById("promptinput").style.color = "#f7b500";
             }
             setTimeout(function () {
@@ -128,7 +145,7 @@ function savePrompt() {
             // if the prompt does not exist, create a new array with the prompt
             items.customprompt = [body_data];
         };
-        
+
     });
 }
 
@@ -264,44 +281,23 @@ document.addEventListener('DOMContentLoaded', function () {
         setTimeout(function () {
             document.getElementById('apikey').value = "";
         }, 2000);
-        ;
+        // reset the icon to the default one
+        chrome.action.setIcon({ path: "icons/icon16.png" })
     }
 }, false)
 
 
 
-function onclick() {
-    //deactivate the button
-    
-    savePrompt();
-    //activate the button
-    
-    
+// Attach the click event to the respective elements
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('createPrompt').addEventListener('click', savePrompt);
+    document.getElementById('showKey').addEventListener('click', toggleSaveKeyButton);
+    document.getElementById('linktoAPI').addEventListener('click', openLink);
+}, false);
+
+function openLink() {
+    chrome.tabs.create({ active: true, url: this.href });
 }
-
-// add the event listener to the button CreatePrompt
-document.addEventListener('DOMContentLoaded', function () {
-    document.getElementById('createPrompt').addEventListener('click', onclick, false)
-} , false)
-
-
-// add the event listener to the button show api key
-document.addEventListener('DOMContentLoaded', function () {
-    document.getElementById('showKey').addEventListener('click', onclick, false)
-    function onclick() {
-        toggleSaveKeyButton();
-    }
-}
-    , false)
-
-//to attach the link to the element "a"
-document.addEventListener('DOMContentLoaded', function () {
-    var link = document.getElementById('linktoAPI');
-    var location = link.href;
-    link.onclick = function () {
-        chrome.tabs.create({ active: true, url: location });
-    };
-});
 
 
 
@@ -320,39 +316,29 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
     )
-    //check if API is present in storage and if yes, display the API
-    chrome.storage.sync.get('APIKEY', function (items) {
-        //if it exists send an alert
-        if (typeof items.APIKEY !== 'undefined') {
-            // alert(items.APIKEY);
-            document.getElementById('apikey').value = items.APIKEY;
-        }
-    })
-
     checkAPIKeyatBeginning();
 }
     , false);
 
 
 
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-    if (request.message == "API key is valid") {
-        saveKey(); // if the API key is valid, save it
-        chrome.action.setIcon({ path: "icons/iconA16.png" })
-        // change the value of 'showKey' to 'Successfully saved' for 1 second
-        document.getElementById('apikey').value = "API Key is valid!";
-        setTimeout(function () {
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.message === "API_key_valid") {
+        saveKey();
+        chrome.action.setIcon({ path: "icons/iconA16.png" });
+        document.getElementById("apikey").value = "The API KEY is valid. Hooray!";
+        setTimeout(() => {
             hideSaveKey();
-        }, 2000);
-    }
-    else if (request.message == "API key is invalid") {
-        // write in inputkey the message 'API key is invalid'
-        document.getElementById('apikey').value = "API key is invalid";
-        setTimeout(function () {
-            document.getElementById('apikey').value = "";
-        }, 2000);
+        }, 3000);
+        //
+    } else if (request.message === "API_key_invalid") {
+        document.getElementById("apikey").value = "The API KEY is invalid. Try again!";
+        setTimeout(() => {
+            document.getElementById("apikey").value = "";
+        }, 3000);
     }
 });
+
 
 
 // if the API key is present in memory, hide the button to save it

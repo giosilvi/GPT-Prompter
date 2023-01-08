@@ -109,8 +109,17 @@ function checkIdPopup(id) {
 }
 
 
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 
-chrome.runtime.onMessage.addListener((request) => {
+  });
+
+
+chrome.runtime.onMessage.addListener((request,sender, sendResponse) => {
+  if (request.getSelection) {
+    sendResponse({selection: window.getSelection().toString()});
+    return;
+  }
+
   const idPopup = checkIdPopup(request.id_popup);
 
   const handleShowPopUp = () => {

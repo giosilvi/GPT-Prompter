@@ -1,6 +1,6 @@
 {
     "name": "GPT-Prompter",
-    "version": "0.0.1.1",
+    "version": "0.0.1.2",
     "description": "Fast custom prompts to GPT-3 API",
     "manifest_version": 3,
     "icons": {
@@ -10,7 +10,8 @@
     },
     "permissions": [
         "contextMenus",
-        "storage"
+        "storage",
+        "commands"
     ],
     "content_scripts": [
         {
@@ -31,5 +32,13 @@
     "background": {
         "service_worker": "background.js",
         "type": "module"
+    },
+    "commands": {
+        "prompt-on-the-fly": {
+            "suggested_key": {
+                "default": "Alt+P"
+            },
+            "description": "Launches the Prompt-on-the-Fly functionality"
+        }
     }
 }

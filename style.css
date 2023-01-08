@@ -2,7 +2,7 @@
 Theme Name: GPT3
 Description: The first theme for GPT3 responder
 Version: 0.1
-Author: Paoloart
+Author: Paoloart, GiorgioS
 Template: 42 is the completion to everything
 
 */
@@ -27,7 +27,7 @@ h1 h2 {
 .save {
   align-items: center;
   justify-content: space-around;
-  margin: 3px;
+  margin-right: 25px;
   max-width: 700px;
   font-size: 1rem;
   background-color: transparent;
@@ -52,8 +52,10 @@ h1 h2 {
   font-size: 1rem;
   background-color: transparent;
   color: #6e6e80;
-  padding: 10px 0;
+  padding-top: 3px;
+  padding-bottom: 3px;
   border-width: 0px;
+  border-radius: 5px;
   flex-wrap: wrap;
   -webkit-box-pack: justify;
   justify-content: space-between;
@@ -63,6 +65,16 @@ h1 h2 {
   cursor: pointer;
   white-space: nowrap;
   margin: auto;
+}
+.apikeybutton:hover {
+  background-color: #E5E5E5;
+  
+
+}
+.apikeybutton:active {
+  background-color: #D3D3D3;
+  border-radius: 5px;
+
 }
 
 .form-control-dark {
@@ -116,7 +128,7 @@ body ul .draggable {
   margin: 10px;
   background-color: white;
   color: #212121;
-  line-height: 3.5;
+  line-height: 2.5;
   cursor: move;
   transition: all 200ms;
   user-select: none;
@@ -142,3 +154,12 @@ body ul .draggable:hover:after {
 .over {
   transform: scale(1.1, 1.1);
 }
+
+.feature-text {
+  font-weight: bold;
+  margin-right: 5px;
+}
+
+
+
+
