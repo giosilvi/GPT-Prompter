@@ -64,7 +64,7 @@ const flypopup = (id, { text = "none", left = 0, top = 0 }) => `
 <div class="popuptext onylonthefly" id="${id}" style="left: ${left}px; top:${top}px">
   <div id="${id}prompt" class="popupprompt">
     <div id="${id}header" class="grabbable" style='width: 90%;'>
-    <b>Prompt on-the-fly</b>: type below and press submit 
+    <b>Prompt on-the-fly</b>: (shortcuts: <b>Alt+P</b> to open , <b>Alt+Enter</b> to submit) 
     </div>
     <div style='min-width: 120px; width:10%; justify-content: flex-end;'>
       <button class='minibuttons' id="pin${id}">&#128204;&#xFE0E;</button>
@@ -320,7 +320,7 @@ class popUpClass extends HTMLElement {
     });
     // make the same listener, but for the ctrl+enter key combination
     this.shadowRoot.getElementById(id_target + "textarea").addEventListener("keydown", (e) => {
-      if (e.ctrlKey && e.key === 'Enter') {
+      if (e.altKey && e.key === 'Enter') {
         this.shadowRoot.getElementById(id_target + "submit").click();
       }
     }
