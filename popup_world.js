@@ -64,7 +64,7 @@ const flypopup = (id, { text = "none", left = 0, top = 0 }) => `
 <div class="popuptext onylonthefly" id="${id}" style="left: ${left}px; top:${top}px">
   <div id="${id}prompt" class="popupprompt">
     <div id="${id}header" class="grabbable" style='width: 90%;'>
-    <b>Prompt on-the-fly</b>: (shortcuts: <b>Alt+P</b> to open , <b>Alt+Enter</b> to submit) 
+    <b>Prompt on-the-fly</b>: (shortcuts: <b>Alt+P</b> to open , <b>Alt+Enter</b> to submit/stop <b>Esc</b> to close) 
     </div>
     <div style='min-width: 120px; width:10%; justify-content: flex-end;'>
       <button class='minibuttons' id="pin${id}">&#128204;&#xFE0E;</button>
@@ -300,32 +300,46 @@ class popUpClass extends HTMLElement {
     });
   }
 
-  runClick(id_target) {
-    // if id_target + "submit" has no listener, add one
-    this.shadowRoot.getElementById(id_target + "submit").addEventListener("click", () => {
-      // show stop button and hide run button
-      this.toggleRunStop(id_target);
+runClick(targetId) {
+  // Add a click event listener to the target element's submit button if it doesn't already have one
+  const submitButton = this.shadowRoot.getElementById(`${targetId}submit`);
+  if (!submitButton.listener) {
+    submitButton.addEventListener("click", () => {
+      // Show the stop button and hide the run button
+      this.toggleRunStop(targetId);
 
-      this.shadowRoot.getElementById(id_target + "text").innerHTML = "";
-      console.log('Prompt on-the-fly launched from', id_target)
-      var promptDict = {
-        "prompt": this.shadowRoot.getElementById(id_target + "textarea").innerHTML,
-        "model": "text-davinci-003",
-        "temperature": 0.1,
-        "max_tokens": 1000,
-        "popupID": id_target,
+      // Reset the text element
+      this.shadowRoot.getElementById(`${targetId}text`).innerHTML = '';
+      // console.log(`Prompt on-the-fly launched from ${targetId}`)
+
+      // Create a prompt object to send to the runtime
+      const promptObj = {
+        prompt: this.shadowRoot.getElementById(`${targetId}textarea`).innerHTML,
+        model: 'text-davinci-003',
+        temperature: 0.1,
+        max_tokens: 1000,
+        popupID: targetId,
       }
-      chrome.runtime.sendMessage({ text: "launchGPT", prompt: promptDict });
-
+      chrome.runtime.sendMessage({ text: 'launchGPT', prompt: promptObj });
     });
-    // make the same listener, but for the ctrl+enter key combination
-    this.shadowRoot.getElementById(id_target + "textarea").addEventListener("keydown", (e) => {
-      if (e.altKey && e.key === 'Enter') {
-        this.shadowRoot.getElementById(id_target + "submit").click();
+  }
+
+  // Add a keydown event listener to the target element's textarea for the alt+enter key combination
+  this.shadowRoot.getElementById(`${targetId}textarea`).addEventListener('keydown', (e) => {
+    if (e.altKey && e.key === 'Enter') {
+      // If the submit button is not hidden, click it; otherwise, click the stop button
+      if (!this.shadowRoot.getElementById(`${targetId}submit`).classList.contains('hide')) {
+        this.shadowRoot.getElementById(`${targetId}submit`).click();
+      } else {
+        this.shadowRoot.getElementById(`${targetId}stop`).click();
       }
     }
-    );
-  }
+    // if the user presses escape, close the popup
+    if (e.key === 'Escape') {
+      this.shadowRoot.getElementById(`mclose${targetId}`).click();
+    }
+  });
+}
 
  
 
