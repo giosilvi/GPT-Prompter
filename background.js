@@ -147,12 +147,46 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 });
 
 
+// refactor the function for the prompt-on-the-fly
+// declare function:
+function launchPromptOnTheFly(info, tabs) {
+    var selectionText = '';
+    if (typeof info.selectionText !== 'undefined') {
+        selectionText = info.selectionText;
+    }
+    // here we want to create a minipop-up to ask the user to insert the prompt
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        chrome.tabs.sendMessage(tabs[0].id, { message: 'showPopUpOnTheFly', text: selectionText, body_data: { "model": "text-davinci-003", "temperature": 0, "max_tokens": 2048 } });
+    });
+}
 
-chrome.contextMenus.onClicked.addListener((info, tabs) => {
+// chrome.commands.onCommand.addListener(function (command) {
+//     if (command === "prompt-on-the-fly") {
+//         chrome.contextMenus.create({
+//             title: "Prompt on the Fly",
+//             contexts: ["selection"],
+//             onclick: function (info) {
+//                 chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+//                     launchPromptOnTheFly(info, tabs[0]);
+//                 });
+//             }
+//         });
+//     }
+// });
 
-    // get the id of the context menu clicked
-    // to transfort a string to int do: parseInt(string)
 
+
+chrome.contextMenus.onClicked.addListener(async (info, tabs) => {
+
+    // check if the API key is present in storage, if not, send a message to the tab with early return
+    const items = await new Promise((resolve) => {
+        chrome.storage.sync.get('APIKEY', resolve);
+    });
+    if (typeof items.APIKEY == 'undefined') {
+        chrome.tabs.sendMessage(tabs.id, 'APIKEY not found. Click on the GPT-prompter icon to set it.');
+        return;
+    }
+  
     // if the context menu clicked is a custom prompt
     if (info.menuItemId.includes('customprompt')) {
 
@@ -200,32 +234,8 @@ chrome.contextMenus.onClicked.addListener((info, tabs) => {
         });
     }
     // if the context menu clicked is the on-the-fly prompt
-    else if (info.menuItemId == 'On-the-fly') {
-        var selectionText = '';
-        if (typeof info.selectionText !== 'undefined') {
-            selectionText = info.selectionText;
-        }
-
-        // here we want to create a minipop-up to ask the user to insert the prompt
-        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-            chrome.tabs.sendMessage(tabs[0].id, { message: 'showPopUpOnTheFly', text: selectionText, body_data: { "model": "text-davinci-003", "temperature": 0, "max_tokens": 2048 } });
-        });
-        // check if there is a selection
-        // if (info.selectionText) {
-        //     // if there is a selection, use it as the prompt
-        //     var prompt = { "model": "text-davinci-002", "temperature": 0, "max_tokens": 1024, "prompt": info.selectionText };
-        //     chrome.storage.sync.get('APIKEY', function (items) {
-        //         if (typeof items.APIKEY !== 'undefined') {
-        //             (async () => {
-        //                 await promptGPT3Prompting(prompt, items, tabs)
-        //             })();
-        //         }
-        //         else {
-        //             chrome.tabs.sendMessage(tabs.id, 'APIKEY not found');
-        //             console.log('Error: No API key found.');
-        //         }
-        //     })
-        // }
+    else if (info.menuItemId == 'On-the-Fly') {
+        launchPromptOnTheFly(info, tabs)
     }
 }
 
