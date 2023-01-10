@@ -64,7 +64,7 @@ const flypopup = (id, { text = "none", left = 0, top = 0 }) => `
 <div class="popuptext onylonthefly" id="${id}" style="left: ${left}px; top:${top}px">
   <div id="${id}prompt" class="popupprompt">
     <div id="${id}header" class="grabbable" style='width: 90%;'>
-    <b>Prompt on-the-fly</b>: (shortcuts: <b>Alt+P</b> to open , <b>Alt+Enter</b> to submit/stop <b>Esc</b> to close) 
+    <b>Prompt on-the-fly</b>: (shortcuts: <b>Alt+P</b> to open , <b>Alt+Enter</b> to submit/stop, <b>Esc</b> to close) 
     </div>
     <div style='min-width: 120px; width:10%; justify-content: flex-end;'>
       <button class='minibuttons' id="pin${id}">&#128204;&#xFE0E;</button>
@@ -372,6 +372,13 @@ runClick(targetId) {
       this.runClick(id_target);
       this.stopButton(id_target);
     }
+    // add a listener to escape key to close the popup
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        this.shadowRoot.getElementById(`mclose${id_target}`).click();
+      }
+    }
+    );
   }
 
  
