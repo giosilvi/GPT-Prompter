@@ -373,13 +373,14 @@ runClick(targetId) {
       this.stopButton(id_target);
     }
     // add a listener to escape key to close the popup
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        this.shadowRoot.getElementById(`mclose${id_target}`).click();
-      }
-    }
-    );
-  }
+    let popupElement = this.shadowRoot.getElementById(id_target);
+    popupElement.tabIndex = -1; // allow the element to receive focus and listen to keyboard events even if it is not in the natural tab order of the document
+    popupElement.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          this.shadowRoot.getElementById(id_close).click();
+        }
+    });
+}
 
  
     
