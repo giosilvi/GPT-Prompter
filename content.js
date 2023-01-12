@@ -5,8 +5,16 @@ document.body.appendChild(popUpShadow); //attach the shadowDOM to body
 window.addEventListener("scroll", function () {
   const x = window.scrollX, y = window.scrollY;
   popUpShadow.listOfUnpinnedPopups.forEach((id) => {
+    // show the button to pin the popup
+    const pinButton = popUpShadow.shadowRoot.getElementById(`pin${id}`);
+    // make it unhidden
+    // if it is already unhidden, do nothing
+    if (pinButton.hasAttribute("hidden")) {
+      pinButton.removeAttribute("hidden");
+    }
     const elem = popUpShadow.shadowRoot.getElementById(parseInt(id));
     const elemTop = elem.offsetTop - (y - this.window.lastY);
+    
     const elemLeft = elem.offsetLeft - (x - this.window.lastX);
     elem.style.top = `${elemTop}px`;
     elem.style.left = `${elemLeft}px`;

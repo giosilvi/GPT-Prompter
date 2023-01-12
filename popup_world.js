@@ -48,11 +48,11 @@ const minipopup = (id, { left = 0, top = 0 }) => `
   
     <div id="${id}header" class="grabbable" style='width: 90%;'>
     </div>
-    <div style='min-width: 160px; width:10%; justify-content: flex-end;'>
-      <button class='minibuttons' id="regenerate${id}" title="Regenerate prompt">&#8635;&#xFE0E;</button>
-      <button class='minibuttons' id="pin${id}" title="Pin the popup">&#128204;&#xFE0E;</button>
+    <div style='width:10%; justify-content: flex-end; display:flex!important'> 
+      <button class='minibuttons' id="pin${id}" title="Pin the popup" hidden>&#128204;&#xFE0E;</button>
+      <button class='minibuttons' id="regenerate${id}" title="Regenerate prompt (Alt+Enter)">&#8635;&#xFE0E;</button>
       <button class='minibuttons' id="minimize${id}" title="Minimize/maximize completion">&#128469;&#xFE0E;</button>
-      <button class='minibuttons' id="mclose${id}" title="Close popup">&#128473;&#xFE0E;</button>
+      <button class='minibuttons' id="mclose${id}" title="Close popup (Esc)">&#128473;&#xFE0E;</button>
     </div>
   </div>
   <p id="${id}text" class='popupcompletion'></p>
@@ -64,17 +64,17 @@ const flypopup = (id, { text = "none", left = 0, top = 0 }) => `
 <div class="popuptext onylonthefly" id="${id}" style="left: ${left}px; top:${top}px">
   <div id="${id}prompt" class="popupprompt">
     <div id="${id}header" class="grabbable" style='width: 90%;'>
-    <b>Prompt on-the-fly</b>: (shortcuts: <b>Alt+P</b> to open , <b>Alt+Enter</b> to submit/stop, <b>Esc</b> to close) 
+    <b>Prompt On-the-Fly</b> (<b>Alt+P</b> - Open , <b>Alt+Enter</b> - Submit/Stop, <b>Esc</b> - Close) 
     </div>
-    <div style='min-width: 120px; width:10%; justify-content: flex-end;'>
-      <button class='minibuttons' id="pin${id}">&#128204;&#xFE0E;</button>
-      <button class='minibuttons' id="minimize${id}">&#128469;&#xFE0E;</button>
-      <button class='minibuttons' id="mclose${id}">&#128473;&#xFE0E;</button>
+    <div style=' width:10%; justify-content: flex-end; display:flex!important'>
+      <button class='minibuttons' id="pin${id}" title="Pin the popup" hidden>&#128204;&#xFE0E;</button>
+      <button class='minibuttons' id="minimize${id}" title="Minimize/maximize completion">&#128469;&#xFE0E;</button>
+      <button class='minibuttons' id="mclose${id}"  title="Close popup (Esc)">&#128473;&#xFE0E;</button>
     </div>
   </div>
   <div contentEditable="true" id="${id}textarea" class='textarea'> ${text}</div>
-  <button type="button" id="${id}submit" class="submitbutton">Submit</button>
-  <button type="button" id="${id}stop" class="submitbutton hide" style='background-color: red;'>Stop</button>
+  <button type="button" id="${id}submit" class="submitbutton" title="Alt+Enter">Submit</button>
+  <button type="button" id="${id}stop" class="submitbutton hide" title="Alt+Enter" style='background-color: red;'>Stop</button>
   <p id="${id}text" class='popupcompletion'></p>
 </div>
 `;
@@ -137,7 +137,7 @@ const styled = `
     position:fixed;
     width:auto;
     min-width:200px;
-    max-width:700px;
+    max-width:800px;
     max-height: -webkit-fill-available;
     z-index:-1;
     line-height:1.8;
@@ -231,6 +231,7 @@ class popUpClass extends HTMLElement {
     // Set up event listeners for the buttons and other actions
     this.buttonForPopUp(this.ids);
     }
+
     ontheflypopup(selectionText) {
       // Create a new element to hold the pop-up
       const popUpElement = document.createElement('div');
@@ -338,6 +339,13 @@ runClick(targetId) {
     if (e.key === 'Escape') {
       this.shadowRoot.getElementById(`mclose${targetId}`).click();
     }
+    if (e.altKey && e.key === 'c') {
+      // if the copy button exists, click it
+      if (this.shadowRoot.getElementById(`copy_to_clipboard${targetId}`))
+      {
+        this.shadowRoot.getElementById(`copy_to_clipboard${targetId}`).click();
+      }
+    }
   });
 }
 
@@ -378,6 +386,27 @@ runClick(targetId) {
     popupElement.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
           this.shadowRoot.getElementById(id_close).click();
+        }
+        //if it press Alt+C, it will click the copy button
+        if (event.altKey && event.key === 'c') {
+          // if the copy button exists, click it
+          if (this.shadowRoot.getElementById("copy_to_clipboard" + id_target))
+          {
+            this.shadowRoot.getElementById("copy_to_clipboard" + id_target).click();
+          }
+        }
+       // if it press Alt+Enter, it will click the regenerate button
+        if (event.altKey && event.key === 'Enter') {
+          // if the regenerate button exists, click it
+          if (this.shadowRoot.getElementById("regenerate" + id_target))
+          {
+            this.shadowRoot.getElementById("regenerate" + id_target).click();
+          }
+          // else try to click the run button, if it exists
+          else if (this.shadowRoot.getElementById(id_target + "submit"))
+          {
+            this.shadowRoot.getElementById(id_target + "submit").click();
+          }
         }
     });
 }
@@ -484,7 +513,7 @@ runClick(targetId) {
   }
 
   addCopyToClipboardBtn(target_id, complete_completion) {
-    this.shadowRoot.getElementById(target_id + "text").innerHTML += "<button class='minibuttons' id='copy_to_clipboard" + target_id + "' title='Copy to clipboard'>&#x2398;&#xFE0E;</button>"; //
+    this.shadowRoot.getElementById(target_id + "text").innerHTML += "<button class='minibuttons' id='copy_to_clipboard" + target_id + "' title='Copy to clipboard (Alt+C)'>&#x2398;&#xFE0E;</button>"; //
     this.shadowRoot.getElementById("copy_to_clipboard" + target_id).addEventListener("click", () => {
       this.copyToClipboard(complete_completion);
       // invert color for 1 second
