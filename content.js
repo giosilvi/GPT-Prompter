@@ -42,23 +42,33 @@ document.addEventListener('contextmenu', function (e) {
 
   function addListenersForDrag() {
     popUpShadow.listOfActivePopups.forEach((id) => {
-      const elem = popUpShadow.shadowRoot.getElementById(`${id}header`);
+      const elem = popUpShadow.shadowRoot.getElementById(`${id}grabbable`);
       elem.addEventListener('mousedown', mouseDown, false);
     });
   }
   
+  let offsetX, offsetY;
+
   function spanMove(e, id) {
-    const fullPopup = popUpShadow.shadowRoot.getElementById(id.replace('header', ''));
-    const header = popUpShadow.shadowRoot.getElementById(id);
-    const mouseYPosition = e.clientY - header.offsetHeight / 2 - 20; //20 is the radius of the border I think
-    const mouseXPosition = e.clientX - fullPopup.offsetWidth / 2;
+    const fullPopup = popUpShadow.shadowRoot.getElementById(id.replace('grabbable', ''));
+  
+    if (!offsetX && !offsetY) {
+      offsetX = e.clientX - fullPopup.offsetLeft;
+      offsetY = e.clientY - fullPopup.offsetTop;
+    }
+  
+    const mouseYPosition = e.clientY - offsetY;
+    const mouseXPosition = e.clientX - offsetX;
     fullPopup.style.top = `${mouseYPosition}px`;
     fullPopup.style.left = `${mouseXPosition}px`;
   }
   
+  
   function mouseDown(e) {
     e.preventDefault(); // prevent the selection of the text below the popup
     const id = this.id;
+    offsetX = undefined;
+    offsetY = undefined;
     const wrapper = (event) => {
       spanMove(event, id);
     }

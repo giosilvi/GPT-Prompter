@@ -45,14 +45,15 @@ function computeCost(tokens, model) {
 const minipopup = (id, { left = 0, top = 0 }) => `
 <div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px">
   <div id="${id}prompt" class="popupprompt">
-  
-    <div id="${id}header" class="grabbable" style='width: 90%;'>
-    </div>
-    <div style='width:10%; justify-content: flex-end; display:flex!important'> 
-      <button class='minibuttons' id="pin${id}" title="Pin the popup" hidden>&#128204;&#xFE0E;</button>
-      <button class='minibuttons' id="regenerate${id}" title="Regenerate prompt (Alt+Enter)">&#8635;&#xFE0E;</button>
-      <button class='minibuttons' id="minimize${id}" title="Minimize/maximize completion">&#128469;&#xFE0E;</button>
-      <button class='minibuttons' id="mclose${id}" title="Close popup (Esc)">&#128473;&#xFE0E;</button>
+    <div id="${id}grabbable" class="grabbable" style="display: flex; justify-content: space-between; position: relative;">
+      <div id="${id}header">
+      </div>
+      <div style='justify-content: flex-end; display:flex!important; align-items: flex-start;  right: 0;'> 
+        <button class='minibuttons' id="pin${id}" title="Pin the popup" hidden>&#128204;&#xFE0E;</button>
+        <button class='minibuttons' id="regenerate${id}" title="Regenerate prompt (Alt+Enter)">&#8635;&#xFE0E;</button>
+        <button class='minibuttons' id="minimize${id}" title="Minimize/maximize completion">&#128469;&#xFE0E;</button>
+        <button class='minibuttons' id="mclose${id}" title="Close popup (Esc)">&#128473;&#xFE0E;</button>
+      </div>
     </div>
   </div>
   <p id="${id}text" class='popupcompletion'></p>
@@ -63,13 +64,15 @@ const minipopup = (id, { left = 0, top = 0 }) => `
 const flypopup = (id, { text = "none", left = 0, top = 0 }) => `
 <div class="popuptext onylonthefly" id="${id}" style="left: ${left}px; top:${top}px">
   <div id="${id}prompt" class="popupprompt">
-    <div id="${id}header" class="grabbable" style='width: 90%;'>
-    <b>Prompt On-the-Fly</b> (<b>Alt+P</b> - Open , <b>Alt+Enter</b> - Submit/Stop, <b>Esc</b> - Close) 
+  <div id="${id}grabbable" class="grabbable" style="display: flex;  justify-content: space-between; position: relative; ">
+    <div id="${id}header">
+    <b>Prompt On-the-Fly</b> (<b>Alt+P</b> - Open , <b>Alt+Enter</b> - Submit, <b>Esc</b> - Close)
     </div>
-    <div style=' width:10%; justify-content: flex-end; display:flex!important'>
+    <div style='justify-content: flex-end; display:flex!important; align-items: flex-start; right: 0;'>
       <button class='minibuttons' id="pin${id}" title="Pin the popup" hidden>&#128204;&#xFE0E;</button>
       <button class='minibuttons' id="minimize${id}" title="Minimize/maximize completion">&#128469;&#xFE0E;</button>
       <button class='minibuttons' id="mclose${id}"  title="Close popup (Esc)">&#128473;&#xFE0E;</button>
+    </div>
     </div>
   </div>
   <div contentEditable="true" id="${id}textarea" class='textarea'> ${text}</div>
@@ -119,7 +122,7 @@ const styled = `
     white-space: pre-wrap;
   }
   .popupprompt {
-    display: flex!important;
+    // display: flex!important;
     height: 2em;
     overflow-y: hidden;
   }
