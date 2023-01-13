@@ -121,6 +121,7 @@ chrome.runtime.onInstalled.addListener(function () {
 
 // Listen for a signal to refresh the context menu
 chrome.runtime.onMessage.addListener((message, sender) => {
+    console.log(message);
     // If the signal is to refresh the context menu
     if (message.text === 'new_prompt_list') {
         createContextMenu();
@@ -141,11 +142,42 @@ chrome.runtime.onMessage.addListener((message, sender) => {
                 await promptGPT3Prompting(message.prompt, items, tab);
             })();
         });
-    } else {
+    }
+    
+    else if (message.text === 'enableContextMenu') {
+        console.log('enableContextMenu passed');
+        chrome.contextMenus.update("GPT-Prompter", {enabled: true}); // enable the context menu item
+    }
+    else {
         console.log('Unknown message: ', message);
     }
 });
 
+// The following code will first disable the context menu item with ID "GPT-Prompter" when the active tab is changed or reloaded.
+// Then it will check if the new tab is complete, if it is, it will send a message to the content script of the new tab 
+// with the message "shouldReenableContextMenu" and a callback function that will handle the response from the content script.
+function updateContextMenu(tab) {
+    chrome.contextMenus.update("GPT-Prompter", {enabled: false});
+    chrome.tabs.sendMessage(tab.id, {greeting: "shouldReenableContextMenu"}, function(response) {
+        if(response && response.farewell === 'yes'){
+            chrome.contextMenus.update("GPT-Prompter", {enabled: true});
+        }
+    });
+}
+
+chrome.tabs.onActivated.addListener(function(activeInfo) {
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+        if(tabs[0].status === 'complete'){
+            updateContextMenu(tabs[0]);
+        }
+    });
+});
+
+chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+    if(changeInfo.status === 'complete') {
+        updateContextMenu(tab);
+    }
+});
 
 
 
