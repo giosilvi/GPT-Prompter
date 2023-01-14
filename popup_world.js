@@ -46,7 +46,7 @@ const minipopup = (id, { left = 0, top = 0 }) => `
 <div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px">
   <div id="${id}prompt" class="popupprompt">
     <div id="${id}grabbable" class="grabbable" style="display: flex; justify-content: space-between; position: relative;">
-      <div id="${id}header">
+      <div id="${id}header" class="promptheader" title=" Double-click to expand">
       </div>
       <div style='justify-content: flex-end; display:flex!important; align-items: flex-start;  right: 0;'> 
         <button class='minibuttons' id="pin${id}" title="Pin the popup" hidden>&#128204;&#xFE0E;</button>
@@ -65,35 +65,58 @@ const flypopup = (id, { text = "none", left = 0, top = 0 }) => `
 <div class="popuptext onylonthefly" id="${id}" style="left: ${left}px; top:${top}px">
   <div id="${id}prompt" class="popupprompt">
   <div id="${id}grabbable" class="grabbable" style="display: flex;  justify-content: space-between; position: relative; ">
-    <div id="${id}header">
-    <b>Prompt On-the-Fly</b> (<b>Alt+P</b> - Open , <b>Alt+Enter</b> - Submit, <b>Esc</b> - Close)
+    <div id="${id}header" class="promptheader" title=" Double-click to expand">
+      <b>Prompt On-the-Fly</b> (<b>Alt+P</b> - Open , <b>Alt+Enter</b> - Submit, <b>Esc</b> - Close)
     </div>
-    <div style='justify-content: flex-end; display:flex!important; align-items: flex-start; right: 0;'>
-      <button class='minibuttons' id="pin${id}" title="Pin the popup" hidden>&#128204;&#xFE0E;</button>
-      <button class='minibuttons' id="minimize${id}" title="Minimize/maximize completion">&#128469;&#xFE0E;</button>
-      <button class='minibuttons' id="mclose${id}"  title="Close popup (Esc)">&#128473;&#xFE0E;</button>
-    </div>
+      <div style='justify-content: flex-end; display:flex!important; align-items: flex-start; right: 0;'>
+        <button class='minibuttons' id="pin${id}" title="Pin the popup" hidden>&#128204;&#xFE0E;</button>
+        <button class='minibuttons' id="minimize${id}" title="Minimize/maximize completion">&#128469;&#xFE0E;</button>
+        <button class='minibuttons' id="mclose${id}"  title="Close popup (Esc)">&#128473;&#xFE0E;</button>
+      </div>
     </div>
   </div>
   <div contentEditable="true" id="${id}textarea" class='textarea'> ${text}</div>
-  <button type="button" id="${id}submit" class="submitbutton" title="Alt+Enter">Submit</button>
-  <button type="button" id="${id}stop" class="submitbutton hide" title="Alt+Enter" style='background-color: red;'>Stop</button>
+    <button type="button" id="${id}submit" class="submitbutton" title="Alt+Enter">Submit</button>
+    <button type="button" id="${id}stop" class="submitbutton hide" title="Alt+Enter" style='background-color: red;'>Stop</button>
   <p id="${id}text" class='popupcompletion'></p>
 </div>
 `;
 
 
 const styled = `
-  .textarea{
-    border: 1px solid #ffffff;
+.promptheader:after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, transparent 0.6em, #202123 100%);
+  z-index: 1;
+  }
+
+.textarea{
+    border: 1px solid #bbbbbb;
     margin-bottom:10px;
     margin-top:10px;
-  }
+}
+.textarea:focus{
+    border: 1px solid #ffffff;
+}
+  
+.textarea:hover {
+    background-color: #333333; /* slightly lighter background color */
+    
+}
+
   .grabbable {
     cursor: move; /* fallback if grab cursor is unsupported */
     cursor: grab;
     cursor: -moz-grab;
     cursor: -webkit-grab;
+  }
+  .grabbable:hover {
+    background-color: #282828; /* slightly lighter background color */
   }
 
   /* (Optional) Apply a "closed-hand" cursor during drag operation. */
@@ -113,6 +136,9 @@ const styled = `
     padding-bottom: 6px;
     padding-left: 12px;
   }
+  .submitbutton:hover {
+    background-color: #0f8e6c;
+  }
   .onylonthefly{
     border: 2px solid rgb(16, 163, 127);
   }
@@ -122,12 +148,12 @@ const styled = `
     white-space: pre-wrap;
   }
   .popupprompt {
-    // display: flex!important;
-    height: 2em;
+    height: 2.6em;
     overflow-y: hidden;
   }
   .expand {
     height: auto;
+    min-height: 2.6em;
   }
   .popuptext {
     align-items: center;
@@ -172,10 +198,14 @@ const styled = `
     margin-left:5px; 
     font-size:15px;
     border-radius: 8px;
+    z-index: 2;
+  }
+  .minibuttons:hover{
+    background-color: #333333;
   }
   .invertcolor{
     color:  #000;
-    background-color:#fff;
+    background-color:#fff!important;
   }
 `;
 
@@ -209,7 +239,7 @@ class popUpClass extends HTMLElement {
     this.alreadyCalled = {};
   }
 
-  //   this function update the style in shadow DOM with the new mousePosition
+  //   this function update the style in shadow DOM with the new mousePosition. TO REVIEW
   attributeChangedCallback(name, oldValue, newValue) {
     if (name === "mousePosition") {
       if (this.mousePosition.left + 150 > window.innerWidth) {
@@ -233,29 +263,29 @@ class popUpClass extends HTMLElement {
 
     // Set up event listeners for the buttons and other actions
     this.buttonForPopUp(this.ids);
-    }
+  }
 
-    ontheflypopup(selectionText) {
-      // Create a new element to hold the pop-up
-      const popUpElement = document.createElement('div');
-      popUpElement.innerHTML = flypopup(this.ids, { text: selectionText, left: this.mousePosition.left, top: this.mousePosition.top });
-    
-      // Append the new element to the shadow root
-      this.shadowRoot.appendChild(popUpElement);
-    
-      // Toggle the 'show' class on the element with the ID specified in this.ids
-      this.shadowRoot.getElementById(this.ids).classList.toggle('show');
-    
-      // Set up event listeners for the buttons and other actions
-      this.buttonForPopUp(this.ids);
-    
-      // Get the textarea element and add a keydown event listener to it
-      const id_textarea = this.shadowRoot.getElementById(this.ids + 'textarea');
-      id_textarea.addEventListener('keydown', (e) => { e.stopPropagation(); });
-    
-      // Focus on the textarea element
-      this.shadowRoot.getElementById(this.ids + "textarea").focus();
-    }
+  ontheflypopup(selectionText) {
+    // Create a new element to hold the pop-up
+    const popUpElement = document.createElement('div');
+    popUpElement.innerHTML = flypopup(this.ids, { text: selectionText, left: this.mousePosition.left, top: this.mousePosition.top });
+
+    // Append the new element to the shadow root
+    this.shadowRoot.appendChild(popUpElement);
+
+    // Toggle the 'show' class on the element with the ID specified in this.ids
+    this.shadowRoot.getElementById(this.ids).classList.toggle('show');
+
+    // Set up event listeners for the buttons and other actions
+    this.buttonForPopUp(this.ids);
+
+    // Get the textarea element and add a keydown event listener to it
+    const id_textarea = this.shadowRoot.getElementById(this.ids + 'textarea');
+    id_textarea.addEventListener('keydown', (e) => { e.stopPropagation(); });
+
+    // Focus on the textarea element
+    this.shadowRoot.getElementById(this.ids + "textarea").focus();
+  }
 
   pinButtons(id_target, id_button) {
     this.shadowRoot.getElementById(id_button).addEventListener("click", () => {
@@ -294,69 +324,94 @@ class popUpClass extends HTMLElement {
       if (this.listOfUnpinnedPopups.includes(id_target)) {
         this.listOfUnpinnedPopups.splice(this.listOfUnpinnedPopups.indexOf(id_target), 1);
       }
-      
+
     });
   }
 
   doubleClick(id_target) {
     this.shadowRoot.getElementById(id_target).addEventListener("dblclick", () => {
       this.shadowRoot.getElementById(id_target).classList.toggle('expand');
+      // from id_target replace prompt with header, and get the element with the id header, toggle class nobackground
+      let promptHeader = this.shadowRoot.getElementById(id_target.replace('prompt', 'header'));
+      promptHeader.classList.toggle('promptheader');
+
     });
   }
 
-runClick(targetId) {
-  // Add a click event listener to the target element's submit button if it doesn't already have one
-  const submitButton = this.shadowRoot.getElementById(`${targetId}submit`);
-  if (!submitButton.listener) {
-    submitButton.addEventListener("click", () => {
-      // Show the stop button and hide the run button
-      this.toggleRunStop(targetId);
+  runClick(targetId) {
+    // Add a click event listener to the target element's submit button if it doesn't already have one
+    const submitButton = this.shadowRoot.getElementById(`${targetId}submit`);
+    if (!submitButton.listener) {
+      submitButton.addEventListener("click", () => {
+        // Show the stop button and hide the run button
+        this.toggleRunStop(targetId);
 
-      // Reset the text element
-      this.shadowRoot.getElementById(`${targetId}text`).innerHTML = '';
-      // console.log(`Prompt on-the-fly launched from ${targetId}`)
+        // Reset the text element
+        this.shadowRoot.getElementById(`${targetId}text`).innerHTML = '';
+        // console.log(`Prompt on-the-fly launched from ${targetId}`)
 
-      // Create a prompt object to send to the runtime
-      const promptObj = {
-        prompt: this.shadowRoot.getElementById(`${targetId}textarea`).innerHTML,
-        model: 'text-davinci-003',
-        temperature: 0.1,
-        max_tokens: 1000,
-        popupID: targetId,
-      }
-      chrome.runtime.sendMessage({ text: 'launchGPT', prompt: promptObj });
-    });
-  }
-
-  // Add a keydown event listener to the target element's textarea for the alt+enter key combination
-  this.shadowRoot.getElementById(`${targetId}textarea`).addEventListener('keydown', (e) => {
-    if (e.altKey && e.key === 'Enter') {
-      // If the submit button is not hidden, click it; otherwise, click the stop button
-      if (!this.shadowRoot.getElementById(`${targetId}submit`).classList.contains('hide')) {
-        this.shadowRoot.getElementById(`${targetId}submit`).click();
-      } else {
-        this.shadowRoot.getElementById(`${targetId}stop`).click();
-      }
+        // Create a prompt object to send to the runtime
+        const promptObj = {
+          prompt: this.shadowRoot.getElementById(`${targetId}textarea`).innerHTML,
+          model: 'text-davinci-003',
+          temperature: 0.1,
+          max_tokens: 1000,
+          popupID: targetId,
+        }
+        chrome.runtime.sendMessage({ text: 'launchGPT', prompt: promptObj });
+      });
     }
-    // if the user presses escape, close the popup
+    this.shadowRoot.getElementById(`${targetId}textarea`).addEventListener('keydown', this.handleKeydown.bind(this, targetId));
+  }
+
+  handleKeydown(targetId, e) {
     if (e.key === 'Escape') {
-      this.shadowRoot.getElementById(`mclose${targetId}`).click();
-    }
-    if (e.altKey && e.key === 'c') {
-      // if the copy button exists, click it
-      if (this.shadowRoot.getElementById(`copy_to_clipboard${targetId}`))
-      {
-        this.shadowRoot.getElementById(`copy_to_clipboard${targetId}`).click();
+      this.closePopup(`mclose${targetId}`);
+    } else if (e.altKey) {
+      if (e.key === 'Enter') {
+        this.submitOrStop(targetId);
+      } else if (e.key === 'c') {
+        this.clickCopyToClipboard(targetId);
       }
     }
-  });
-}
+  }
 
- 
+  submitOrStop(targetId) {
+    const submitButton = this.shadowRoot.getElementById(`${targetId}submit`);
+    if (!submitButton.classList.contains('hide')) {
+      submitButton.click();
+    } else {
+      this.shadowRoot.getElementById(`${targetId}stop`).click();
+    }
+  }
+
+  closePopup(id_close) {
+    this.shadowRoot.getElementById(id_close).click();
+  }
+
+  clickCopyToClipboard(targetId) {
+    const copyButton = this.shadowRoot.getElementById(`copy_to_clipboard${targetId}`);
+    if (copyButton) {
+      copyButton.click();
+    }
+  }
+
+
+  regenerateOrRun(id_target) {
+    const regenerateButton = this.shadowRoot.getElementById(`regenerate${id_target}`);
+    if (regenerateButton) {
+      regenerateButton.click();
+    } else {
+      const runButton = this.shadowRoot.getElementById(`${id_target}submit`);
+      if (runButton) {
+        runButton.click();
+      }
+    }
+  }
+
 
   stopButton(id_target) {
     this.shadowRoot.getElementById(id_target + "stop").addEventListener("click", () => {
-      console.log('Prompt on-the-fly stopped from', id_target)
       this.stop_stream = true;
       this.toggleRunStop(id_target);
 
@@ -372,9 +427,9 @@ runClick(targetId) {
 
 
   buttonForPopUp(id_target) {
-    const id_pin = "pin" + id_target;
-    const id_close = "mclose" + id_target;
-    const id_minimize = "minimize" + id_target;
+    const id_pin = `pin${id_target}`;
+    const id_close = `mclose${id_target}`;
+    const id_minimize = `minimize${id_target}`;
     this.pinButtons(id_target, id_pin);
     this.minimizeButtons(id_target, id_minimize);
     this.closeButtons(id_target, id_close);
@@ -387,57 +442,43 @@ runClick(targetId) {
     let popupElement = this.shadowRoot.getElementById(id_target);
     popupElement.tabIndex = -1; // allow the element to receive focus and listen to keyboard events even if it is not in the natural tab order of the document
     popupElement.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') {
-          this.shadowRoot.getElementById(id_close).click();
+      if (event.key === 'Escape') {
+        this.closePopup(id_close);
+      } else if (event.altKey) {
+        if (event.key === 'c') {
+          this.clickCopyToClipboard(id_target);
         }
-        //if it press Alt+C, it will click the copy button
-        if (event.altKey && event.key === 'c') {
-          // if the copy button exists, click it
-          if (this.shadowRoot.getElementById("copy_to_clipboard" + id_target))
-          {
-            this.shadowRoot.getElementById("copy_to_clipboard" + id_target).click();
-          }
+        else if (event.key === 'Enter') {
+          this.regenerateOrRun(id_target);
         }
-       // if it press Alt+Enter, it will click the regenerate button
-        if (event.altKey && event.key === 'Enter') {
-          // if the regenerate button exists, click it
-          if (this.shadowRoot.getElementById("regenerate" + id_target))
-          {
-            this.shadowRoot.getElementById("regenerate" + id_target).click();
-          }
-          // else try to click the run button, if it exists
-          else if (this.shadowRoot.getElementById(id_target + "submit"))
-          {
-            this.shadowRoot.getElementById(id_target + "submit").click();
-          }
-        }
+      }
     });
-}
+  }
 
- 
-    
+
+
 
   updatePopupHeader(request, target_id) {
     var symbol = symbolFromModel(request.body_data.model)
     this.shadowRoot.getElementById(target_id + "header").innerHTML = symbol + "<i> " + request.text + "</i>";
-    
-    if (!this.alreadyCalled[target_id] && 
+
+    if (!this.alreadyCalled[target_id] &&
       this.shadowRoot.getElementById("regenerate" + target_id)) {
       this.regenerateButton(target_id, request);
       this.alreadyCalled[target_id] = true;
     }
   }
 
-  //to be finished
-   regenerateButton(id_target,request) {
+
+  regenerateButton(id_target, request) {
     this.shadowRoot.getElementById("regenerate" + id_target).addEventListener("click", () => {
-      if (this.stream_on == true) { this.stop_stream = true;} //stop the actual stream if it is on, and then restart it (remains on)
+      if (this.stream_on == true) { this.stop_stream = true; } //stop the actual stream if it is on, and then restart it (remains on)
       this.shadowRoot.getElementById(id_target + "text").innerHTML = "";
       var promptDict = {
         "prompt": request.text,
-        "model":  request.body_data.model,
-        "temperature":  request.body_data.temperature,
-        "max_tokens":  request.body_data.max_tokens,
+        "model": request.body_data.model,
+        "temperature": request.body_data.temperature,
+        "max_tokens": request.body_data.max_tokens,
         "popupID": id_target,
       }
       chrome.runtime.sendMessage({ text: "launchGPT", prompt: promptDict });
@@ -456,8 +497,8 @@ runClick(targetId) {
 
   updatepopup(message, target_id, stream) {
     //if stream is true
-    if (stream) 
-    {this.stream_on = true;
+    if (stream) {
+      this.stream_on = true;
       // if choices is a key in message, it means usual stream
       if (message.choices) {
         var text = message.choices[0].text
@@ -520,6 +561,7 @@ runClick(targetId) {
     this.shadowRoot.getElementById("copy_to_clipboard" + target_id).addEventListener("click", () => {
       this.copyToClipboard(complete_completion);
       // invert color for 1 second
+
       this.shadowRoot.getElementById("copy_to_clipboard" + target_id).classList.toggle('invertcolor');
       setTimeout(() => {
         this.shadowRoot.getElementById("copy_to_clipboard" + target_id).classList.toggle('invertcolor');

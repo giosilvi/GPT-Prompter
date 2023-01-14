@@ -156,6 +156,10 @@ chrome.runtime.onMessage.addListener((request,sender, sendResponse) => {
       break;
     case 'showPopUpOnTheFly':
       handleShowPopUp();
+      // if request.text is empty, then pass a "non-breaking space": &nbsp; 
+      if (request.text === '') {
+        request.text = '&nbsp;';
+      }
       popUpShadow.ontheflypopup(request.text);
       addListenersForDrag();
       break;
@@ -196,11 +200,11 @@ chrome.runtime.onMessage.addListener((request,sender, sendResponse) => {
 
 //  the background script will re-enable the context menu based on the response from the content script,
 //  if the content script responds with "yes" the context menu will be re-enabled, otherwise it will stay disabled.
-chrome.runtime.onMessage.addListener(
-  function(request, sender, sendResponse) {
-    if (request.greeting === "shouldReenableContextMenu") {
-       sendResponse({farewell: "yes"});
-    }
-  });
+// chrome.runtime.onMessage.addListener(
+//   function(request, sender, sendResponse) {
+//     if (request.greeting === "shouldReenableContextMenu") {
+//        sendResponse({farewell: "yes"});
+//     }
+//   });
 
 console.log('GPT-prompter content script is running')

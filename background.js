@@ -121,7 +121,6 @@ chrome.runtime.onInstalled.addListener(function () {
 
 // Listen for a signal to refresh the context menu
 chrome.runtime.onMessage.addListener((message, sender) => {
-    console.log(message);
     // If the signal is to refresh the context menu
     if (message.text === 'new_prompt_list') {
         createContextMenu();
@@ -158,9 +157,16 @@ chrome.runtime.onMessage.addListener((message, sender) => {
 // with the message "shouldReenableContextMenu" and a callback function that will handle the response from the content script.
 function updateContextMenu(tab) {
     chrome.contextMenus.update("GPT-Prompter", {enabled: false});
+    // if the tab is complete, send a message to the content script to check if the context menu should be re-enabled
     chrome.tabs.sendMessage(tab.id, {greeting: "shouldReenableContextMenu"}, function(response) {
         if(response && response.farewell === 'yes'){
             chrome.contextMenus.update("GPT-Prompter", {enabled: true});
+        }
+        else if ( chrome.runtime.lastError) {
+            console.log('Content script not available');
+        }
+        else{
+            console.log('Error.')
         }
     });
 }
