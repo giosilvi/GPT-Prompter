@@ -50,7 +50,7 @@ const minipopup = (id, { left = 0, top = 0 }) => `
       </div>
       <div style='justify-content: flex-end; display:flex!important; align-items: flex-start;  right: 0;'> 
         <button class='minibuttons' id="pin${id}" title="Pin the popup" hidden>&#128204;&#xFE0E;</button>
-        <button class='minibuttons' id="regenerate${id}" title="Regenerate prompt (Alt+Enter)">&#8635;&#xFE0E;</button>
+        <button class='minibuttons' id="regenerate${id}" title="Regenerate prompt (Alt+Enter)" hidden>&#8635;&#xFE0E;</button>
         <button class='minibuttons' id="minimize${id}" title="Minimize/maximize completion">&#128469;&#xFE0E;</button>
         <button class='minibuttons' id="mclose${id}" title="Close popup (Esc)">&#128473;&#xFE0E;</button>
       </div>
@@ -168,18 +168,20 @@ const styled = `
     min-width:200px;
     max-width:800px;
     max-height: -webkit-fill-available;
-    z-index:-1;
+    z-index: 9999;
     line-height:1.6;
-    // font-size:18px;
     margin-right:10px!important;
     font-family: 'Roboto', sans-serif!important;
     resize:both;
     overflow:auto;
+    transform: scale(0);
+    transform-origin: top left;
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
   }
   .show {
     opacity: 0.9;
-    z-index: 9999;
     padding: 20px;
+    transform: scale(1);
   }
   .hide {
     display: none;
@@ -259,8 +261,7 @@ class popUpClass extends HTMLElement {
     this.shadowRoot.appendChild(popUpElement);
 
     // Toggle the 'show' class on the element with the ID specified in this.ids
-    this.shadowRoot.getElementById(this.ids).classList.toggle('show');
-
+    setTimeout(() => {this.shadowRoot.getElementById(this.ids).classList.toggle('show'); }, 10);
     // Set up event listeners for the buttons and other actions
     this.buttonForPopUp(this.ids);
   }
@@ -279,7 +280,9 @@ class popUpClass extends HTMLElement {
 
     // toggle the 'show' class on the element with the ID specified in this.ids
     const element = this.shadowRoot.getElementById(this.ids);
-    element.classList.toggle('show');
+   
+    // pause for 1 second to allow the popup to be rendered
+    setTimeout(() => { element.classList.toggle('show'); }, 10);
 
     // Set up event listeners for the buttons and other actions
     this.buttonForPopUp(this.ids);
@@ -299,7 +302,6 @@ class popUpClass extends HTMLElement {
     }
     // attach the bodyData to the element
     element.bodyData = bodyData;
-    console.log("bodyData", element.bodyData);
 }
 
 
@@ -334,7 +336,8 @@ class popUpClass extends HTMLElement {
   closeButtons(id_target, id_button) {
     this.shadowRoot.getElementById(id_button).addEventListener("click", () => {
       this.shadowRoot.getElementById(id_target).classList.toggle('show');
-      this.shadowRoot.getElementById(id_target).remove();
+      setTimeout(() => { this.shadowRoot.getElementById(id_target).remove(); }, 500);
+      
       this.listOfActivePopups = this.listOfActivePopups.filter(item => item !== id_target);
       // remove from listOfUnpinnedPopups if it is there
       if (this.listOfUnpinnedPopups.includes(id_target)) {
@@ -478,11 +481,15 @@ class popUpClass extends HTMLElement {
   updatePopupHeader(request, target_id) {
     var symbol = symbolFromModel(request.body_data.model)
     this.shadowRoot.getElementById(target_id + "header").innerHTML = symbol + "<i> " + request.text + "</i>";
-
-    if (!this.alreadyCalled[target_id] &&
-      this.shadowRoot.getElementById("regenerate" + target_id)) {
-      this.regenerateButton(target_id, request);
-      this.alreadyCalled[target_id] = true;
+    // if tempeature is greater than 0 make the regenearte button visible
+    if (request.body_data.temperature > 0) {
+      this.shadowRoot.getElementById("regenerate" + target_id).removeAttribute("hidden");
+      // attach a listener to the regenerate button, but only once
+      if (!this.alreadyCalled[target_id] &&
+        this.shadowRoot.getElementById("regenerate" + target_id)) {
+          this.regenerateButton(target_id, request);
+          this.alreadyCalled[target_id] = true;
+        }
     }
   }
 
@@ -574,7 +581,7 @@ class popUpClass extends HTMLElement {
   }
 
   addCopyToClipboardBtn(target_id, complete_completion) {
-    this.shadowRoot.getElementById(target_id + "text").innerHTML += "<button class='minibuttons' id='copy_to_clipboard" + target_id + "' title='Copy to clipboard (Alt+C)'>&#x2398;&#xFE0E;</button>"; //
+    this.shadowRoot.getElementById(target_id + "text").innerHTML += "<button class='minibuttons' style='float:right;' id='copy_to_clipboard" + target_id + "' title='Copy to clipboard (Alt+C)'>&#x2398;&#xFE0E;</button>"; //
     this.shadowRoot.getElementById("copy_to_clipboard" + target_id).addEventListener("click", () => {
       this.copyToClipboard(complete_completion);
       // invert color for 1 second
