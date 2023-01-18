@@ -17,10 +17,9 @@ async function checkGPT(apikey) {
                 'Authorization': 'Bearer ' + apikey
             }
         });
-
         // If the request was successful, parse the response as JSON
         if (response.ok) {
-            const result = await response.json();
+            // const result = await response.json();
             // Send a message to the runtime indicating that the API_key_valid
             chrome.runtime.sendMessage({ message: 'API_key_valid' });
         } else {
@@ -47,42 +46,42 @@ function checkAPIKey() {
 
 //Function to create context menu, erasing the previous one
 function createContextMenu() {
-    // if the context menu already exists, erase it
+    // Remove existing context menus
     chrome.contextMenus.removeAll();
-    // create a new context menu
+
+    // Create new context menu
     chrome.contextMenus.create({
         id: 'GPT-Prompter',
-        title: 'GPT-Prompter ',
-        // documentUrlPatterns: ["<all_urls>"], // this will make it work on local chrome pages, but the content script will not work
+        title: 'GPT-Prompter',
         documentUrlPatterns: ["https://*/*", "http://*/*", "file:///*"],
-        contexts: ["selection", "page", "frame"]
+        contexts: ["all"]
     });
 
-    // create a sub-context menu
+    // Create sub-context menu
     chrome.contextMenus.create({
         id: 'On-the-Fly',
         title: '★ Prompt On-the-fly',
         parentId: 'GPT-Prompter',
-        contexts: ["selection", "page", "frame"]
+        contexts: ["all"]
     });
 
-    // retrieve from storage the list of custom prompts
+    // Retrieve list of custom prompts from storage
     chrome.storage.sync.get('customprompt', function (items) {
-        // Check that the prompt exists
-        if (typeof items.customprompt !== 'undefined') {
-            // add a context menu for each custom prompt
-            for (var i = 0; i < items.customprompt.length; i++) {
-                var symbol = symbolFromModel(items.customprompt[i]["model"]);
+        if (items.customprompt) {
+            // Create a context menu for each custom prompt
+            items.customprompt.forEach((prompt, index) => {
+                const symbol = symbolFromModel(prompt.model);
                 chrome.contextMenus.create({
-                    id: 'customprompt-' + i,
+                    id: `customprompt-${index}`,
                     parentId: "GPT-Prompter",
-                    title: symbol + ' ' + items.customprompt[i]["prompt"].replaceAll('#TEXT#', '%s'), // here the text in the menu is created with selected text %s
-                    contexts: ["selection"]
+                    title: `${symbol} ${prompt.prompt.replaceAll('#TEXT#', '%s')}`,
+                    contexts: ["all"]
                 });
-            }
+            });
         }
     });
 }
+
 
 // LISTENER DECLARATION
 
@@ -142,10 +141,10 @@ chrome.runtime.onMessage.addListener((message, sender) => {
             })();
         });
     }
-    
+
     else if (message.text === 'enableContextMenu') {
         console.log('enableContextMenu passed');
-        chrome.contextMenus.update("GPT-Prompter", {enabled: true}); // enable the context menu item
+        chrome.contextMenus.update("GPT-Prompter", { enabled: true }); // enable the context menu item
     }
     else {
         console.log('Unknown message: ', message);
@@ -156,45 +155,62 @@ chrome.runtime.onMessage.addListener((message, sender) => {
 // Then it will check if the new tab is complete, if it is, it will send a message to the content script of the new tab 
 // with the message "shouldReenableContextMenu" and a callback function that will handle the response from the content script.
 function updateContextMenu(tab) {
-    chrome.contextMenus.update("GPT-Prompter", {enabled: false});
+    chrome.contextMenus.update("GPT-Prompter", { enabled: false });
     // if the tab is complete, send a message to the content script to check if the context menu should be re-enabled
-    chrome.tabs.sendMessage(tab.id, {greeting: "shouldReenableContextMenu"}, function(response) {
-        if(response && response.farewell === 'yes'){
-            chrome.contextMenus.update("GPT-Prompter", {enabled: true});
+    chrome.tabs.sendMessage(tab.id, { greeting: "shouldReenableContextMenu" }, function (response) {
+        if (response && response.farewell === 'yes') {
+            chrome.contextMenus.update("GPT-Prompter", { enabled: true });
         }
-        else if ( chrome.runtime.lastError) {
+        else if (chrome.runtime.lastError) {
             console.log('Content script not available');
         }
-        else{
+        else {
             console.log('Error.')
         }
     });
 }
 
-chrome.tabs.onActivated.addListener(function(activeInfo) {
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-        if(tabs[0].status === 'complete'){
+chrome.tabs.onActivated.addListener(function (activeInfo) {
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        if (tabs[0].status === 'complete') {
             updateContextMenu(tabs[0]);
         }
     });
 });
 
-chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
-    if(changeInfo.status === 'complete') {
+chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
+    if (changeInfo.status === 'complete') {
         updateContextMenu(tab);
     }
 });
 
 
 
-function launchPromptOnTheFly(selectionText, tabs) {
+function launchPromptOnTheFly(selectionText, prompt ) {
 
     if (typeof selectionText == 'undefined') {
         selectionText = '';
     }
+    // if there is a text /#TEXT#/g inside selectionText replace with nothing, and use the position to set the cursor later
+    var cursorPosition = selectionText.search(/#TEXT#/g);
+    if (cursorPosition !== -1) {
+        selectionText = selectionText.replace(/#TEXT#/g, '');
+    }
+    // if prompt is not null, use it
+    if (prompt !== null) {
+        var model = prompt["model"]
+        var temperature = prompt["temperature"]
+        var max_tokens = prompt["max_tokens"]
+        // make the body_data
+        var bodyData = { "model": model, "temperature": temperature, "max_tokens": max_tokens };
+    }
+    else {
+        // if prompt is null, use the default one
+        var bodyData = { "model": "text-davinci-003", "temperature": 0, "max_tokens": 2048 };
+    }
     // here we want to create a minipop-up to ask the user to insert the prompt
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        chrome.tabs.sendMessage(tabs[0].id, { message: 'showPopUpOnTheFly', text: selectionText, body_data: { "model": "text-davinci-003", "temperature": 0, "max_tokens": 2048 } });
+        chrome.tabs.sendMessage(tabs[0].id, { message: 'showPopUpOnTheFly', text: selectionText, body_data: bodyData, cursorPosition: cursorPosition });
     });
 }
 
@@ -206,7 +222,7 @@ chrome.commands.onCommand.addListener(function (command) {
             // Send a message to the content script to get the selected text
             chrome.tabs.sendMessage(tab.id, { getSelection: true }, function (response) {
                 // Call the launchPromptOnTheFly function with the selected text and the current tab
-                launchPromptOnTheFly(response.selection, tab);
+                launchPromptOnTheFly(response.selection, null);
             });
         });
     }
@@ -237,20 +253,27 @@ chrome.contextMenus.onClicked.addListener(async (info, tabs) => {
                 if (promptNumber <= items.customprompt.length) {
                     // Get the prompt object
                     const prompt = items.customprompt[promptNumber];
-                    // Update the prompt text with the selected text
-                    prompt.prompt = prompt.prompt.replace(/#TEXT#/g, info.selectionText);
-
-                    // Send a message to the content script to show the popup
-                    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-                        chrome.tabs.sendMessage(tabs[0].id, { message: 'showPopUp' });
-                    });
-                    // Get the APIKEY from storage
-                    chrome.storage.sync.get('APIKEY', function (items) {
-                        // Launch the prompt
-                        (async () => {
-                            await promptGPT3Prompting(prompt, items, tabs);
-                        })();
-                    });
+                    // Update the prompt text with the selected text, if there is any
+                    if (info.selectionText) {
+                        prompt.prompt = prompt.prompt.replace(/#TEXT#/g, info.selectionText);
+                        // Send a message to the content script to show the popup
+                        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                            chrome.tabs.sendMessage(tabs[0].id, { message: 'showPopUp' });
+                        });
+                        // Get the APIKEY from storage
+                        chrome.storage.sync.get('APIKEY', function (items) {
+                            // Launch the prompt
+                            (async () => {
+                                await promptGPT3Prompting(prompt, items, tabs);
+                            })();
+                        });
+                    }
+                    else {
+                        // launch prompt on the fly with the prompt object
+                        // but first substitute the #TEXT# placeholder with nothing
+                        // prompt.prompt = prompt.prompt.replace(/#TEXT#/g, '');
+                        launchPromptOnTheFly(prompt.prompt, prompt);
+                    }
                 } else {
                     // If the prompt number is invalid, send an error message to the tab and log a message to the console
                     chrome.tabs.sendMessage(tabs.id, 'Error: invalid prompt number');
@@ -266,7 +289,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tabs) => {
     // If the clicked context menu item is the "On-the-Fly" prompt
     else if (info.menuItemId === 'On-the-Fly') {
         // Launch the "On-the-Fly" prompt with the selected text and the current tabs object
-        launchPromptOnTheFly(info.selectionText, tabs);
+        launchPromptOnTheFly(info.selectionText, null);
     }
 });
 

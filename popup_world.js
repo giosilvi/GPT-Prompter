@@ -91,7 +91,7 @@ const styled = `
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(to bottom, transparent 0.6em, #202123 100%);
+  background: linear-gradient(to bottom, transparent 0.6em, #202123 2.8em);
   z-index: 1;
   }
 
@@ -169,7 +169,7 @@ const styled = `
     max-width:800px;
     max-height: -webkit-fill-available;
     z-index:-1;
-    line-height:1.8;
+    line-height:1.6;
     // font-size:18px;
     margin-right:10px!important;
     font-family: 'Roboto', sans-serif!important;
@@ -265,27 +265,43 @@ class popUpClass extends HTMLElement {
     this.buttonForPopUp(this.ids);
   }
 
-  ontheflypopup(selectionText) {
+  ontheflypopup(selectionText, bodyData, cursorPosition) {
     // Create a new element to hold the pop-up
     const popUpElement = document.createElement('div');
-    popUpElement.innerHTML = flypopup(this.ids, { text: selectionText, left: this.mousePosition.left, top: this.mousePosition.top });
+    popUpElement.innerHTML = flypopup(this.ids, { 
+        text: selectionText, 
+        left: this.mousePosition.left, 
+        top: this.mousePosition.top 
+    });
 
     // Append the new element to the shadow root
     this.shadowRoot.appendChild(popUpElement);
 
-    // Toggle the 'show' class on the element with the ID specified in this.ids
-    this.shadowRoot.getElementById(this.ids).classList.toggle('show');
+    // toggle the 'show' class on the element with the ID specified in this.ids
+    const element = this.shadowRoot.getElementById(this.ids);
+    element.classList.toggle('show');
 
     // Set up event listeners for the buttons and other actions
     this.buttonForPopUp(this.ids);
 
-    // Get the textarea element and add a keydown event listener to it
-    const id_textarea = this.shadowRoot.getElementById(this.ids + 'textarea');
-    id_textarea.addEventListener('keydown', (e) => { e.stopPropagation(); });
+    // Get the text area element 
+    const txtArea = this.shadowRoot.getElementById(this.ids + 'textarea');
+    if(txtArea){
+        // Stop the event from bubbling up to the document
+        txtArea.addEventListener('keydown', (e) => { e.stopPropagation(); });
+        txtArea.focus();
+        const range = document.createRange();
+        range.setStart(txtArea.childNodes[0], cursorPosition+1);
+        range.collapse(true);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+    }
+    // attach the bodyData to the element
+    element.bodyData = bodyData;
+    console.log("bodyData", element.bodyData);
+}
 
-    // Focus on the textarea element
-    this.shadowRoot.getElementById(this.ids + "textarea").focus();
-  }
 
   pinButtons(id_target, id_button) {
     this.shadowRoot.getElementById(id_button).addEventListener("click", () => {
@@ -350,12 +366,13 @@ class popUpClass extends HTMLElement {
         this.shadowRoot.getElementById(`${targetId}text`).innerHTML = '';
         // console.log(`Prompt on-the-fly launched from ${targetId}`)
 
+        const element = this.shadowRoot.getElementById(targetId);
         // Create a prompt object to send to the runtime
         const promptObj = {
           prompt: this.shadowRoot.getElementById(`${targetId}textarea`).innerHTML,
-          model: 'text-davinci-003',
-          temperature: 0.1,
-          max_tokens: 1000,
+          model: element.bodyData.model,
+          temperature: element.bodyData.temperature,
+          max_tokens: element.bodyData.max_tokens,
           popupID: targetId,
         }
         chrome.runtime.sendMessage({ text: 'launchGPT', prompt: promptObj });

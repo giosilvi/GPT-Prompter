@@ -160,7 +160,7 @@ chrome.runtime.onMessage.addListener((request,sender, sendResponse) => {
       if (request.text === '') {
         request.text = '&nbsp;';
       }
-      popUpShadow.ontheflypopup(request.text);
+      popUpShadow.ontheflypopup(request.text, request.body_data, request.cursorPosition);
       addListenersForDrag();
       break;
     case 'GPTprompt':
