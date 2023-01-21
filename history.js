@@ -70,7 +70,7 @@ function updateTotalCostDisplay(totalCost) {
 // in javascript, to return two values, use an array
 
 
-function update_del_buttons(items) {
+function update_lower_buttons(items) {
     for (var j = 0; j < items.history.length; j++) {
         document.getElementById('eraseItem' + j.toString()).addEventListener('click', function () {
             var id = this.id.substring(9);
@@ -92,7 +92,7 @@ function erasePrompt(index) {
                 items.history.splice(index, 1);
                 freshList = makeHistoryList(items);
                 document.getElementById('history-of-prompts').innerHTML = freshList
-                update_del_buttons(items);;
+                update_lower_buttons(items);;
                 chrome.storage.local.set({ 'history': items.history }, function () {
                     // Notify that is erased
                     console.log('Your prompt was erased from history.');
@@ -113,7 +113,7 @@ function load_history() {
             if (items.history.length > 0) {
                 freshList = makeHistoryList(items);
                 document.getElementById('history-of-prompts').innerHTML = freshList
-                update_del_buttons(items);
+                update_lower_buttons(items);
             }
         }
     }
@@ -126,7 +126,7 @@ function delete_all() {
             items.history = [];
             document.getElementById('history-of-prompts').innerHTML = "History deleted";
             document.getElementById('totCost').innerHTML = "";
-            update_del_buttons(items);
+            update_lower_buttons(items);
             chrome.storage.local.set({ 'history': items.history }, function () {
                 // Notify that is erased
                 console.log('Your history was erased.');

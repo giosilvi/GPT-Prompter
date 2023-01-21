@@ -57,10 +57,10 @@ function createContextMenu() {
         contexts: ["all"]
     });
 
-    // Create sub-context menu
+    // Create sub-context menu 🤖
     chrome.contextMenus.create({
         id: 'On-the-Fly',
-        title: '★ Prompt On-the-fly',
+        title: '★ Prompt On-the-Fly ★',
         parentId: 'GPT-Prompter',
         contexts: ["all"]
     });
@@ -74,7 +74,7 @@ function createContextMenu() {
                 chrome.contextMenus.create({
                     id: `customprompt-${index}`,
                     parentId: "GPT-Prompter",
-                    title: `${symbol} ${prompt.prompt.replaceAll('#TEXT#', '%s')}`,
+                    title: passTitleOrPrompt(prompt,symbol),
                     contexts: ["all"]
                 });
             });
@@ -82,6 +82,15 @@ function createContextMenu() {
     });
 }
 
+function passTitleOrPrompt(customprompt, symbol ) {
+    // if customprompt contains  a title return the title
+    if (customprompt.title) {
+        return `${symbol} ${customprompt.title.replaceAll('#TEXT#', '%s')}`;
+    }
+    else{
+        return `${symbol} ${customprompt.prompt.replaceAll('#TEXT#', '%s')}`;
+    }
+}
 
 // LISTENER DECLARATION
 

@@ -1,11 +1,4 @@
 // GENERAL FUNCTIONS
-// function makePromptList(items) {
-//     var freshList = '';
-//     for (var i = 0; i < items.customprompt.length; i++) {
-//         freshList += '<li class="list-group-item draggable" draggable="true">' + items.customprompt[i]['prompt'] + "<br> (Model: " + items.customprompt[i]['model'] + " ,Temp: " + items.customprompt[i]['temperature'] + " , Max length:" + items.customprompt[i]['max_tokens'] + ') <button id="del' + i.toString() + '" class="save" > Delete </button></li>';
-//     }
-//     return freshList;
-// }
 
 function makePromptList(items) {
     // Clear the node 'list-of-prompts'.
@@ -13,44 +6,121 @@ function makePromptList(items) {
     while (ul.firstChild) {
         ul.removeChild(ul.firstChild);
     }
-
+    var titleExists = false;
     for (var i = 0; i < items.customprompt.length; i++) {
+
         var li = document.createElement('li');
-        var attr = document.createAttribute('draggable');
-        var id = document.createAttribute('id');
-        id.value = i;
-        li.setAttributeNode(id);
         li.className = 'list-group-item draggable';
-        attr.value = 'true';
-        li.setAttributeNode(attr);
+        li.setAttribute('draggable', 'true');
+        li.setAttribute('id', i);
 
-        // Add to li a button with the id 'del' + i.toString().
-        var promptText = `<span class="prompt-text">${items.customprompt[i]['prompt']}</span>`;
-        var modelText = `<span class="feature-text">Model:</span> ${items.customprompt[i]['model']}`;
-        var tempText = `<span class="feature-text" style="margin-left: 25px;">Temp:</span> ${items.customprompt[i]['temperature']}`;
-        var maxTokensText = `<span class="feature-text" style="margin-left: 25px;">Max tokens:</span> ${items.customprompt[i]['max_tokens']}`;
-        var editButton = `<button id="edit${i}" class="save">Edit</button>`;
-        var deleteButton = `<button id="del${i}" class="save">Delete</button>`;
-        // combine all the text and buttons
-        //   li.innerHTML = `${promptText}<br>${modelText}${tempText}${maxTokensText}${editButton}${deleteButton}`;
-        li.innerHTML = `${promptText}<br>${modelText}${tempText}${maxTokensText}<br>${editButton}${deleteButton}`;
+        // Create text elements for title, prompt, model, temperature, and max tokens
+        var titleText = document.createElement('span');
+        titleText.className = 'feature-text';
+        // check if title exists
+        if (items.customprompt[i]['title'] != undefined && items.customprompt[i]['title'] != '') {
+            titleText.innerText = items.customprompt[i]['title'];
+            titleText.setAttribute('data-title', 'Title:');
+            titleExists = true;
+        } else {
+            titleExists = false;
+        }
+        
+        var promptText = document.createElement('span');
+        promptText.className = 'prompt-text';
+        promptText.innerText = items.customprompt[i]['prompt'];
 
+        var modelText = document.createElement('span');
+        modelText.className = 'feature-text';
+        modelText.innerText = ` ${items.customprompt[i]['model']}`;
+        modelText.setAttribute('data-title', 'Model:');
+
+        var tempText = document.createElement('span');
+        tempText.className = 'feature-text';
+        tempText.style.marginLeft = '25px';
+        tempText.innerText = ` ${items.customprompt[i]['temperature']}`;
+        tempText.setAttribute('data-title', 'Temp:');
+
+        var maxTokensText = document.createElement('span');
+        maxTokensText.className = 'feature-text';
+        maxTokensText.style.marginLeft = '25px';
+        maxTokensText.innerText = ` ${items.customprompt[i]['max_tokens']}`;
+        maxTokensText.setAttribute('data-title', 'Max tokens:');
+
+        // Create Add title , edit and delete buttons
+        var titleButton = document.createElement('button');
+        titleButton.className = 'save';
+        if (titleExists) {
+            titleButton.innerText = 'Edit Title';
+        } else {    
+            titleButton.innerText = 'Add Title';
+        }
+        titleButton.setAttribute('id', `title${i}`);
+
+        var editButton = document.createElement('button');
+        editButton.className = 'save';
+        editButton.innerText = 'Edit Prompt';
+        editButton.setAttribute('id', `edit${i}`);
+
+        var deleteButton = document.createElement('button');
+        deleteButton.className = 'save';
+        deleteButton.innerText = 'Delete';
+        deleteButton.setAttribute('id', `del${i}`);
+
+        // Add a textare for the title, make it hidden, make it one line, and 500px wide
+        var titleInsertText = document.createElement('textarea');
+        titleInsertText.className = 'title-text';
+        titleInsertText.setAttribute('id', `title-text${i}`);
+        titleInsertText.style.display = 'none';
+        titleInsertText.setAttribute('rows', '1');
+        titleInsertText.setAttribute('cols', '60');
+        titleInsertText.setAttribute('placeholder', 'Enter title here (click away to save)');
+
+
+        // Append all elements to the list item
+        if (titleExists) {
+            li.appendChild(titleText);
+            li.appendChild(document.createElement('br'));
+        }
+        li.appendChild(promptText);
+        li.appendChild(document.createElement('br'));
+        li.appendChild(modelText);
+        li.appendChild(tempText);
+        li.appendChild(maxTokensText);
+        li.appendChild(document.createElement('br'));
+        li.appendChild(titleButton);
+        li.appendChild(editButton);
+        li.appendChild(deleteButton);
+        li.appendChild(document.createElement('br'));
+        li.appendChild(titleInsertText);
+
+        // Append the list item to the 'list-of-prompts' node
         ul.appendChild(li);
+        // Call the addEventsDragAndDrop function with the list item as the parameter
         addEventsDragAndDrop(li);
     }
+    update_lower_buttons(items)
 }
 
 
-function update_del_buttons(items) {
+
+
+function update_lower_buttons(items) {
     for (var j = 0; j < items.customprompt.length; j++) {
-        document.getElementById('del' + j.toString()).addEventListener('click', function () {
-            var id = this.id.substring(3);
-            erasePrompt(id);
+        // add event listener to the add title button
+        document.getElementById('title' + j.toString()).addEventListener('click', function () {
+            var id = this.id.substring(5);
+            addTitle(id);
         }, false)
         // add event listener to the edit button
         document.getElementById('edit' + j.toString()).addEventListener('click', function () {
             var id = this.id.substring(4);
             editPrompt(id);
+        }, false)
+        // add event listener to the delete button
+        document.getElementById('del' + j.toString()).addEventListener('click', function () {
+            var id = this.id.substring(3);
+            erasePrompt(id);
         }, false)
     }
 }
@@ -119,7 +189,6 @@ function savePrompt() {
             if (prompt_already_present == false) {
                 items.customprompt.push(body_data);
                 makePromptList(items) //update the list of prompts
-                update_del_buttons(items); // update right click menu
                 chrome.storage.sync.set({ 'customprompt': items.customprompt }, function () {
                     // Notify that we saved
                     console.log('Your custom prompt was saved.');
@@ -161,13 +230,52 @@ function erasePrompt(index) {
                 // remove the prompt from the array
                 items.customprompt.splice(index, 1);
                 makePromptList(items); //update the list of prompts
-                update_del_buttons(items);  // update the delete buttons
 
                 chrome.storage.sync.set({ 'customprompt': items.customprompt }, function () {
                     // Notify that is erased
                     console.log('Your custom prompt was erased.');
                 })
                 chrome.runtime.sendMessage({ text: "new_prompt_list" }); // new menu list
+            }
+        }
+    });
+}
+
+function addTitle(index){
+    
+    // show the texttitle to the user
+    let textTitle = document.getElementById(`title-text${index}`);
+    textTitle.style.display = 'block';
+    // put the focus on the texttitle
+    textTitle.focus();
+    // when the user loses the focus, save the title
+    textTitle.addEventListener('blur', function(){
+        saveTitle(index);
+        // and hide the texttitle
+        textTitle.style.display = 'none';
+        chrome.runtime.sendMessage({ text: "new_prompt_list" });
+    });
+    
+}
+
+function saveTitle(index){
+    // get the text from the title
+    var title = document.getElementById(`title-text${index}`).value;
+    // try to retrive the custom prompt from the storage API
+    chrome.storage.sync.get('customprompt', function (items) {
+        // Check that the prompt exists
+        if (typeof items.customprompt !== 'undefined') {
+            // check that the index is valid
+            if (index <= items.customprompt.length) {
+                // add the title to the prompt
+                items.customprompt[index]['title'] = title;
+                // save the title in the storage
+                chrome.storage.sync.set({ 'customprompt': items.customprompt }, function () {
+                    // Notify that is saved
+                    console.log('Your custom prompt title was saved.');
+                })
+                makePromptList(items); //update the list of prompts
+
             }
         }
     });
@@ -196,15 +304,15 @@ function editPrompt(index) {
     });
 }
 
-function editPrompt2(index) {
-    //call savePrompt function
-    // erasePrompt(index);
-    savePrompt();
-    // change the innerHTML of the button
-    document.getElementById('createPrompt').innerHTML = '<b>Create prompt</b>';
-    // change the onclick function of the button
-    document.getElementById('createPrompt').onclick = function () { savePrompt() };
-}
+// function editPrompt2(index) {
+//     //call savePrompt function
+//     // erasePrompt(index);
+//     savePrompt();
+//     // change the innerHTML of the button
+//     document.getElementById('createPrompt').innerHTML = '<b>Create prompt</b>';
+//     // change the onclick function of the button
+//     document.getElementById('createPrompt').onclick = function () { savePrompt() };
+// }
 
 
 
@@ -289,7 +397,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 // Attach the click event to the respective elements
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('createPrompt').addEventListener('click', savePrompt);
     document.getElementById('showKey').addEventListener('click', toggleSaveKeyButton);
     document.getElementById('linktoAPI').addEventListener('click', openLink);
@@ -308,11 +416,7 @@ document.addEventListener('DOMContentLoaded', function () {
     chrome.storage.sync.get('customprompt', function (items) {
         //if it exists send an alert
         if (typeof items.customprompt !== 'undefined') {
-            // alert(items.customprompt);
             makePromptList(items);
-            // document.getElementById('list-of-prompts').innerHTML = freshList
-            //add an event listener to the delete buttons
-            update_del_buttons(items);
         }
     }
     )
@@ -463,7 +567,7 @@ function reoderListinMemory() {
             chrome.storage.sync.set({ 'customprompt': newList }, function () {
                 items.customprompt = newList;
                 makePromptList(items);
-                update_del_buttons(items);
+                
             });
         }
         chrome.runtime.sendMessage({ text: "new_prompt_list" });

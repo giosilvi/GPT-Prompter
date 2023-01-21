@@ -128,7 +128,7 @@ body ul .draggable {
   margin: 10px;
   background-color: white;
   color: #212121;
-  line-height: 2.5;
+  line-height: 1.5;
   cursor: move;
   transition: all 200ms;
   user-select: none;
@@ -156,10 +156,19 @@ body ul .draggable:hover:after {
 }
 
 .feature-text {
-  font-weight: bold;
   margin-right: 5px;
 }
-
+.feature-text::before {
+  font-weight:bold;
+  content: attr(data-title);
+}
+.prompt-text{
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+}
 
 
 
