@@ -69,7 +69,7 @@ function makePromptList(items) {
 
         // Add a textare for the title, make it hidden, make it one line, and 500px wide
         var titleInsertText = document.createElement('textarea');
-        titleInsertText.className = 'title-text';
+        titleInsertText.className = 'title-text form-control';
         titleInsertText.setAttribute('id', `title-text${i}`);
         titleInsertText.style.display = 'none';
         titleInsertText.setAttribute('rows', '1');

@@ -14,22 +14,41 @@
 <body>
     <div class="container-fluid">
         <div class="row">
-            <div class="col-md-2 ml-auto" style="display:flex; padding: 40px;"><img src="icons\iconA128.png"></div>
-            <div class="col-md-10 mr-auto" style="margin: top 20px; text-align: left; margin:auto;">
-                <h1 style="margin-bottom: -1.5rem;">History: Prompts & completions </h1><br><span
-                    style="margin: top -50px;">Here you can see your prompt & completions (and costs)</span>
+            <div class="logoimage" style="display:flex; padding: 40px;">
+                <img src="icons\iconA128.png">
+            </div>
+            <div class="typewriter">
+                <h1 style="margin-bottom: -1rem;" >
+                    History: Prompts & Completions 
+                </h1>
+                <br>
+                <span style="font-style: italic;">
+                    Here you can see the history of your prompts with completion and costs.
+                </span>
             </div>
         </div>
-
+        
 
         <div style="padding-left: 30px" class="btn-group" role="group" aria-label="button_option">
             <button type="button", id="export_to_json" class="save" style="white-space: nowrap; font-size: 1rem; padding:0px">Export 
                 as JSON file</button>
         </div>
         <!-- <ol id="custom-prompts"></ol> -->
-        <div style="padding-left: 30px" class="btn-group" role="group" aria-label="button_option">
+        <div  class="btn-group" role="group" aria-label="button_option">
             <button type="button" id="delete-all" class="save"
                 style="white-space: nowrap; font-size: 1rem; padding:0px">Delete All</button>
+        </div>
+        <div style="float:right">
+            <form action="https://www.paypal.com/donate" method="post" target="_top">
+                <input type="hidden" name="business" value="FAXAR6TAH7P8U" />
+                <input type="hidden" name="no_recurring" value="0" />
+                <input type="hidden" name="item_name" value="If you find GPT-Prompter useful consider making a donation to help keep it free for everybody!
+                Thank you!" />
+                <input type="hidden" name="currency_code" value="EUR" />
+                <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
+                <img alt="" border="0" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1" />
+            </form>
+                
         </div>
             <!-- add a new line -->
         <div style="height:20px"></div>

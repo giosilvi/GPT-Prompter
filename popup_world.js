@@ -45,8 +45,8 @@ function computeCost(tokens, model) {
 const minipopup = (id, { left = 0, top = 0 }) => `
 <div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px">
   <div id="${id}prompt" class="popupprompt">
-    <div id="${id}grabbable" class="grabbable" style="display: flex; justify-content: space-between; position: relative;">
-      <div id="${id}header" class="promptheader" title=" Double-click to expand">
+    <div id="${id}grabbable" class="grabbable">
+      <div id="${id}header" class="promptheader" style="white-space: pre-wrap;" title=" Double-click to expand">
       </div>
       <div style='justify-content: flex-end; display:flex!important; align-items: flex-start;  right: 0;'> 
         <button class='minibuttons' id="pin${id}" title="Pin the popup" hidden>&#128204;&#xFE0E;</button>
@@ -64,7 +64,7 @@ const minipopup = (id, { left = 0, top = 0 }) => `
 const flypopup = (id, { text = "none", left = 0, top = 0 }) => `
 <div class="popuptext onylonthefly" id="${id}" style="left: ${left}px; top:${top}px">
   <div id="${id}prompt" class="popupprompt">
-  <div id="${id}grabbable" class="grabbable" style="display: flex;  justify-content: space-between; position: relative; ">
+  <div id="${id}grabbable" class="grabbable">
     <div id="${id}header" class="promptheader" title=" Double-click to expand">
       <b>Prompt On-the-Fly</b> (<b>Alt+P</b> - Open , <b>Alt+Enter</b> - Submit, <b>Esc</b> - Close)
     </div>
@@ -99,6 +99,8 @@ const styled = `
     border: 1px solid #bbbbbb;
     margin-bottom:10px;
     margin-top:10px;
+    white-space: pre-wrap;
+    
 }
 .textarea:focus{
     border: 1px solid #ffffff;
@@ -114,6 +116,10 @@ const styled = `
     cursor: grab;
     cursor: -moz-grab;
     cursor: -webkit-grab;
+    color: #3ee2ba;
+    display: flex; 
+    justify-content: space-between; 
+    position: relative;
   }
   .grabbable:hover {
     background-color: #282828; /* slightly lighter background color */
@@ -177,6 +183,7 @@ const styled = `
     transform: scale(0);
     transform-origin: top left;
     transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+    
   }
   .show {
     opacity: 0.9;
@@ -556,14 +563,14 @@ class popUpClass extends HTMLElement {
       this.stream_on = false;
       // show run button and hide stop button
       this.toggleRunStop(target_id);
-      var complete_completion = this.shadowRoot.getElementById(target_id + "text").innerHTML
+      const complete_completion = this.shadowRoot.getElementById(target_id + "text").innerHTML
       // add a button to copy the text to clipboard
       this.addCopyToClipboardBtn(target_id, complete_completion);
 
       //save prompt to local storage 
-      var body_data = JSON.parse(message.body_data)
-      var model = body_data.model
-      var cost = computeCost(this.tokens, model)
+      const body_data = JSON.parse(message.body_data)
+      const model = body_data.model
+      const cost = computeCost(this.tokens, model)
       this.clearnewlines = true;
       this.tokens = 0;
       // save the result.choices[0].text in the storage 
