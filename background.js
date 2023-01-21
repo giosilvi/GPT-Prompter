@@ -117,7 +117,7 @@ chrome.runtime.onInstalled.addListener(function () {
             }
         }
         else { // if the prompt does not exist, create the default one
-            items.customprompt = [{ "model": "text-davinci-003", "temperature": 0.1, "max_tokens": 1024, "prompt": 'Tell me more about "#TEXT#":' }];
+            items.customprompt = [{ "model": "text-davinci-003", "temperature": 0.1, "max_tokens": 1024, "prompt": 'Tell me more about #TEXT# :' }];
         }
         // save the new_prompt_list
         chrome.storage.sync.set({ 'customprompt': items.customprompt });

@@ -98,7 +98,6 @@ body .list .input {
   height: 50px;
   width: 250px;
   padding-left: 10px;
-  font-family: "Raleway", sans-serif;
   font-weight: 800;
   font-size: 16px;
   margin-left: -5px;
@@ -123,7 +122,6 @@ body ul {
 }
 body ul .draggable {
   will-change: transform;
-  font-family: "Raleway", sans-serif;
   list-style-type: none;
   margin: 10px;
   background-color: white;
