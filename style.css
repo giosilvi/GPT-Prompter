@@ -217,3 +217,9 @@ body ul .draggable:hover:after {
     transform: rotate(360deg);
   }
 }
+
+.suggestion {
+  color: #e1e1e1;
+  font-style: italic;
+  font-size: smaller;
+}

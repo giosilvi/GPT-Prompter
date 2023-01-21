@@ -9,6 +9,6 @@ To use it follows these steps:
 
 3- From https://beta.openai.com/account/api-keys you can copy your API Key and paste into the chrome extension (we never have access to your API Key, it is stored on your Chrome profile).
 
-4- You are set to go! Now just select text from a website and select from the right-click menu the GPT-Prompter command to send the custom prompt with the selected text. 
+4- You are set to go! Now just select text from a website and select from the context menu (right click) the GPT-Prompter command to send the custom prompt with the selected text. 
 
 5- The default prompt is "Tell me more about <selected text>", but you can create anything you want with just the constrain that it has to contain a field for the selected text to be parsed in it.

@@ -194,14 +194,14 @@ function savePrompt() {
                     console.log('Your custom prompt was saved.');
                 })
                 chrome.runtime.sendMessage({ text: "new_prompt_list" });
-                document.getElementById('promptinput').value = 'Prompt created! Available in right-click menu.';
+                document.getElementById('promptinput').value = 'Prompt created! Available in context menu (right click).';
                 document.getElementById("promptinput").style.color = "#10a37f"; //green color for the prompt created
             }
             else {
                 console.log('Your custom prompt was already saved.');
                 var customprompt = document.getElementById('promptinput').value;
 
-                document.getElementById('promptinput').value = 'Prompt already present! Available in right-click menu.';
+                document.getElementById('promptinput').value = 'Prompt already present! Available in context menu (right click).';
                 //yellow color for the prompt created
                 document.getElementById("promptinput").style.color = "#f7b500";
             }
