@@ -1,8 +1,14 @@
 {
     "name": "GPT-Prompter",
+    "browser_specific_settings": {
+        "gecko": {
+          "id": "giorgiosilvidev@gmail.com",
+          "strict_min_version": "101.0"
+        }
+      },
     "version": "0.0.1.7",
     "description": "Fast custom prompts to GPT-3 API",
-    "manifest_version": 3,
+    "manifest_version": 2,
     "icons": {
         "16": "icons/iconA16.png",
         "48": "icons/iconA48.png",
@@ -11,7 +17,7 @@
     "permissions": [
         "contextMenus",
         "storage",
-        "commands"
+        "activeTab" 
     ],
     "content_scripts": [
         {
@@ -20,18 +26,17 @@
             ],
             "js": [
                 "node_modules/@webcomponents/custom-elements/custom-elements.min.js",
-                "content.js",
-                "popup_world.js"
+                "popup_world.js",
+                "content.js"
             ]
         }
     ],
-    "action": {
+    "browser_action": {
         "default_popup": "popup.html",
         "default_title": "GPT-Prompter"
     },
     "background": {
-        "service_worker": "background.js",
-        "type": "module"
+        "scripts": ["background.js"]
     },
     "commands": {
         "prompt-on-the-fly": {

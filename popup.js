@@ -389,8 +389,6 @@ document.addEventListener('DOMContentLoaded', function () {
         setTimeout(function () {
             document.getElementById('apikey').value = "";
         }, 2000);
-        // reset the icon to the default one
-        chrome.action.setIcon({ path: "icons/icon16.png" })
     }
 }, false)
 
@@ -429,7 +427,6 @@ document.addEventListener('DOMContentLoaded', function () {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.message === "API_key_valid") {
         saveKey();
-        chrome.action.setIcon({ path: "icons/iconA16.png" });
         document.getElementById("apikey").value = "The API KEY is valid. Hooray!";
         setTimeout(() => {
             hideSaveKey();

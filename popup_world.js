@@ -217,25 +217,50 @@ const styled = `
     background-color:#fff!important;
   }
 `;
-
+// new function
+function renderShadowDOM(parent) {
+  console.log("running render out ")
+    parent.attachShadow({ mode: "open" }); // here we create the shadow DOM
+    const style = document.createElement("style");
+    style.innerHTML = styled;
+    parent.shadowRoot.appendChild(style); // here append the style to the shadowRoot    
+    parent.ids = 0;
+    parent.tokens = 0;
+    parent.clearnewlines = true;
+    parent.listOfActivePopups = [];
+    parent.listOfUnpinnedPopups = [];
+    parent.listOfUndesiredStreams = [];
+    parent.stream_on = false;
+    parent.stop_stream = false;
+    parent.alreadyCalled = {};
+}
 class popUpClass extends HTMLElement {
   constructor() {
-    super();
-    this.render();
+    console.log("running constructor")
+    console.log("super() called")
+    super(); // super() is required to call the parent class constructor
+    console.log("this is the constructor", this)
+    console.log('this contains this methods', Object.get)
+    try {this.renderShadowDOM();
+    } catch (err) {
+      console.log(err)
+    }
+    console.log("render() called")
   }
 
-  get mousePosition() {
+  mousePosition = () => { 
     return JSON.parse(this.getAttribute("mousePosition") || "{}");
   }
 
   static get observedAttributes() {
     return ["mousePosition"];
   }
-
-  render() {
+  // copyToClipboard = async (text) => {
+  renderShadowDOM = () => {
+    console.log("running render")
     this.attachShadow({ mode: "open" }); // here we create the shadow DOM
     const style = document.createElement("style");
-    style.textContent = styled;
+    style.innerHTML = styled;
     this.shadowRoot.appendChild(style); // here append the style to the shadowRoot    
     this.ids = 0;
     this.tokens = 0;
@@ -249,37 +274,53 @@ class popUpClass extends HTMLElement {
   }
 
   //   this function update the style in shadow DOM with the new mousePosition. TO REVIEW
-  attributeChangedCallback(name, oldValue, newValue) {
+  attributeChangedCallback(name, oldValue, newValue){
     if (name === "mousePosition") {
-      if (this.mousePosition.left + 150 > window.innerWidth) {
-        var position = this.mousePosition
+      console.log("running attributeChangedCallback")
+      if (this.mousePosition().left + 150 > window.innerWidth) {
+        var position = this.mousePosition()
         position.left = window.innerWidth - 150
         this.lastpop = minipopup(this.ids, position);
       }
-      else { this.lastpop = minipopup(this.ids, this.mousePosition); }
+      else { this.lastpop = minipopup(this.ids, this.mousePosition()); }
     }
   }
-  defaultpopup() {
+  defaultpopup = () => {
+    console.log("running defaultpopup")
     // Create a new element to hold the pop-up
+    try {
     const popUpElement = document.createElement('div');
+    // if lastpop is not defined, create a default popup with position 0,0
+    if (this.lastpop === undefined) {
+      this.lastpop = minipopup(this.ids, {left:0, top:0});
+    }
     popUpElement.innerHTML = this.lastpop;
-
+    console.log("this is the popUpElement", this.lastpop)
+    
     // Append the new element to the shadow root
     this.shadowRoot.appendChild(popUpElement);
-
+    
+    console.log("ID is ", this.ids)
+    console.log('on the shadowRoot there are all these elements', this.shadowRoot)
+    console.log("If you want to see the element with the ID specified in this.ids, use",this.shadowRoot.getElementById(this.ids))
     // Toggle the 'show' class on the element with the ID specified in this.ids
     setTimeout(() => {this.shadowRoot.getElementById(this.ids).classList.toggle('show'); }, 10);
     // Set up event listeners for the buttons and other actions
-    this.buttonForPopUp(this.ids);
+    this.buttonForPopUp(this.ids);}
+    catch (err) {
+      console.log(err)
+    }
+
   }
 
-  ontheflypopup(selectionText, bodyData, cursorPosition) {
+  ontheflypopup = (selectionText, bodyData, cursorPosition) => {
+    console.log("running ontheflypopup")
     // Create a new element to hold the pop-up
     const popUpElement = document.createElement('div');
     popUpElement.innerHTML = flypopup(this.ids, { 
         text: selectionText, 
-        left: this.mousePosition.left, 
-        top: this.mousePosition.top 
+        left: this.mousePosition().left, 
+        top: this.mousePosition().top 
     });
 
     // Append the new element to the shadow root
@@ -312,7 +353,7 @@ class popUpClass extends HTMLElement {
 }
 
 
-  pinButtons(id_target, id_button) {
+  pinButtons = (id_target, id_button) => {
     this.shadowRoot.getElementById(id_button).addEventListener("click", () => {
       // if the element is in listOfUnpinnedPopups, remove it from there. If not, add it to the list
       if (this.listOfUnpinnedPopups.includes(id_target)) {
@@ -327,7 +368,7 @@ class popUpClass extends HTMLElement {
   }
 
 
-  minimizeButtons(id_target, id_button) {
+  minimizeButtons = (id_target, id_button) => {
     this.shadowRoot.getElementById(id_button).addEventListener("click", () => {
       this.shadowRoot.getElementById(id_target + "text").classList.toggle('hide');
       this.shadowRoot.getElementById(id_target).classList.toggle('resetresize');
@@ -340,7 +381,7 @@ class popUpClass extends HTMLElement {
       }
     });
   }
-  closeButtons(id_target, id_button) {
+  closeButtons = (id_target, id_button) => {
     this.shadowRoot.getElementById(id_button).addEventListener("click", () => {
       this.shadowRoot.getElementById(id_target).classList.toggle('show');
       setTimeout(() => { this.shadowRoot.getElementById(id_target).remove(); }, 500);
@@ -354,7 +395,7 @@ class popUpClass extends HTMLElement {
     });
   }
 
-  doubleClick(id_target) {
+  doubleClick = (id_target) => {
     this.shadowRoot.getElementById(id_target).addEventListener("dblclick", () => {
       this.shadowRoot.getElementById(id_target).classList.toggle('expand');
       // from id_target replace prompt with header, and get the element with the id header, toggle class nobackground
@@ -364,7 +405,7 @@ class popUpClass extends HTMLElement {
     });
   }
 
-  runClick(targetId) {
+  runClick = (targetId) => {
     // Add a click event listener to the target element's submit button if it doesn't already have one
     const submitButton = this.shadowRoot.getElementById(`${targetId}submit`);
     if (!submitButton.listener) {
@@ -391,7 +432,7 @@ class popUpClass extends HTMLElement {
     this.shadowRoot.getElementById(`${targetId}textarea`).addEventListener('keydown', this.handleKeydown.bind(this, targetId));
   }
 
-  handleKeydown(targetId, e) {
+  handleKeydown = (targetId, e) => {
     if (e.key === 'Escape') {
       this.closePopup(`mclose${targetId}`);
     } else if (e.altKey) {
@@ -403,7 +444,7 @@ class popUpClass extends HTMLElement {
     }
   }
 
-  submitOrStop(targetId) {
+  submitOrStop = (targetId) => {
     const submitButton = this.shadowRoot.getElementById(`${targetId}submit`);
     if (!submitButton.classList.contains('hide')) {
       submitButton.click();
@@ -412,11 +453,11 @@ class popUpClass extends HTMLElement {
     }
   }
 
-  closePopup(id_close) {
+  closePopup = (id_close) => {
     this.shadowRoot.getElementById(id_close).click();
   }
 
-  clickCopyToClipboard(targetId) {
+  clickCopyToClipboard = (targetId) => {
     const copyButton = this.shadowRoot.getElementById(`copy_to_clipboard${targetId}`);
     if (copyButton) {
       copyButton.click();
@@ -424,7 +465,7 @@ class popUpClass extends HTMLElement {
   }
 
 
-  regenerateOrRun(id_target) {
+  regenerateOrRun = (id_target) => {
     const regenerateButton = this.shadowRoot.getElementById(`regenerate${id_target}`);
     if (regenerateButton) {
       regenerateButton.click();
@@ -437,7 +478,7 @@ class popUpClass extends HTMLElement {
   }
 
 
-  stopButton(id_target) {
+  stopButton = (id_target) => {
     this.shadowRoot.getElementById(id_target + "stop").addEventListener("click", () => {
       this.stop_stream = true;
       this.toggleRunStop(id_target);
@@ -445,7 +486,7 @@ class popUpClass extends HTMLElement {
     });
   }
 
-  toggleRunStop(id_target) {
+  toggleRunStop = (id_target) => {
     if (this.shadowRoot.getElementById(id_target + "submit")) {
       this.shadowRoot.getElementById(id_target + "submit").classList.toggle('hide');
       this.shadowRoot.getElementById(id_target + "stop").classList.toggle('hide');
@@ -453,7 +494,7 @@ class popUpClass extends HTMLElement {
   }
 
 
-  buttonForPopUp(id_target) {
+  buttonForPopUp = (id_target) => {
     const id_pin = `pin${id_target}`;
     const id_close = `mclose${id_target}`;
     const id_minimize = `minimize${id_target}`;
@@ -485,7 +526,8 @@ class popUpClass extends HTMLElement {
 
 
 
-  updatePopupHeader(request, target_id) {
+  updatePopupHeader = (request, target_id) => {
+    console.log("updatePopupHeader", request, target_id);
     var symbol = symbolFromModel(request.body_data.model)
     this.shadowRoot.getElementById(target_id + "header").innerHTML = symbol + "<i> " + request.text + "</i>";
     // if tempeature is greater than 0 make the regenearte button visible
@@ -501,7 +543,7 @@ class popUpClass extends HTMLElement {
   }
 
 
-  regenerateButton(id_target, request) {
+  regenerateButton = (id_target, request) => {
     this.shadowRoot.getElementById("regenerate" + id_target).addEventListener("click", () => {
       if (this.stream_on == true) { this.stop_stream = true; } //stop the actual stream if it is on, and then restart it (remains on)
       this.shadowRoot.getElementById(id_target + "text").innerHTML = "";
@@ -526,7 +568,7 @@ class popUpClass extends HTMLElement {
     }
   };
 
-  updatepopup(message, target_id, stream) {
+  updatepopup = (message, target_id, stream) => {
     //if stream is true
     if (stream) {
       this.stream_on = true;
@@ -587,7 +629,7 @@ class popUpClass extends HTMLElement {
     }
   }
 
-  addCopyToClipboardBtn(target_id, complete_completion) {
+  addCopyToClipboardBtn = (target_id, complete_completion) => {
     this.shadowRoot.getElementById(target_id + "text").innerHTML += "<button class='minibuttons' style='float:right;' id='copy_to_clipboard" + target_id + "' title='Copy to clipboard (Alt+C)'>&#x2398;&#xFE0E;</button>"; //
     this.shadowRoot.getElementById("copy_to_clipboard" + target_id).addEventListener("click", () => {
       this.copyToClipboard(complete_completion);
