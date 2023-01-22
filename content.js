@@ -151,23 +151,16 @@ chrome.runtime.onMessage.addListener((request,sender, sendResponse) => {
 
   switch (request.message) {
     case 'showPopUp':
-      console.log('showPopUp');
       handleShowPopUp();
       popUpShadow.defaultpopup();
       addListenersForDrag();
       break;
     case 'showPopUpOnTheFly':
-      console.log('showPopUpOnTheFly');
       handleShowPopUp();
-      // if request.text is empty, then pass a "non-breaking space": &nbsp; 
-      if (request.text === '') {
-        request.text = '&nbsp;';
-      }
       popUpShadow.ontheflypopup(request.text, request.body_data, request.cursorPosition);
       addListenersForDrag();
       break;
     case 'GPTprompt':
-      console.log('GPTprompt');
       popUpShadow.updatePopupHeader(request, idPopup);
       break;
     case 'GPTStream_completion':

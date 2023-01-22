@@ -154,11 +154,6 @@ chrome.runtime.onMessage.addListener((message, sender) => {
             })();
         });
     }
-
-    else if (message.text === 'enableContextMenu') {
-        console.log('enableContextMenu passed');
-        chrome.contextMenus.update("GPT-Prompter", { enabled: true }); // enable the context menu item
-    }
     else {
         console.log('Unknown message: ', message);
     }
@@ -314,13 +309,11 @@ chrome.contextMenus.onClicked.addListener(async (info, tabs) => {
 
 function checkTabsAndSendStream(message, tabs, string, body_data, idpopup, uuid) {
     if (tabs.id == -1) { //pdf case
-      console.log("pdf case");
       chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
           sendStream(message, tabs[0].id, string, body_data, idpopup, uuid);
         });
       }
       else {// html case
-        console.log("html case");
         sendStream(message, tabs.id, string, body_data, idpopup, uuid);
       }
     }
@@ -394,5 +387,3 @@ async function promptGPT3Prompting(prompt, items, tabs) {
       checkTabsAndSendStream("GPTStream_completion", tabs, "Error:" + err, str_body_data, popupID, uuid);
     });
 }
-
-console.log("background.js loaded");

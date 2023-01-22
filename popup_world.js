@@ -217,35 +217,14 @@ const styled = `
     background-color:#fff!important;
   }
 `;
-// new function
-function renderShadowDOM(parent) {
-  console.log("running render out ")
-    parent.attachShadow({ mode: "open" }); // here we create the shadow DOM
-    const style = document.createElement("style");
-    style.innerHTML = styled;
-    parent.shadowRoot.appendChild(style); // here append the style to the shadowRoot    
-    parent.ids = 0;
-    parent.tokens = 0;
-    parent.clearnewlines = true;
-    parent.listOfActivePopups = [];
-    parent.listOfUnpinnedPopups = [];
-    parent.listOfUndesiredStreams = [];
-    parent.stream_on = false;
-    parent.stop_stream = false;
-    parent.alreadyCalled = {};
-}
+
 class popUpClass extends HTMLElement {
   constructor() {
-    console.log("running constructor")
-    console.log("super() called")
     super(); // super() is required to call the parent class constructor
-    console.log("this is the constructor", this)
-    console.log('this contains this methods', Object.get)
     try {this.renderShadowDOM();
     } catch (err) {
       console.log(err)
     }
-    console.log("render() called")
   }
 
   mousePosition = () => { 
@@ -257,7 +236,6 @@ class popUpClass extends HTMLElement {
   }
   // copyToClipboard = async (text) => {
   renderShadowDOM = () => {
-    console.log("running render")
     this.attachShadow({ mode: "open" }); // here we create the shadow DOM
     const style = document.createElement("style");
     style.innerHTML = styled;
@@ -276,7 +254,6 @@ class popUpClass extends HTMLElement {
   //   this function update the style in shadow DOM with the new mousePosition. TO REVIEW
   attributeChangedCallback(name, oldValue, newValue){
     if (name === "mousePosition") {
-      console.log("running attributeChangedCallback")
       if (this.mousePosition().left + 150 > window.innerWidth) {
         var position = this.mousePosition()
         position.left = window.innerWidth - 150
@@ -286,23 +263,14 @@ class popUpClass extends HTMLElement {
     }
   }
   defaultpopup = () => {
-    console.log("running defaultpopup")
     // Create a new element to hold the pop-up
     try {
     const popUpElement = document.createElement('div');
-    // if lastpop is not defined, create a default popup with position 0,0
-    if (this.lastpop === undefined) {
-      this.lastpop = minipopup(this.ids, {left:0, top:0});
-    }
     popUpElement.innerHTML = this.lastpop;
-    console.log("this is the popUpElement", this.lastpop)
     
     // Append the new element to the shadow root
     this.shadowRoot.appendChild(popUpElement);
     
-    console.log("ID is ", this.ids)
-    console.log('on the shadowRoot there are all these elements', this.shadowRoot)
-    console.log("If you want to see the element with the ID specified in this.ids, use",this.shadowRoot.getElementById(this.ids))
     // Toggle the 'show' class on the element with the ID specified in this.ids
     setTimeout(() => {this.shadowRoot.getElementById(this.ids).classList.toggle('show'); }, 10);
     // Set up event listeners for the buttons and other actions
@@ -314,7 +282,6 @@ class popUpClass extends HTMLElement {
   }
 
   ontheflypopup = (selectionText, bodyData, cursorPosition) => {
-    console.log("running ontheflypopup")
     // Create a new element to hold the pop-up
     const popUpElement = document.createElement('div');
     popUpElement.innerHTML = flypopup(this.ids, { 
@@ -527,7 +494,6 @@ class popUpClass extends HTMLElement {
 
 
   updatePopupHeader = (request, target_id) => {
-    console.log("updatePopupHeader", request, target_id);
     var symbol = symbolFromModel(request.body_data.model)
     this.shadowRoot.getElementById(target_id + "header").innerHTML = symbol + "<i> " + request.text + "</i>";
     // if tempeature is greater than 0 make the regenearte button visible
