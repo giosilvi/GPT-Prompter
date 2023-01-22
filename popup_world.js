@@ -252,7 +252,7 @@ class popUpClass extends HTMLElement {
   }
 
   //   this function update the style in shadow DOM with the new mousePosition. TO REVIEW
-  attributeChangedCallback(name, oldValue, newValue){
+  attributeChangedCallback = (name, oldValue, newValue) =>{
     if (name === "mousePosition") {
       if (this.mousePosition().left + 150 > window.innerWidth) {
         var position = this.mousePosition()
@@ -266,10 +266,15 @@ class popUpClass extends HTMLElement {
     // Create a new element to hold the pop-up
     try {
     const popUpElement = document.createElement('div');
+     // if lastpop is not defined, create a default popup 
+    if (this.lastpop === undefined) {
+      this.lastpop = minipopup(this.ids, this.mousePosition());
+    }
     popUpElement.innerHTML = this.lastpop;
     
     // Append the new element to the shadow root
     this.shadowRoot.appendChild(popUpElement);
+    
     
     // Toggle the 'show' class on the element with the ID specified in this.ids
     setTimeout(() => {this.shadowRoot.getElementById(this.ids).classList.toggle('show'); }, 10);
