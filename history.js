@@ -30,7 +30,7 @@ function makeHistoryList(items) {
  */
 function createListItem(item, index) {
     // create list item element
-    var listItem = '<li class="list-group-item list-group-item-action typewritersimpler" style="white-space: pre-wrap;">';
+    var listItem = '<li class="list-group-item list-group-item-action " style="white-space: pre-wrap;">';
     // parse prompt object from item
     var prompt = JSON.parse(item[0]);
     // create empty prompt content string
