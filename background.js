@@ -186,12 +186,14 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
         }
     });
 });
-
+// on Updated
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
     if (changeInfo.status === 'complete') {
         updateContextMenu(tab);
     }
 });
+
+
 
 
 
@@ -302,7 +304,11 @@ chrome.contextMenus.onClicked.addListener(async (info, tabs) => {
     }
 });
 
-
+// create Context Menu every time browser starts
+chrome.runtime.onStartup.addListener(function () {
+    createContextMenu();
+  }
+  );
 
 
 

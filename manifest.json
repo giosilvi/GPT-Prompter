@@ -1,6 +1,6 @@
 {
     "name": "GPT-Prompter",
-    "version": "0.0.1.7",
+    "version": "0.0.1.8",
     "description": "Fast custom prompts to GPT-3 API",
     "manifest_version": 3,
     "icons": {
