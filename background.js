@@ -95,7 +95,10 @@ function passTitleOrPrompt(customprompt, symbol ) {
 // LISTENER DECLARATION
 
 // Initial context menu creation, on install
-chrome.runtime.onInstalled.addListener(function () {
+chrome.runtime.onInstalled.addListener(function (details) {
+    // if (details.reason === "install") {
+    //     chrome.action.openPopup(); // open popup not a function, but is in documentation
+    //   }
     // check on installe if the API key is present in storage
     checkAPIKey();
     // add one prompt to the storage

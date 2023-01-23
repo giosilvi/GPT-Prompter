@@ -30,7 +30,7 @@ function makeHistoryList(items) {
  */
 function createListItem(item, index) {
     // create list item element
-    var listItem = '<li class="list-group-item list-group-item-action typewritersimpler" style="white-space: pre-wrap;">';
+    var listItem = `<li class="list-group-item list-group-item-action" style="white-space: pre-wrap; transition: opacity 0.6s;", id="itemHist${index}" >`;
     // parse prompt object from item
     var prompt = JSON.parse(item[0]);
     // create empty prompt content string
@@ -73,8 +73,14 @@ function updateTotalCostDisplay(totalCost) {
 function update_lower_buttons(items) {
     for (var j = 0; j < items.history.length; j++) {
         document.getElementById('eraseItem' + j.toString()).addEventListener('click', function () {
-            var id = this.id.substring(9);
-            erasePrompt(id);
+            // get element itemHist
+            
+            const id = this.id.substring(9);
+            document.getElementById("itemHist"+id).classList.add("hide");
+            setTimeout(() => {
+                    erasePrompt(id);
+            }, 600);
+            // 
         }
             , false)
     }
