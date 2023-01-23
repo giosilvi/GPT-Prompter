@@ -387,3 +387,9 @@ async function promptGPT3Prompting(prompt, items, tabs) {
       checkTabsAndSendStream("GPTStream_completion", tabs, "Error:" + err, str_body_data, popupID, uuid);
     });
 }
+
+// create Context Menu every time firefox starts
+chrome.runtime.onStartup.addListener(function () {
+  createContextMenu();
+}
+);

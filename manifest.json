@@ -6,7 +6,7 @@
           "strict_min_version": "101.0"
         }
       },
-    "version": "0.0.1.8",
+    "version": "0.0.1.9",
     "description": "Fast custom prompts to GPT-3 API",
     "manifest_version": 2,
     "icons": {
