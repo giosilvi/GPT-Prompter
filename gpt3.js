@@ -1,12 +1,12 @@
 function checkTabsAndSendStream(message, tabs, string, body_data, idpopup, uuid) {
     if (tabs.id == -1) { //pdf case
-      console.log("pdf case");
+      // console.log("pdf case");
       chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
           sendStream(message, tabs[0].id, string, body_data, idpopup, uuid);
         });
       }
       else {// html case
-        console.log("html case");
+        // console.log("html case");
         sendStream(message, tabs.id, string, body_data, idpopup, uuid);
       }
     }
@@ -22,7 +22,6 @@ function sendStream(message, id, string, body_data, idpopup, uuid) {
     }
 
 async function promptGPT3Prompting(prompt, items, tabs) {
-  console.log("promptGPT3Prompting ");
   var text = prompt["prompt"]
   var model = prompt["model"]
   var temperature = prompt["temperature"]
@@ -37,7 +36,8 @@ async function promptGPT3Prompting(prompt, items, tabs) {
     "temperature": temperature,
     "max_tokens": max_tokens,
     "prompt": text,
-    "stream": true
+    "stream": true,
+    "logprobs": 1
   };
   // remove stream from body_data
   var str_body_data = JSON.stringify(body_data);
@@ -60,10 +60,7 @@ async function promptGPT3Prompting(prompt, items, tabs) {
       function pump() {
         return reader.read().then(({ done, value }) => {
           // When no more data needs to be consumed, close the stream
-          if (done) {
-            console.log("reader:done");
-            return;
-          }
+          if (done) {return;}
           // Enqueue the next data chunk into our target stream
           // console.log(value);
           var stream = new TextDecoder().decode(value);//.substring(6);

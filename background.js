@@ -57,10 +57,18 @@ function createContextMenu() {
         contexts: ["all"]
     });
 
-    // Create sub-context menu 🤖
+    // Create sub-context menu for prompt on the fly 🤖
     chrome.contextMenus.create({
         id: 'On-the-Fly',
         title: '★ Prompt On-the-Fly ★',
+        parentId: 'GPT-Prompter',
+        contexts: ["all"]
+    });
+
+    // Create a separator
+    chrome.contextMenus.create({
+        id: 'separator',
+        type: 'separator',
         parentId: 'GPT-Prompter',
         contexts: ["all"]
     });
@@ -74,7 +82,7 @@ function createContextMenu() {
                 chrome.contextMenus.create({
                     id: `customprompt-${index}`,
                     parentId: "GPT-Prompter",
-                    title: passTitleOrPrompt(prompt,symbol),
+                    title: passTitleOrPrompt(prompt, symbol),
                     contexts: ["all"]
                 });
             });
@@ -82,12 +90,12 @@ function createContextMenu() {
     });
 }
 
-function passTitleOrPrompt(customprompt, symbol ) {
+function passTitleOrPrompt(customprompt, symbol) {
     // if customprompt contains  a title return the title
     if (customprompt.title) {
         return `${symbol} ${customprompt.title.replaceAll('#TEXT#', '%s')}`;
     }
-    else{
+    else {
         return `${symbol} ${customprompt.prompt.replaceAll('#TEXT#', '%s')}`;
     }
 }
@@ -99,7 +107,7 @@ chrome.runtime.onInstalled.addListener(function (details) {
     // if (details.reason === "install") {
     //     chrome.action.openPopup(); // open popup not a function, but is in documentation
     //   }
-    // check on installe if the API key is present in storage
+
     checkAPIKey();
     // add one prompt to the storage
     chrome.storage.sync.get('customprompt', function (items) {
@@ -127,6 +135,23 @@ chrome.runtime.onInstalled.addListener(function (details) {
         // create the context menu
         createContextMenu()
     });
+    // set advacned setting to true if not set { 'advancedSettings': { "showProb": true} }
+    chrome.storage.sync.get('advancedSettings', function (items) {
+        // Check that the advancedSettings exists
+        if (typeof items.advancedSettings == 'undefined') {
+            // set advancedSettings as a dictionary
+            items.advancedSettings = {};
+        }
+            // if showProb is not set, set it to true
+        if (typeof items.advancedSettings.showProb == 'undefined') {
+                items.advancedSettings.showProb = true;
+        }
+        // save 
+        chrome.storage.sync.set({ 'advancedSettings': items.advancedSettings });
+    });
+
+
+
 });
 
 
@@ -153,11 +178,6 @@ chrome.runtime.onMessage.addListener((message, sender) => {
             })();
         });
     }
-
-    else if (message.text === 'enableContextMenu') {
-        console.log('enableContextMenu passed');
-        chrome.contextMenus.update("GPT-Prompter", { enabled: true }); // enable the context menu item
-    }
     else {
         console.log('Unknown message: ', message);
     }
@@ -166,15 +186,20 @@ chrome.runtime.onMessage.addListener((message, sender) => {
 // The following code will first disable the context menu item with ID "GPT-Prompter" when the active tab is changed or reloaded.
 // Then it will check if the new tab is complete, if it is, it will send a message to the content script of the new tab 
 // with the message "shouldReenableContextMenu" and a callback function that will handle the response from the content script.
+
+let contextMenuEnabled = false;
 function updateContextMenu(tab) {
     chrome.contextMenus.update("GPT-Prompter", { enabled: false });
+    // console.log('Check if content script is running...');
+    contextMenuEnabled = false;
     // if the tab is complete, send a message to the content script to check if the context menu should be re-enabled
     chrome.tabs.sendMessage(tab.id, { greeting: "shouldReenableContextMenu" }, function (response) {
         if (response && response.farewell === 'yes') {
             chrome.contextMenus.update("GPT-Prompter", { enabled: true });
+            contextMenuEnabled = true;
         }
         else if (chrome.runtime.lastError) {
-            console.log('Content script not available');
+            contextMenuEnabled = false;
         }
         else {
             console.log('Error.')
@@ -200,7 +225,7 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
 
 
 
-function launchPromptOnTheFly(selectionText, prompt ) {
+function launchPromptOnTheFly(selectionText, prompt) {
 
     if (typeof selectionText == 'undefined') {
         selectionText = '';
@@ -220,7 +245,7 @@ function launchPromptOnTheFly(selectionText, prompt ) {
     }
     else {
         // if prompt is null, use the default one
-        var bodyData = { "model": "text-davinci-003", "temperature": 0, "max_tokens": 2048 };
+        var bodyData = { "model": "text-davinci-003", "temperature": 0, "max_tokens": 1024 };
     }
     // here we want to create a minipop-up to ask the user to insert the prompt
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
@@ -228,8 +253,11 @@ function launchPromptOnTheFly(selectionText, prompt ) {
     });
 }
 
+
+// Shortcut to launch the prompt on the fly
 chrome.commands.onCommand.addListener(function (command) {
-    if (command === "prompt-on-the-fly") {
+    // if command is prompt-on-the-fly, and the context menu is enabled, launch the prompt on the fly    
+    if (command === "prompt-on-the-fly" && contextMenuEnabled) {
         chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
             // Get the current tab
             var tab = tabs[0];
@@ -240,7 +268,20 @@ chrome.commands.onCommand.addListener(function (command) {
             });
         });
     }
+    else {
+        //send a message to the content script to show a notification
+        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+            //catch the error if the content script is not running
+            chrome.tabs.sendMessage(tabs[0].id, 'GPT-Prompter: Content script not yet running. Wait for the page to load.', function (response) {
+                if (chrome.runtime.lastError) {
+                    console.log('Content script not available');
+                }
+            });
+        });
+    }
+
 });
+
 
 
 // Listen for clicks on context menu items
@@ -251,7 +292,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tabs) => {
     });
     // If the API key is not found, send a message to the tab and return early
     if (typeof APIKEY === 'undefined') {
-        chrome.tabs.sendMessage(tabs.id, 'GPT-Prompter: \n APIKEY not found. Click on the extension icon to set it. \n (Top right corner of the browser -> puzzle piece icon -> GPT-Prompter)');
+        chrome.tabs.sendMessage(tabs.id, 'GPT-Prompter: \n API KEY not found. Click on the extension icon to set it. \n (Top right corner of the browser -> puzzle piece icon -> GPT-Prompter)');
         return;
     }
 
@@ -310,8 +351,8 @@ chrome.contextMenus.onClicked.addListener(async (info, tabs) => {
 // create Context Menu every time browser starts
 chrome.runtime.onStartup.addListener(function () {
     createContextMenu();
-  }
-  );
+}
+);
 
 
 

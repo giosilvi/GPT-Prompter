@@ -36,19 +36,22 @@ function createListItem(item, index) {
     // create empty prompt content string
     var promptContent = '';
     // add key and value pairs from prompt object to prompt content string
+    // if key is 'prompt' put it as last
     for (var key in prompt) {
-        if (key !== 'stream') {
+        if (key !== 'stream' && key !== 'prompt') {
             var value = prompt[key];
             // wrap key in 'strong' element
             promptContent += `<strong>${key}:</strong> ${value}<br>`;
         }
     }
+    // add prompt key and value to prompt content string
+    promptContent += `<strong>prompt:</strong> ${prompt['prompt']}<br>`;
     // create completion content string
     var completionContent = `<strong>completion:</strong> ${item[1]}<br>`;
     // create cost content string with delete button
-    var costContent = `<strong>cost:</strong> ${item[2]}$  <button  class="save" id="eraseItem${index}" > Delete </button>`;
+    var costContent = `<strong>cost:</strong> ${item[2]}$  <button  class="save" style="float:right;" id="eraseItem${index}" > Delete </button> <br>`;
     // add content strings to list item element
-    listItem += `${promptContent}${completionContent}${costContent}`;
+    listItem += `${costContent}${promptContent}${completionContent}`;
     // close list item element
     listItem += '</li>';
     return listItem;

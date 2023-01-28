@@ -25,7 +25,7 @@ function makePromptList(items) {
         } else {
             titleExists = false;
         }
-        
+
         var promptText = document.createElement('span');
         promptText.className = 'prompt-text';
         promptText.innerText = items.customprompt[i]['prompt'];
@@ -52,7 +52,7 @@ function makePromptList(items) {
         titleButton.className = 'save';
         if (titleExists) {
             titleButton.innerText = 'Edit Title';
-        } else {    
+        } else {
             titleButton.innerText = 'Add Title';
         }
         titleButton.setAttribute('id', `title${i}`);
@@ -241,24 +241,24 @@ function erasePrompt(index) {
     });
 }
 
-function addTitle(index){
-    
+function addTitle(index) {
+
     // show the texttitle to the user
     let textTitle = document.getElementById(`title-text${index}`);
     textTitle.style.display = 'block';
     // put the focus on the texttitle
     textTitle.focus();
     // when the user loses the focus, save the title
-    textTitle.addEventListener('blur', function(){
+    textTitle.addEventListener('blur', function () {
         saveTitle(index);
         // and hide the texttitle
         textTitle.style.display = 'none';
         chrome.runtime.sendMessage({ text: "new_prompt_list" });
     });
-    
+
 }
 
-function saveTitle(index){
+function saveTitle(index) {
     // get the text from the title
     var title = document.getElementById(`title-text${index}`).value;
     // try to retrive the custom prompt from the storage API
@@ -326,10 +326,30 @@ function saveKey() {
     });
 }
 
+//if the user click on the toggle probabilityToggle then save the value in the storage under chrome.storage.sync.set({ 'advancedSettings': { "showProb": true or false} });
+// add listener to the probabilityToggle
+function addListenerToProbabilityToggle() {
+    // set the value of the probabilityToggle retrieved from the storage
+    chrome.storage.sync.get('advancedSettings', function (items) {
+        // Check that the advanced setting  exists
+        if (typeof items.advancedSettings !== 'undefined') {
+            // set the value of the probabilityToggle
+            document.getElementById('probabilityToggle').checked = items.advancedSettings.showProb;
+        }
+    });
+    // add listener to the probabilityToggle
+    document.getElementById('probabilityToggle').addEventListener('click', function () {
+        // get the value of the probabilityToggle
+        var probabilityToggle = document.getElementById('probabilityToggle').checked;
+        // save the value in the storage
+        chrome.storage.sync.set({ 'advancedSettings': { "showProb": probabilityToggle } }, function () {
+            // Notify that we saved
+            console.log('Your probabilityToggle was saved.');
+        });
+    });
+}
 
-
-//make a function that listen for event keydown on the input
-document.addEventListener('DOMContentLoaded', function () {
+function checkInputOfPromptDesigner() {
     document.getElementById('promptinput').addEventListener('keyup', onkey, false);
     function onkey(e) {
         //get the value of the input
@@ -343,7 +363,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 // update the input
                 document.getElementById('promptinput').value = inputtext;
             }
-            //check if "#SELECTED TEXT##" is contained in inputtext
+            //check if "TEXT#" is contained in inputtext
             else if (inputtext.indexOf("TEXT#") != -1) {
                 //if yes, replace it with "#TEXT#"
                 inputtext = inputtext.replace("TEXT#", "#TEXT#");
@@ -356,6 +376,14 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 }
+
+
+
+//make a function that listen for event keydown on the input
+document.addEventListener('DOMContentLoaded', function () {
+    checkInputOfPromptDesigner();
+    addListenerToProbabilityToggle();
+    }
 );
 
 
@@ -401,6 +429,8 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('createPrompt').addEventListener('click', savePrompt);
     document.getElementById('showKey').addEventListener('click', toggleSaveKeyButton);
     document.getElementById('linktoAPI').addEventListener('click', openLink);
+    document.getElementById('linktoLogprob').addEventListener('click', openLink);
+    
 }, false);
 
 function openLink() {
@@ -431,14 +461,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         saveKey();
         chrome.action.setIcon({ path: "icons/iconA16.png" });
         document.getElementById("apikey").value = "The API KEY is valid. Hooray!";
+        document.getElementById("apikey").style.color = "#10a37f"; //green color 
         setTimeout(() => {
             hideSaveKey();
+            // set the color back to black
+            document.getElementById("apikey").style.color = "#495057";
         }, 3000);
         //
     } else if (request.message === "API_key_invalid") {
         document.getElementById("apikey").value = "The API KEY is invalid. Try again!";
+        document.getElementById("apikey").style.color = "#e74c3c"; //red color
         setTimeout(() => {
             document.getElementById("apikey").value = "";
+            document.getElementById("apikey").style.color = "#495057";
         }, 3000);
     }
 });
@@ -567,7 +602,7 @@ function reoderListinMemory() {
             chrome.storage.sync.set({ 'customprompt': newList }, function () {
                 items.customprompt = newList;
                 makePromptList(items);
-                
+
             });
         }
         chrome.runtime.sendMessage({ text: "new_prompt_list" });

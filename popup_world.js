@@ -1,5 +1,5 @@
 // import symbolFromModel from './sharedfunctions.js'; //TODO:fix this
-var models = {
+const models = {
   "text-davinci-003": "ↁ",
   "text-davinci-002": "🅳",
   "text-curie-001": "🅲",
@@ -13,7 +13,7 @@ function symbolFromModel(model) {
   if (models.hasOwnProperty(model)) {
     return models[model];
   }
-  return "";
+  return null;
 }
 
 
@@ -46,9 +46,11 @@ const minipopup = (id, { left = 0, top = 0 }) => `
 <div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px">
   <div id="${id}prompt" class="popupprompt">
     <div id="${id}grabbable" class="grabbable">
+    
       <div id="${id}header" class="promptheader" style="white-space: pre-wrap;" title=" Double-click to expand">
       </div>
       <div style='justify-content: flex-end; display:flex!important; align-items: flex-start;  right: 0;'> 
+      <button class='minibuttons symbolmodel' id="${id}symbol"></button>
         <button class='minibuttons' id="pin${id}" title="Pin the popup" hidden>&#128204;&#xFE0E;</button>
         <button class='minibuttons' id="regenerate${id}" title="Regenerate prompt (Alt+Enter)" hidden>&#8635;&#xFE0E;</button>
         <button class='minibuttons' id="minimize${id}" title="Minimize/maximize completion">&#128469;&#xFE0E;</button>
@@ -56,19 +58,22 @@ const minipopup = (id, { left = 0, top = 0 }) => `
       </div>
     </div>
   </div>
+  <span id="${id}probability" style="color: #777676; float: right;"></span>
   <p id="${id}text" class='popupcompletion'></p>
+  
 </div>
 `;
 
 
-const flypopup = (id, { text = "none", left = 0, top = 0 }) => `
+const flypopup = (id, { text = "none", left = 0, top = 0, symbol = "ↁ" }) => `
 <div class="popuptext onylonthefly" id="${id}" style="left: ${left}px; top:${top}px">
   <div id="${id}prompt" class="popupprompt">
   <div id="${id}grabbable" class="grabbable">
     <div id="${id}header" class="promptheader" title=" Double-click to expand">
-      <b>Prompt On-the-Fly</b> (<b>Alt+P</b> - Open , <b>Alt+Enter</b> - Submit, <b>Esc</b> - Close)
+     <b>Prompt On-the-Fly</b> (<b>Alt+P</b> - Open , <b>Alt+Enter</b> - Submit, <b>Esc</b> - Close)
     </div>
       <div style='justify-content: flex-end; display:flex!important; align-items: flex-start; right: 0;'>
+        <button class='minibuttons symbolmodel' id="${id}symbol">${symbol}</button>
         <button class='minibuttons' id="pin${id}" title="Pin the popup" hidden>&#128204;&#xFE0E;</button>
         <button class='minibuttons' id="minimize${id}" title="Minimize/maximize completion">&#128469;&#xFE0E;</button>
         <button class='minibuttons' id="mclose${id}"  title="Close popup (Esc)">&#128473;&#xFE0E;</button>
@@ -78,6 +83,7 @@ const flypopup = (id, { text = "none", left = 0, top = 0 }) => `
   <div contentEditable="true" id="${id}textarea" class='textarea'> ${text}</div>
     <button type="button" id="${id}submit" class="submitbutton" title="Alt+Enter">Submit</button>
     <button type="button" id="${id}stop" class="submitbutton hide" title="Alt+Enter" style='background-color: red;'>Stop</button>
+    <span id="${id}probability" style="color: #777676; float: right;"></span>
   <p id="${id}text" class='popupcompletion'></p>
 </div>
 `;
@@ -110,112 +116,116 @@ const styled = `
     background-color: #333333; /* slightly lighter background color */
     
 }
+.symbolmodel {
+  color: #3ee2ba!important; 
+  border-radius: 16px;
+}
 
-  .grabbable {
-    cursor: move; /* fallback if grab cursor is unsupported */
-    cursor: grab;
-    cursor: -moz-grab;
-    cursor: -webkit-grab;
-    color: #3ee2ba;
-    display: flex; 
-    justify-content: space-between; 
-    position: relative;
-  }
-  .grabbable:hover {
-    background-color: #282828; /* slightly lighter background color */
-  }
+.grabbable {
+  cursor: move; /* fallback if grab cursor is unsupported */
+  cursor: grab;
+  cursor: -moz-grab;
+  cursor: -webkit-grab;
+  color: #3ee2ba;
+  display: flex; 
+  justify-content: space-between; 
+  position: relative;
+}
+.grabbable:hover {
+  background-color: #282828; /* slightly lighter background color */
+}
 
-  /* (Optional) Apply a "closed-hand" cursor during drag operation. */
-  .grabbable:active {
-    cursor: grabbing;
-    cursor: -moz-grabbing;
-    cursor: -webkit-grabbing;
-  }
-  .submitbutton {
-    background-color: #10a37f;
-    color: white;
-    border: white;
-    border-radius: 5px;
-    padding: 6px 12px;
-    padding-top: 6px;
-    padding-right: 12px;
-    padding-bottom: 6px;
-    padding-left: 12px;
-  }
-  .submitbutton:hover {
-    background-color: #0f8e6c;
-  }
-  .onylonthefly{
-    border: 2px solid rgb(16, 163, 127);
-  }
-  .popupcompletion {
-    clear: left;
-    cursor: text;
-    white-space: pre-wrap;
-  }
-  .popupprompt {
-    height: 2.6em;
-    overflow-y: hidden;
-  }
-  .expand {
-    height: auto;
-    min-height: 2.6em;
-  }
-  .popuptext {
-    align-items: center;
-    background-color: #202123;
-    border-radius: 20px;
-    color: #fff;
-    display: block;
-    justify-content:center;
-    opacity:0;
-    position:fixed;
-    width:auto;
-    min-width:200px;
-    max-width:800px;
-    max-height: -webkit-fill-available;
-    z-index: 9999;
-    line-height:1.6;
-    margin-right:10px!important;
-    font-family: 'Roboto', sans-serif!important;
-    resize:both;
-    overflow:auto;
-    transform: scale(0);
-    transform-origin: top left;
-    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
-    
-  }
-  .show {
-    opacity: 0.9;
-    padding: 20px;
-    transform: scale(1);
-  }
-  .hide {
-    display: none;
-    height: auto;
-  }
-  .resetresize {
-    resize: none!important;
-    height: auto!important;
-    width: auto!important;
-  }
+/* (Optional) Apply a "closed-hand" cursor during drag operation. */
+.grabbable:active {
+  cursor: grabbing;
+  cursor: -moz-grabbing;
+  cursor: -webkit-grabbing;
+}
+.submitbutton {
+  background-color: #10a37f;
+  color: white;
+  border: white;
+  border-radius: 5px;
+  padding: 6px 12px;
+  padding-top: 6px;
+  padding-right: 12px;
+  padding-bottom: 6px;
+  padding-left: 12px;
+}
+.submitbutton:hover {
+  background-color: #0f8e6c;
+}
+.onylonthefly{
+  border: 2px solid rgb(16, 163, 127);
+}
+.popupcompletion {
+  clear: left;
+  cursor: text;
+  white-space: pre-wrap;
+}
+.popupprompt {
+  height: 2.6em;
+  overflow-y: hidden;
+}
+.expand {
+  height: auto;
+  min-height: 2.6em;
+}
+.popuptext {
+  align-items: center;
+  background-color: #202123;
+  border-radius: 20px;
+  color: #fff;
+  display: block;
+  justify-content:center;
+  opacity:0;
+  position:fixed;
+  width:auto;
+  min-width:200px;
+  max-width:800px;
+  max-height: -webkit-fill-available;
+  z-index: 9999;
+  line-height:1.6;
+  margin-right:10px!important;
+  font-family: 'Roboto', sans-serif!important;
+  resize:both;
+  overflow:auto;
+  transform: scale(0);
+  transform-origin: top left;
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+  
+}
+.show {
+  opacity: 0.9;
+  padding: 20px;
+  transform: scale(1);
+}
+.hide {
+  display: none;
+  height: auto;
+}
+.resetresize {
+  resize: none!important;
+  height: auto!important;
+  width: auto!important;
+}
 
-  .minibuttons{
-    color: #fff;
-    background-color: #000;
-    cursor: pointer;
-    margin-left:5px; 
-    font-size:15px;
-    border-radius: 8px;
-    z-index: 2;
-  }
-  .minibuttons:hover{
-    background-color: #333333;
-  }
-  .invertcolor{
-    color:  #000;
-    background-color:#fff!important;
-  }
+.minibuttons{
+  color: #fff;
+  background-color: #000;
+  cursor: pointer;
+  margin-left:5px; 
+  font-size:15px;
+  border-radius: 8px;
+  z-index: 2;
+}
+.minibuttons:hover{
+  background-color: #333333;
+}
+.invertcolor{
+  color:  #000;
+  background-color:#fff!important;
+}
 `;
 
 class popUpClass extends HTMLElement {
@@ -239,6 +249,8 @@ class popUpClass extends HTMLElement {
     this.shadowRoot.appendChild(style); // here append the style to the shadowRoot    
     this.ids = 0;
     this.tokens = 0;
+    this.probabilities = [];
+    this.showProbabilities = true;
     this.clearnewlines = true;
     this.listOfActivePopups = [];
     this.listOfUnpinnedPopups = [];
@@ -268,7 +280,7 @@ class popUpClass extends HTMLElement {
     this.shadowRoot.appendChild(popUpElement);
 
     // Toggle the 'show' class on the element with the ID specified in this.ids
-    setTimeout(() => {this.shadowRoot.getElementById(this.ids).classList.toggle('show'); }, 10);
+    setTimeout(() => { this.shadowRoot.getElementById(this.ids).classList.toggle('show'); }, 10);
     // Set up event listeners for the buttons and other actions
     this.buttonForPopUp(this.ids);
   }
@@ -276,18 +288,22 @@ class popUpClass extends HTMLElement {
   ontheflypopup(selectionText, bodyData, cursorPosition) {
     // Create a new element to hold the pop-up
     const popUpElement = document.createElement('div');
-    popUpElement.innerHTML = flypopup(this.ids, { 
-        text: selectionText, 
-        left: this.mousePosition.left, 
-        top: this.mousePosition.top 
+    popUpElement.innerHTML = flypopup(this.ids, {
+      text: selectionText,
+      left: this.mousePosition.left,
+      top: this.mousePosition.top,
+      symbol: symbolFromModel(bodyData.model)
     });
+
 
     // Append the new element to the shadow root
     this.shadowRoot.appendChild(popUpElement);
 
     // toggle the 'show' class on the element with the ID specified in this.ids
     const element = this.shadowRoot.getElementById(this.ids);
-   
+    // update title of <button class='minibuttons symbolmodel' id="${id}symbol"></button> inside the popup
+    const symbolmodel = this.shadowRoot.getElementById(this.ids + 'symbol');
+    symbolmodel.title = bodyData.model;
     // pause for 1 second to allow the popup to be rendered
     setTimeout(() => { element.classList.toggle('show'); }, 10);
 
@@ -296,20 +312,20 @@ class popUpClass extends HTMLElement {
 
     // Get the text area element 
     const txtArea = this.shadowRoot.getElementById(this.ids + 'textarea');
-    if(txtArea){
-        // Stop the event from bubbling up to the document
-        txtArea.addEventListener('keydown', (e) => { e.stopPropagation(); });
-        txtArea.focus();
-        const range = document.createRange();
-        range.setStart(txtArea.childNodes[0], cursorPosition+1);
-        range.collapse(true);
-        const sel = window.getSelection();
-        sel.removeAllRanges();
-        sel.addRange(range);
+    if (txtArea) {
+      // Stop the event from bubbling up to the document
+      txtArea.addEventListener('keydown', (e) => { e.stopPropagation(); });
+      txtArea.focus();
+      const range = document.createRange();
+      range.setStart(txtArea.childNodes[0], cursorPosition + 1);
+      range.collapse(true);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
     }
     // attach the bodyData to the element
     element.bodyData = bodyData;
-}
+  }
 
 
   pinButtons(id_target, id_button) {
@@ -344,7 +360,12 @@ class popUpClass extends HTMLElement {
     this.shadowRoot.getElementById(id_button).addEventListener("click", () => {
       this.shadowRoot.getElementById(id_target).classList.toggle('show');
       setTimeout(() => { this.shadowRoot.getElementById(id_target).remove(); }, 500);
-      
+      // if the stream is on, stop it
+      if (this.stream_on) {
+        this.stop_stream = true;
+        this.stream_on = false;
+      }
+
       this.listOfActivePopups = this.listOfActivePopups.filter(item => item !== id_target);
       // remove from listOfUnpinnedPopups if it is there
       if (this.listOfUnpinnedPopups.includes(id_target)) {
@@ -371,10 +392,12 @@ class popUpClass extends HTMLElement {
       submitButton.addEventListener("click", () => {
         // Show the stop button and hide the run button
         this.toggleRunStop(targetId);
+        // Clear the probability element
+        this.shadowRoot.getElementById(`${targetId}probability`).innerHTML = '';
+        
 
         // Reset the text element
         this.shadowRoot.getElementById(`${targetId}text`).innerHTML = '';
-        // console.log(`Prompt on-the-fly launched from ${targetId}`)
 
         const element = this.shadowRoot.getElementById(targetId);
         // Create a prompt object to send to the runtime
@@ -453,10 +476,53 @@ class popUpClass extends HTMLElement {
   }
 
 
+  togglerModel(id_target, id_symbol) {
+    this.shadowRoot.getElementById(id_symbol).addEventListener("click", () => {
+      // toggle across the models, updating  element.bodyData.model
+      const element = this.shadowRoot.getElementById(id_target);
+      const model = element.bodyData.model;
+      const symbolElement = this.shadowRoot.getElementById(id_symbol)
+
+      if (model === "text-davinci-003") {
+        element.bodyData.model = "text-davinci-002";
+        symbolElement.innerHTML = models["text-davinci-002"];
+      }
+      else if (model === "text-davinci-002") {
+        element.bodyData.model = "text-curie-001";
+        symbolElement.innerHTML = models["text-curie-001"];
+      }
+      else if (model === "text-curie-001") {
+        element.bodyData.model = "text-babbage-001";
+        symbolElement.innerHTML = models["text-babbage-001"];
+      }
+      else if (model === "text-babbage-001") {
+        element.bodyData.model = "text-ada-001";
+        symbolElement.innerHTML = models["text-ada-001"];
+      }
+      else if (model === "text-ada-001") {
+        element.bodyData.model = "code-davinci-002";
+        symbolElement.innerHTML = models["code-davinci-002"];
+      }
+      else if (model === "code-davinci-002") {
+        element.bodyData.model = "text-davinci-003";
+        symbolElement.innerHTML = models["text-davinci-003"];
+      }
+      else { // default
+        element.bodyData.model = "text-davinci-003";
+        symbolElement.innerHTML = models["text-davinci-003"];
+      }
+      symbolElement.title = element.bodyData.model;
+    });
+  }
+
+
+
   buttonForPopUp(id_target) {
     const id_pin = `pin${id_target}`;
     const id_close = `mclose${id_target}`;
     const id_minimize = `minimize${id_target}`;
+    const id_symbol = `${id_target}symbol`;
+    this.togglerModel(id_target, id_symbol)
     this.pinButtons(id_target, id_pin);
     this.minimizeButtons(id_target, id_minimize);
     this.closeButtons(id_target, id_close);
@@ -486,30 +552,51 @@ class popUpClass extends HTMLElement {
 
 
   updatePopupHeader(request, target_id) {
+    this.probabilities = [];
+    this.clearnewlines = true;
+    this.tokens = 0;
+    // check from storage if the  chrome.storage.sync.set({ 'advancedSettings': { "showProb": true or false} }); is true or false
+    chrome.storage.sync.get(['advancedSettings'], (result) => {
+      if (result.advancedSettings.showProb) {
+        this.showProbabilities = true;
+      }
+      else {
+        this.showProbabilities = false;
+      }
+    });
+    const element = this.shadowRoot.getElementById(target_id);
+    element.bodyData = request.body_data;
+    element.text = request.text;
+
     var symbol = symbolFromModel(request.body_data.model)
-    this.shadowRoot.getElementById(target_id + "header").innerHTML = symbol + "<i> " + request.text + "</i>";
+    this.shadowRoot.getElementById(target_id + "symbol").innerHTML = symbol;
+    this.shadowRoot.getElementById(target_id + "symbol").title = request.body_data.model;
+    this.shadowRoot.getElementById(target_id + "header").innerHTML = "<i> " + request.text + "</i>";
     // if tempeature is greater than 0 make the regenearte button visible
     if (request.body_data.temperature > 0) {
-      this.shadowRoot.getElementById("regenerate" + target_id).removeAttribute("hidden");
-      // attach a listener to the regenerate button, but only once
-      if (!this.alreadyCalled[target_id] &&
-        this.shadowRoot.getElementById("regenerate" + target_id)) {
-          this.regenerateButton(target_id, request);
+      // if regenate button exists, make it visible
+      if (this.shadowRoot.getElementById("regenerate" + target_id)) {
+        this.shadowRoot.getElementById("regenerate" + target_id).removeAttribute("hidden");
+
+        // attach a listener to the regenerate button, but only once
+        if (!this.alreadyCalled[target_id]) {
+          this.regenerateButton(target_id, element);
           this.alreadyCalled[target_id] = true;
         }
+      }
     }
   }
 
 
-  regenerateButton(id_target, request) {
+  regenerateButton(id_target, element) {
     this.shadowRoot.getElementById("regenerate" + id_target).addEventListener("click", () => {
       if (this.stream_on == true) { this.stop_stream = true; } //stop the actual stream if it is on, and then restart it (remains on)
       this.shadowRoot.getElementById(id_target + "text").innerHTML = "";
       var promptDict = {
-        "prompt": request.text,
-        "model": request.body_data.model,
-        "temperature": request.body_data.temperature,
-        "max_tokens": request.body_data.max_tokens,
+        "prompt": element.text,
+        "model": element.bodyData.model,
+        "temperature": element.bodyData.temperature,
+        "max_tokens": element.bodyData.max_tokens,
         "popupID": id_target,
       }
       chrome.runtime.sendMessage({ text: "launchGPT", prompt: promptDict });
@@ -520,11 +607,35 @@ class popUpClass extends HTMLElement {
   copyToClipboard = async (text) => {
     try {
       await navigator.clipboard.writeText(text);
-      console.log('Text copied to clipboard');
+      // console.log('Text copied to clipboard');
     } catch (err) {
       console.error('Failed to copy: ', err);
     }
   };
+
+  computeProbability(message) {
+    if (this.showProbabilities && message.choices[0].logprobs) {
+      // get logprobs
+      var logprobs = message.choices[0].logprobs.token_logprobs[0]
+      // convert logprobs to probabilities
+      var probs = Math.exp(logprobs)
+      // add to list this.probabilities
+      // check that probs is not NaN
+      if (!isNaN(probs)) {
+        this.probabilities.push(probs)
+      }
+    }
+  }
+
+  updateProbability(id, return_prob = false) {
+    if (this.probabilities.length > 0 && this.showProbabilities) {
+      const probability = 100 * this.probabilities.reduce((a, b) => a + b, 0) / this.probabilities.length;
+      this.shadowRoot.getElementById(id).innerHTML = "Tokens prob.: " + probability.toFixed(2) + "%";
+      if (return_prob){
+        return probability.toFixed(2);
+      }
+    }
+  }
 
   updatepopup(message, target_id, stream) {
     //if stream is true
@@ -539,6 +650,8 @@ class popUpClass extends HTMLElement {
           return
         }
         else {
+          this.computeProbability(message);
+          this.updateProbability(target_id + "probability");
           this.clearnewlines = false;
           this.shadowRoot.getElementById(target_id + "text").innerHTML += text;
         }
@@ -561,6 +674,8 @@ class popUpClass extends HTMLElement {
     else {
       // if stream is false, it means that the stream is over
       this.stream_on = false;
+      // compute the probability, get average of element in this.probabilities
+      const final_prob = this.updateProbability(target_id + "probability",true);
       // show run button and hide stop button
       this.toggleRunStop(target_id);
       const complete_completion = this.shadowRoot.getElementById(target_id + "text").innerHTML
@@ -571,16 +686,18 @@ class popUpClass extends HTMLElement {
       const body_data = JSON.parse(message.body_data)
       const model = body_data.model
       const cost = computeCost(this.tokens, model)
-      this.clearnewlines = true;
-      this.tokens = 0;
+      // update in body_data the final probability in logprobs
+      body_data.logprobs = final_prob + " %";
+      // revert body_data to string
+
       // save the result.choices[0].text in the storage 
       chrome.storage.local.get('history', function (items) {
         if (typeof items.history !== 'undefined') {
-          items.history.push([message.body_data, complete_completion, cost]);// add the result to the history
+          items.history.push([JSON.stringify(body_data), complete_completion, cost]);// add the result to the history
           chrome.storage.local.set({ 'history': items.history });
         }
         else {
-          items.history = [[message.body_data, complete_completion, cost]]; // initialize the history array
+          items.history = [[JSON.stringify(body_data), complete_completion, cost]]; // initialize the history array
           chrome.storage.local.set({ 'history': items.history });
         }
       });
