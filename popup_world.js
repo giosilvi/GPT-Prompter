@@ -58,8 +58,9 @@ const minipopup = (id, { left = 0, top = 0 }) => `
       </div>
     </div>
   </div>
-  <span id="${id}probability" style="color: #777676; float: right;"></span>
+  <span id="${id}probability" style="color: #777676; float: right; line-height: .5;"></span>
   <p id="${id}text" class='popupcompletion'></p>
+  <button class='minibuttons copybutton hide'  id='copy_to_clipboard${id}' title='Copy to clipboard (Alt+C)'>&#x2398;&#xFE0E;</button>
   
 </div>
 `;
@@ -80,11 +81,13 @@ const flypopup = (id, { text = "none", left = 0, top = 0, symbol = "ↁ" }) => `
       </div>
     </div>
   </div>
-  <div contentEditable="true" id="${id}textarea" class='textarea'> ${text}</div>
+  <div contentEditable="true" id="${id}textarea" class='textarea'>${text}</div>
     <button type="button" id="${id}submit" class="submitbutton" title="Alt+Enter">Submit</button>
     <button type="button" id="${id}stop" class="submitbutton hide" title="Alt+Enter" style='background-color: red;'>Stop</button>
-    <span id="${id}probability" style="color: #777676; float: right;"></span>
+    <button type="button" id="${id}add2comp" class="submitbutton hide" style=" width: 65px;" title="Alt+V">Add &#8679;</button>
+    <span id="${id}probability" style="color: #777676; float: right; line-height: .5;"></span>
   <p id="${id}text" class='popupcompletion'></p>
+  <button class='minibuttons copybutton hide' id='copy_to_clipboard${id}' title='Copy to clipboard (Alt+C)'>&#x2398;&#xFE0E;</button>
 </div>
 `;
 
@@ -100,6 +103,13 @@ const styled = `
   background: linear-gradient(to bottom, transparent 0.6em, #202123 2.8em);
   z-index: 1;
   }
+
+.copybutton {
+  float:right;
+  line-height: 1;
+  margin-top: -1em;
+  margin-bottom: -1em;
+}
 
 .textarea{
     border: 1px solid #bbbbbb;
@@ -151,6 +161,8 @@ const styled = `
   padding-right: 12px;
   padding-bottom: 6px;
   padding-left: 12px;
+  width: 100px;
+  height: 30px;
 }
 .submitbutton:hover {
   background-color: #0f8e6c;
@@ -225,6 +237,9 @@ const styled = `
 .invertcolor{
   color:  #000;
   background-color:#fff!important;
+}
+.highlighted-text {
+  background-color: #175043;
 }
 `;
 
@@ -398,8 +413,8 @@ class popUpClass extends HTMLElement {
 
         // Reset the text element
         this.shadowRoot.getElementById(`${targetId}text`).innerHTML = '';
-
         const element = this.shadowRoot.getElementById(targetId);
+        element.preText = '';
         // Create a prompt object to send to the runtime
         const promptObj = {
           prompt: this.shadowRoot.getElementById(`${targetId}textarea`).innerHTML,
@@ -417,11 +432,17 @@ class popUpClass extends HTMLElement {
   handleKeydown(targetId, e) {
     if (e.key === 'Escape') {
       this.closePopup(`mclose${targetId}`);
-    } else if (e.altKey) {
+    } 
+    else if (e.altKey) {
       if (e.key === 'Enter') {
         this.submitOrStop(targetId);
-      } else if (e.key === 'c') {
+      } 
+      else if (e.key === 'c') {
         this.clickCopyToClipboard(targetId);
+      }
+      else if (e.key === 'v') {
+        //click the id_target + "add2comp"
+        this.shadowRoot.getElementById(`${targetId}add2comp`).click();
       }
     }
   }
@@ -515,7 +536,49 @@ class popUpClass extends HTMLElement {
     });
   }
 
+  showAdd2CompletionButton(id_target) {
+    // select the ${id}text of the popup, and detect if text is added
+    const mainElem  = this.shadowRoot.getElementById(id_target);
+    const targetNode = this.shadowRoot.getElementById(id_target + "text");
+    const add2comp = this.shadowRoot.getElementById(id_target + "add2comp");
+    const textarea = this.shadowRoot.getElementById(id_target + "textarea");
+    // get copy to clipboard button
+    const copyButton = this.shadowRoot.getElementById(`copy_to_clipboard${id_target}`);
+    // let highlightId = 0;
 
+    add2comp.addEventListener("click", function() {
+      // const highlightedText = document.createElement("span");
+      // highlightedText.id = "highlightedText";
+      // highlightedText.classList.add("highlighted-text");
+      // highlightedText.textContent = targetNode.textContent;
+      // textarea.appendChild(highlightedText);
+      
+      textarea.innerHTML += mainElem.preText+targetNode.innerHTML;
+      mainElem.preText = '';
+
+      targetNode.innerHTML = '';
+      add2comp.classList.add('hide');
+      copyButton.classList.add('hide');
+
+      // highlightedText.addEventListener("input", function() {
+      //   console.log("input");
+      //   highlightedText.classList.remove("highlighted-text");
+      // });
+    });
+    
+
+    const observer = new MutationObserver((mutationsList) => {
+      for(let mutation of mutationsList) {
+        if (mutation.type === 'childList' && mutation.addedNodes.length) {
+          add2comp.classList.remove('hide');
+        }
+      }
+    });
+
+    const config = { childList: true };
+    observer.observe(targetNode, config);
+
+    }
 
   buttonForPopUp(id_target) {
     const id_pin = `pin${id_target}`;
@@ -531,6 +594,10 @@ class popUpClass extends HTMLElement {
       this.runClick(id_target);
       this.stopButton(id_target);
     }
+    if (this.shadowRoot.getElementById(id_target + "add2comp")) {
+      this.showAdd2CompletionButton(id_target);
+    }
+    
     // add a listener to escape key to close the popup
     let popupElement = this.shadowRoot.getElementById(id_target);
     popupElement.tabIndex = -1; // allow the element to receive focus and listen to keyboard events even if it is not in the natural tab order of the document
@@ -647,6 +714,9 @@ class popUpClass extends HTMLElement {
         // if self.tokens is the first or second and text is a new line character, we don't add it
         if (this.clearnewlines && text == "\n") {
           // console.log('new line \\n skipped from GPT stream')
+          // save the text in a string and append to a string it to the popup as an attribute
+          const element = this.shadowRoot.getElementById(target_id);
+          element.preText = element.preText + text;
           return
         }
         else {
@@ -705,7 +775,7 @@ class popUpClass extends HTMLElement {
   }
 
   addCopyToClipboardBtn(target_id, complete_completion) {
-    this.shadowRoot.getElementById(target_id + "text").innerHTML += "<button class='minibuttons' style='float:right;' id='copy_to_clipboard" + target_id + "' title='Copy to clipboard (Alt+C)'>&#x2398;&#xFE0E;</button>"; //
+    this.shadowRoot.getElementById("copy_to_clipboard" + target_id).classList.remove("hide");
     this.shadowRoot.getElementById("copy_to_clipboard" + target_id).addEventListener("click", () => {
       this.copyToClipboard(complete_completion);
       // invert color for 1 second
