@@ -331,6 +331,16 @@ class popUpClass extends HTMLElement {
       // Stop the event from bubbling up to the document
       txtArea.addEventListener('keydown', (e) => { e.stopPropagation(); });
       txtArea.focus();
+
+      const range = document.createRange();
+      // if there is text in childNodes[0], set the cursor position to the end of the text
+      if (txtArea.childNodes[0]) {
+        range.setStart(txtArea.childNodes[0], cursorPosition + 1);
+        range.collapse(true);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
     }
     // attach the bodyData to the element
     element.bodyData = bodyData;
@@ -403,7 +413,7 @@ class popUpClass extends HTMLElement {
         this.toggleRunStop(targetId);
         // Clear the probability element
         this.shadowRoot.getElementById(`${targetId}probability`).innerHTML = '';
-        
+
 
         // Reset the text element
         this.shadowRoot.getElementById(`${targetId}text`).innerHTML = '';
@@ -426,11 +436,11 @@ class popUpClass extends HTMLElement {
   handleKeydown(targetId, e) {
     if (e.key === 'Escape') {
       this.closePopup(`mclose${targetId}`);
-    } 
+    }
     else if (e.altKey) {
       if (e.key === 'Enter') {
         this.submitOrStop(targetId);
-      } 
+      }
       else if (e.key === 'c') {
         this.clickCopyToClipboard(targetId);
       }
@@ -532,7 +542,7 @@ class popUpClass extends HTMLElement {
 
   showAdd2CompletionButton(id_target) {
     // select the ${id}text of the popup, and detect if text is added
-    const mainElem  = this.shadowRoot.getElementById(id_target);
+    const mainElem = this.shadowRoot.getElementById(id_target);
     const targetNode = this.shadowRoot.getElementById(id_target + "text");
     const add2comp = this.shadowRoot.getElementById(id_target + "add2comp");
     const textarea = this.shadowRoot.getElementById(id_target + "textarea");
@@ -540,14 +550,14 @@ class popUpClass extends HTMLElement {
     const copyButton = this.shadowRoot.getElementById(`copy_to_clipboard${id_target}`);
     // let highlightId = 0;
 
-    add2comp.addEventListener("click", function() {
+    add2comp.addEventListener("click", function () {
       // const highlightedText = document.createElement("span");
       // highlightedText.id = "highlightedText";
       // highlightedText.classList.add("highlighted-text");
       // highlightedText.textContent = targetNode.textContent;
       // textarea.appendChild(highlightedText);
-      
-      textarea.innerHTML += mainElem.preText+targetNode.innerHTML;
+
+      textarea.innerHTML += mainElem.preText + targetNode.innerHTML;
       mainElem.preText = '';
 
       targetNode.innerHTML = '';
@@ -559,10 +569,10 @@ class popUpClass extends HTMLElement {
       //   highlightedText.classList.remove("highlighted-text");
       // });
     });
-    
+
 
     const observer = new MutationObserver((mutationsList) => {
-      for(let mutation of mutationsList) {
+      for (let mutation of mutationsList) {
         if (mutation.type === 'childList' && mutation.addedNodes.length) {
           add2comp.classList.remove('hide');
         }
@@ -572,7 +582,7 @@ class popUpClass extends HTMLElement {
     const config = { childList: true };
     observer.observe(targetNode, config);
 
-    }
+  }
 
   buttonForPopUp(id_target) {
     const id_pin = `pin${id_target}`;
@@ -591,7 +601,7 @@ class popUpClass extends HTMLElement {
     if (this.shadowRoot.getElementById(id_target + "add2comp")) {
       this.showAdd2CompletionButton(id_target);
     }
-    
+
     // add a listener to escape key to close the popup
     let popupElement = this.shadowRoot.getElementById(id_target);
     popupElement.tabIndex = -1; // allow the element to receive focus and listen to keyboard events even if it is not in the natural tab order of the document
@@ -694,7 +704,7 @@ class popUpClass extends HTMLElement {
     if (this.probabilities.length > 0 && this.showProbabilities) {
       const probability = 100 * this.probabilities.reduce((a, b) => a + b, 0) / this.probabilities.length;
       this.shadowRoot.getElementById(id).innerHTML = "Tokens prob.: " + probability.toFixed(2) + "%";
-      if (return_prob){
+      if (return_prob) {
         return probability.toFixed(2);
       }
     }
@@ -741,7 +751,7 @@ class popUpClass extends HTMLElement {
       // if stream is false, it means that the stream is over
       this.stream_on = false;
       // compute the probability, get average of element in this.probabilities
-      const final_prob = this.updateProbability(target_id + "probability",true);
+      const final_prob = this.updateProbability(target_id + "probability", true);
       // show run button and hide stop button
       this.toggleRunStop(target_id);
       const complete_completion = this.shadowRoot.getElementById(target_id + "text").innerHTML
