@@ -84,7 +84,7 @@ const flypopup = (id, { text = "none", left = 0, top = 0, symbol = "ↁ" }) => `
   <div contentEditable="true" id="${id}textarea" class='textarea'>${text}</div>
     <button type="button" id="${id}submit" class="submitbutton" title="Alt+Enter">Submit</button>
     <button type="button" id="${id}stop" class="submitbutton hide" title="Alt+Enter" style='background-color: red;'>Stop</button>
-    <button type="button" id="${id}add2comp" class="submitbutton hide" style=" width: 65px;" title="Alt+V">Add &#8679;</button>
+    <button type="button" id="${id}add2comp" class="submitbutton hide" style=" width: 65px;" title="Alt+A">Add &#8682;</button>
     <span id="${id}probability" style="color: #777676; float: right; line-height: .5;"></span>
   <p id="${id}text" class='popupcompletion'></p>
   <button class='minibuttons copybutton hide' id='copy_to_clipboard${id}' title='Copy to clipboard (Alt+C)'>&#x2398;&#xFE0E;</button>
@@ -196,7 +196,7 @@ const styled = `
   min-width:200px;
   max-width:800px;
   max-height: -webkit-fill-available;
-  z-index: 9999;
+  z-index: 10001;
   line-height:1.6;
   margin-right:10px!important;
   font-family: 'Roboto', sans-serif!important;
@@ -331,12 +331,6 @@ class popUpClass extends HTMLElement {
       // Stop the event from bubbling up to the document
       txtArea.addEventListener('keydown', (e) => { e.stopPropagation(); });
       txtArea.focus();
-      const range = document.createRange();
-      range.setStart(txtArea.childNodes[0], cursorPosition + 1);
-      range.collapse(true);
-      const sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(range);
     }
     // attach the bodyData to the element
     element.bodyData = bodyData;
@@ -440,7 +434,7 @@ class popUpClass extends HTMLElement {
       else if (e.key === 'c') {
         this.clickCopyToClipboard(targetId);
       }
-      else if (e.key === 'v') {
+      else if (e.key === 'a') {
         //click the id_target + "add2comp"
         this.shadowRoot.getElementById(`${targetId}add2comp`).click();
       }
@@ -667,6 +661,8 @@ class popUpClass extends HTMLElement {
         "popupID": id_target,
       }
       chrome.runtime.sendMessage({ text: "launchGPT", prompt: promptDict });
+
+      this.shadowRoot.getElementById(`${id_target}probability`).innerHTML = '';
 
     });
   };

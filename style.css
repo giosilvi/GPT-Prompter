@@ -128,7 +128,7 @@ body ul .draggable {
   color: #212121;
   line-height: 1.5;
   cursor: move;
-  transition: all 200ms;
+  transition: all 400ms;
   user-select: none;
   position: relative;
 }
@@ -139,7 +139,7 @@ body ul .draggable:after {
   position: absolute;
   cursor: pointer;
   line-height: 5;
-  transition: all 200ms;
+  transition: all 400ms;
   transition-timing-function: cubic-bezier(0.48, 0.72, 0.62, 1.5);
   transform: translateX(120%);
   opacity: 0;

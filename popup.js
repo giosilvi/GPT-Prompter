@@ -99,59 +99,66 @@ function makePromptList(items) {
         // Call the addEventsDragAndDrop function with the list item as the parameter
         addEventsDragAndDrop(li);
     }
-    update_lower_buttons(items)
+    updateLowerButtons(items)
 }
 
 
 
 
-function update_lower_buttons(items) {
-    for (var j = 0; j < items.customprompt.length; j++) {
-        // add event listener to the add title button
-        document.getElementById('title' + j.toString()).addEventListener('click', function () {
-            var id = this.id.substring(5);
+function updateLowerButtons(items) {
+    items.customprompt.forEach((prompt, index) => {
+        const id = index.toString();
+
+        const addTitleButton = document.getElementById(`title${id}`);
+        addTitleButton.addEventListener('click', () => {
             addTitle(id);
-        }, false)
-        // add event listener to the edit button
-        document.getElementById('edit' + j.toString()).addEventListener('click', function () {
-            var id = this.id.substring(4);
+        });
+
+        const editButton = document.getElementById(`edit${id}`);
+        editButton.addEventListener('click', () => {
             editPrompt(id);
-        }, false)
-        // add event listener to the delete button
-        document.getElementById('del' + j.toString()).addEventListener('click', function () {
-            var id = this.id.substring(3);
-            erasePrompt(id);
-        }, false)
-    }
+        });
+
+        const deleteButton = document.getElementById(`del${id}`);
+        deleteButton.addEventListener('click', () => {
+            const element = document.getElementById(id);
+            element.classList.add('hide');
+            setTimeout(() => {
+                erasePrompt(id);
+            }, 600);
+        });
+    });
 }
+
 
 function toggleSaveKeyButton() {
-    //display the element with id 'apikey' and the 'saveKey' button
-    if (document.getElementById('apikey').style.display == 'none') {
+    const apiKeyInput = document.getElementById('apikey');
+    const saveKeyButton = document.getElementById('saveKey');
+    const deleteKeyButton = document.getElementById('deleteKey');
+    const linkToAPI = document.getElementById('linktoAPI');
+    const showKeyButton = document.getElementById('showKey');
 
-        document.getElementById('apikey').style.display = 'block';
-        document.getElementById('saveKey').style.display = 'block';
-        document.getElementById('deleteKey').style.display = 'block';
-        document.getElementById('linktoAPI').style.display = 'block';
-        document.getElementById('showKey').innerHTML = 'Hide API';
-        // show the API key if it exists
-        chrome.storage.sync.get('APIKEY', function (items) {
+    if (apiKeyInput.style.display === 'none') {
+        apiKeyInput.style.display = 'block';
+        saveKeyButton.style.display = 'block';
+        deleteKeyButton.style.display = 'block';
+        linkToAPI.style.display = 'block';
+        showKeyButton.innerHTML = 'Hide API';
+
+        chrome.storage.sync.get('APIKEY', (items) => {
             if (typeof items.APIKEY !== 'undefined') {
-                // alert(items.APIKEY);
-                document.getElementById('apikey').value = items.APIKEY;
+                apiKeyInput.value = items.APIKEY;
             }
-        }
-        )
+        });
+    } else {
+        apiKeyInput.style.display = 'none';
+        saveKeyButton.style.display = 'none';
+        deleteKeyButton.style.display = 'none';
+        linkToAPI.style.display = 'none';
+        showKeyButton.innerHTML = 'Show API';
     }
-    else {
-        document.getElementById('apikey').style.display = 'none';
-        document.getElementById('saveKey').style.display = 'none';
-        document.getElementById('deleteKey').style.display = 'none';
-        document.getElementById('linktoAPI').style.display = 'none';
-        document.getElementById('showKey').innerHTML = 'Show API';
-    }
-
 }
+
 
 
 function hideSaveKey() {
@@ -219,43 +226,58 @@ function savePrompt() {
 }
 
 //add a function to erase a custom prompt from the storage API provided the index of the prompt
-function erasePrompt(index) {
-    // try to retrive the custom prompt from the storage API
-    console.log('erasePrompt: ' + index);
-    chrome.storage.sync.get('customprompt', function (items) {
-        // Check that the prompt exists
-        if (typeof items.customprompt !== 'undefined') {
-            // check that the index is valid
-            if (index <= items.customprompt.length) {
-                // remove the prompt from the array
-                items.customprompt.splice(index, 1);
-                makePromptList(items); //update the list of prompts
+async function erasePrompt(index) {
+    try {
+        const items = await getFromStorage('customprompt');
 
-                chrome.storage.sync.set({ 'customprompt': items.customprompt }, function () {
-                    // Notify that is erased
-                    console.log('Your custom prompt was erased.');
-                })
-                chrome.runtime.sendMessage({ text: "new_prompt_list" }); // new menu list
-            }
+        if (items && items.customprompt && index < items.customprompt.length) {
+            items.customprompt.splice(index, 1); // splice: remove 1 element at index
+            await setInStorage({ customprompt: items.customprompt });
+
+            makePromptList(items);
+            console.log('Your custom prompt was erased.');
+
+            chrome.runtime.sendMessage({ text: "new_prompt_list" });
         }
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+async function getFromStorage(key) {
+    return new Promise((resolve, reject) => {
+        chrome.storage.sync.get(key, (items) => {
+            if (chrome.runtime.lastError) {
+                reject(chrome.runtime.lastError);
+            } else {
+                resolve(items);
+            }
+        });
     });
 }
 
-function addTitle(index) {
+async function setInStorage(items) {
+    return new Promise((resolve, reject) => {
+        chrome.storage.sync.set(items, () => {
+            if (chrome.runtime.lastError) {
+                reject(chrome.runtime.lastError);
+            } else {
+                resolve();
+            }
+        });
+    });
+}
 
-    // show the texttitle to the user
+
+function addTitle(index) {
     let textTitle = document.getElementById(`title-text${index}`);
     textTitle.style.display = 'block';
-    // put the focus on the texttitle
     textTitle.focus();
-    // when the user loses the focus, save the title
     textTitle.addEventListener('blur', function () {
         saveTitle(index);
-        // and hide the texttitle
         textTitle.style.display = 'none';
         chrome.runtime.sendMessage({ text: "new_prompt_list" });
     });
-
 }
 
 function saveTitle(index) {
@@ -383,7 +405,7 @@ function checkInputOfPromptDesigner() {
 document.addEventListener('DOMContentLoaded', function () {
     checkInputOfPromptDesigner();
     addListenerToProbabilityToggle();
-    }
+}
 );
 
 
@@ -430,7 +452,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('showKey').addEventListener('click', toggleSaveKeyButton);
     document.getElementById('linktoAPI').addEventListener('click', openLink);
     document.getElementById('linktoLogprob').addEventListener('click', openLink);
-    
+
 }, false);
 
 function openLink() {
@@ -448,11 +470,30 @@ document.addEventListener('DOMContentLoaded', function () {
         if (typeof items.customprompt !== 'undefined') {
             makePromptList(items);
         }
-    }
-    )
+    })
     checkAPIKeyatBeginning();
-}
-    , false);
+    // add listener to selection on the inputmodel
+    document.getElementById('inputmodel').addEventListener('change', function () {
+        //if the user select the model text-davinci-003 or text-davinci-002
+        console.log(document.getElementById('inputmodel').value);
+        const model = document.getElementById('inputmodel').value;
+        if (model == "text-davinci-003" || model == "text-davinci-002") {
+            // set the max value of element input maxtokens to 4096
+            document.getElementById('maxtoken').max = 4000;
+        }
+        else if (model == "code-davinci-002") {
+            // set the max value of element input maxtokens to 8000
+            document.getElementById('maxtoken').max = 8000;
+        }
+        else {
+            // set the max value of element input maxtokens to 2048
+            document.getElementById('maxtoken').max = 2048;
+        }
+
+
+        //end
+    });
+}, false);
 
 
 

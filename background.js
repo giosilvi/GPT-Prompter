@@ -115,6 +115,7 @@ chrome.runtime.onInstalled.addListener(function (details) {
         if (typeof items.customprompt !== 'undefined') {
             // check if customprompt is a list of strings
             if (items.customprompt.length > 0 && typeof items.customprompt[0] === 'string') {
+                console.log("Fixing the prompt list")
                 //loop over the list of prompts
                 for (var i = 0; i < items.customprompt.length; i++) {
                     // modify each one of them to become a dictionary
@@ -245,7 +246,7 @@ function launchPromptOnTheFly(selectionText, prompt) {
     }
     else {
         // if prompt is null, use the default one
-        var bodyData = { "model": "text-davinci-003", "temperature": 0, "max_tokens": 1024 };
+        var bodyData = { "model": "text-davinci-003", "temperature": 0.1, "max_tokens": 1024 };
     }
     // here we want to create a minipop-up to ask the user to insert the prompt
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {

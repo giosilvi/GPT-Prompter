@@ -87,7 +87,7 @@
             </div>
 
             <!--temperature-->
-            <div class="row" style="margin-left:0px!important">
+            <div class="row" style="margin-left:0px!important" title="What sampling temperature to use. Higher values means the model will take more risks. Try 0.9 for more creative applications, and 0 (argmax sampling) for ones with a well-defined answer.">
                 <label for="temperature" class="form-label col-sm-3">Temperature</label>
                 <input type="range" class="form-range col-sm-6" style="margin-right:30px; padding:0" id="temperature"
                     min="0" max="1" step="0.01" value="0.1">
@@ -97,10 +97,10 @@
             </div>
 
             <!--max token-->
-            <div class="row" style="margin-left:0px!important">
-                <label for="maxtoken" class="form-label col-sm-3">Maximum length</label>
+            <div class="row" style="margin-left:0px!important" title="The maximum number of tokens to generate in the completion.">
+                <label for="maxtoken" class="form-label col-sm-3">Max tokens</label>
                 <input id="maxtoken" type="range" class="form-range col-sm-6" style="margin-right:30px;padding:0"
-                    min="0" max="2048" step="1" value="1024">
+                    min="0" max="4000" step="1" value="1024">
                 <input class="text-input col-sm-2" type="text" readonly="readonly" style="text-align:right;border: 0;"
                     id="token" value="1024">
             </div>
