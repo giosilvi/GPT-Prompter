@@ -179,7 +179,7 @@ function savePrompt() {
     var temp = parseFloat(document.getElementById("temp").value);
     var token = parseInt(document.getElementById("token").value);
     var text = document.getElementById("promptinput").value;
-    var body_data = { "model": model, "temperature": temp, "max_tokens": token, "prompt": text, "echo": true, "stream": true }
+    var bodyData = { "model": model, "temperature": temp, "max_tokens": token, "prompt": text, "echo": true, "stream": true }
     // try to retrive the custom prompt from the storage API
     chrome.storage.sync.get('customprompt', function (items) {
         // Check that the prompt exists
@@ -194,7 +194,7 @@ function savePrompt() {
             var customprompt = document.getElementById('promptinput').value;
 
             if (prompt_already_present == false) {
-                items.customprompt.push(body_data);
+                items.customprompt.push(bodyData);
                 makePromptList(items) //update the list of prompts
                 chrome.storage.sync.set({ 'customprompt': items.customprompt }, function () {
                     // Notify that we saved
@@ -219,7 +219,7 @@ function savePrompt() {
             }, 2000);
         } else {
             // if the prompt does not exist, create a new array with the prompt
-            items.customprompt = [body_data];
+            items.customprompt = [bodyData];
         };
 
     });

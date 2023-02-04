@@ -156,7 +156,7 @@ chrome.runtime.onMessage.addListener((request,sender, sendResponse) => {
       break;
     case 'showPopUpOnTheFly':
       handleShowPopUp();
-      popUpShadow.ontheflypopup(request.text, request.body_data, request.cursorPosition);
+      popUpShadow.ontheflypopup(request.text, request.bodyData, request.cursorPosition);
       addListenersForDrag();
       break;
     case 'GPTprompt':

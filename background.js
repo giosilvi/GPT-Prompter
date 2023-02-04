@@ -241,7 +241,7 @@ function launchPromptOnTheFly(selectionText, prompt) {
         var model = prompt["model"]
         var temperature = prompt["temperature"]
         var max_tokens = prompt["max_tokens"]
-        // make the body_data
+        // make the bodyData
         var bodyData = { "model": model, "temperature": temperature, "max_tokens": max_tokens };
     }
     else {
@@ -250,7 +250,7 @@ function launchPromptOnTheFly(selectionText, prompt) {
     }
     // here we want to create a minipop-up to ask the user to insert the prompt
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        chrome.tabs.sendMessage(tabs[0].id, { message: 'showPopUpOnTheFly', text: selectionText, body_data: bodyData, cursorPosition: cursorPosition });
+        chrome.tabs.sendMessage(tabs[0].id, { message: 'showPopUpOnTheFly', text: selectionText, bodyData: bodyData, cursorPosition: cursorPosition });
     });
 }
 

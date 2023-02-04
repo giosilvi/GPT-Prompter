@@ -1,21 +1,21 @@
-function checkTabsAndSendStream(message, tabs, string, body_data, idpopup, uuid) {
+function checkTabsAndSendStream(message, tabs, string, bodyData, idpopup, uuid) {
     if (tabs.id == -1) { //pdf case
       // console.log("pdf case");
       chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-          sendStream(message, tabs[0].id, string, body_data, idpopup, uuid);
+          sendStream(message, tabs[0].id, string, bodyData, idpopup, uuid);
         });
       }
       else {// html case
         // console.log("html case");
-        sendStream(message, tabs.id, string, body_data, idpopup, uuid);
+        sendStream(message, tabs.id, string, bodyData, idpopup, uuid);
       }
     }
     
-function sendStream(message, id, string, body_data, idpopup, uuid) {
+function sendStream(message, id, string, bodyData, idpopup, uuid) {
       chrome.tabs.sendMessage(id, {
         message: message,
         text: string,
-        body_data: body_data,
+        bodyData: bodyData,
         id_popup: idpopup,
         uuid : uuid
       }); //send the completion to the content script
@@ -31,7 +31,7 @@ async function promptGPT3Prompting(prompt, items, tabs) {
   //send immediately text to the content script
   console.log(text, model, temperature, max_tokens);
   const url = "https://api.openai.com/v1/completions";
-  var body_data = {
+  var bodyData = {
     "model": model,
     "temperature": temperature,
     "max_tokens": max_tokens,
@@ -39,8 +39,8 @@ async function promptGPT3Prompting(prompt, items, tabs) {
     "stream": true,
     "logprobs": 1
   };
-  // remove stream from body_data
-  var str_body_data = JSON.stringify(body_data);
+  // remove stream from bodyData
+  var str_bodyData = JSON.stringify(bodyData);
 
   fetch(url, {
     method: 'POST',
@@ -49,11 +49,11 @@ async function promptGPT3Prompting(prompt, items, tabs) {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer ' + items.APIKEY
     },
-    body: str_body_data
+    body: str_bodyData
   }
   ).then((response) => response.body)
     .then((body) => {
-      checkTabsAndSendStream("GPTprompt", tabs, text, body_data, popupID,uuid); // send the prompt to the content script, to be added to last mini popup
+      checkTabsAndSendStream("GPTprompt", tabs, text, bodyData, popupID,uuid); // send the prompt to the content script, to be added to last mini popup
       const reader = body.getReader();
       return pump();
 
@@ -66,14 +66,14 @@ async function promptGPT3Prompting(prompt, items, tabs) {
           var stream = new TextDecoder().decode(value);//.substring(6);
           // console.log(string, typeof string);
           // if tabs.id == -1 then use querySelector to get the tab
-          checkTabsAndSendStream("GPTStream_completion", tabs, stream, str_body_data, popupID, uuid);
+          checkTabsAndSendStream("GPTStream_completion", tabs, stream, str_bodyData, popupID, uuid);
           return pump();
         });
       }
     }
     ).catch(err => {
       console.log("error" + err);
-      checkTabsAndSendStream("GPTStream_completion", tabs, "Error:" + err, str_body_data, popupID, uuid);
+      checkTabsAndSendStream("GPTStream_completion", tabs, "Error:" + err, str_bodyData, popupID, uuid);
     });
 }
 

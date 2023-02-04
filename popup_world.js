@@ -60,7 +60,7 @@ const minipopup = (id, { left = 0, top = 0 }) => `
   </div>
   <span id="${id}probability" style="color: #777676; float: right; line-height: .5;"></span>
   <p id="${id}text" class='popupcompletion'></p>
-  <button class='minibuttons copybutton hide'  id='copy_to_clipboard${id}' title='Copy to clipboard (Alt+C)'>&#x2398;&#xFE0E;</button>
+  <button class='minibuttons copybutton hide' id='copy_to_clipboard${id}' title='Copy to clipboard (Alt+C)'>&#x2398;&#xFE0E;</button>
   
 </div>
 `;
@@ -81,7 +81,7 @@ const flypopup = (id, { text = "none", left = 0, top = 0, symbol = "ↁ" }) => `
       </div>
     </div>
   </div>
-  <p contentEditable="true" id="${id}textarea" class='textarea'>${text}</p>
+  <span contentEditable="true" id="${id}textarea" class='textarea'>${text}</span>
     <button type="button" id="${id}submit" class="submitbutton" title="Alt+Enter">Submit</button>
     <button type="button" id="${id}stop" class="submitbutton hide" title="Alt+Enter" style='background-color: red;'>Stop</button>
     <button type="button" id="${id}add2comp" class="submitbutton hide" style=" width: 65px;" title="Alt+A">Add &#8682;</button>
@@ -116,7 +116,8 @@ const styled = `
     margin-bottom:10px;
     margin-top:10px;
     white-space: pre-wrap;
-    
+    display: inline-block;
+    width: -webkit-fill-available;
 }
 .textarea:focus{
     border: 1px solid #ffffff;
@@ -407,32 +408,69 @@ class popUpClass extends HTMLElement {
   }
 
   runClick(targetId) {
-    // Add a click event listener to the target element's submit button if it doesn't already have one
     const submitButton = this.shadowRoot.getElementById(`${targetId}submit`);
+
+    // Add click event listener to submit button if it doesn't already have one
     if (!submitButton.listener) {
       submitButton.addEventListener("click", () => {
-        // Show the stop button and hide the run button
         this.toggleRunStop(targetId);
-        // Clear the probability element
-        this.shadowRoot.getElementById(`${targetId}probability`).innerHTML = '';
+        this.clearProbability(targetId);
+        this.resetTextElement(targetId);
 
-
-        // Reset the text element
-        this.shadowRoot.getElementById(`${targetId}text`).innerHTML = '';
-        const element = this.shadowRoot.getElementById(targetId);
-        element.preText = '';
-        // Create a prompt object to send to the runtime
         const promptObj = {
-          prompt: this.shadowRoot.getElementById(`${targetId}textarea`).textContent,
-          model: element.bodyData.model,
-          temperature: element.bodyData.temperature,
-          max_tokens: element.bodyData.max_tokens,
+          prompt: this.getTextareaValue(targetId),
+          model: this.getBodyData(targetId, 'model'),
+          temperature: this.getBodyData(targetId, 'temperature'),
+          max_tokens: this.getBodyData(targetId, 'max_tokens'),
           popupID: targetId,
-        }
+        };
         chrome.runtime.sendMessage({ text: 'launchGPT', prompt: promptObj });
       });
     }
-    this.shadowRoot.getElementById(`${targetId}textarea`).addEventListener('keydown', this.handleKeydown.bind(this, targetId));
+
+    // Remove <br> from textarea
+    this.removeBRFromTextarea(targetId);
+
+    // Add keydown event listener to textarea
+    this.getTextareaElement(targetId).addEventListener("keydown", this.handleKeydown.bind(this, targetId));
+
+    // Add alt + a keydown event listener to target element
+    this.shadowRoot.getElementById(targetId).addEventListener('keydown', (event) => {
+      if (event.altKey && event.key === 'a') {
+        this.shadowRoot.getElementById(`${targetId}add2comp`).click();
+      }
+    });
+  }
+
+
+  clearProbability(targetId) {
+    this.shadowRoot.getElementById(`${targetId}probability`).innerHTML = '';
+  }
+
+  resetTextElement(targetId) {
+    this.shadowRoot.getElementById(`${targetId}text`).innerHTML = '';
+    const element = this.shadowRoot.getElementById(targetId);
+    element.preText = '';
+  }
+
+  getTextareaValue(targetId) {
+    return this.shadowRoot.getElementById(`${targetId}textarea`).textContent;
+  }
+
+  getBodyData(targetId, property) {
+    return this.shadowRoot.getElementById(targetId).bodyData[property];
+  }
+
+  getTextareaElement(targetId) {
+    return this.shadowRoot.getElementById(`${targetId}textarea`);
+  }
+
+  removeBRFromTextarea(targetId) {
+    this.getTextareaElement(targetId).addEventListener("keydown", (e) => {
+      if (e.target.innerHTML.includes("<br>")) {
+        e.target.innerHTML = e.target.innerHTML.replace(/<br>/g, "");
+      }
+    });
   }
 
   handleKeydown(targetId, e) {
@@ -447,7 +485,6 @@ class popUpClass extends HTMLElement {
         this.clickCopyToClipboard(targetId);
       }
       else if (e.key === 'a') {
-        //click the id_target + "add2comp"
         this.shadowRoot.getElementById(`${targetId}add2comp`).click();
       }
     }
@@ -501,6 +538,15 @@ class popUpClass extends HTMLElement {
       this.shadowRoot.getElementById(id_target + "stop").classList.toggle('hide');
     }
   }
+  copyButtonListener(id_target) {
+    this.shadowRoot.getElementById("copy_to_clipboard" + id_target).addEventListener("click", () => {
+      this.copyToClipboard(this.shadowRoot.getElementById(id_target + "text").innerHTML);
+      this.shadowRoot.getElementById("copy_to_clipboard" + id_target).classList.toggle('invertcolor');
+      setTimeout(() => {
+        this.shadowRoot.getElementById("copy_to_clipboard" + id_target).classList.toggle('invertcolor');
+      }, 500);
+    });
+  }
 
 
   togglerModel(id_target, id_symbol) {
@@ -553,33 +599,23 @@ class popUpClass extends HTMLElement {
     // let highlightId = 0;
 
     add2comp.addEventListener("click", function () {
-      textarea.innerHTML = textarea.innerHTML.replace(/<div><br>/g, '<br>').replace(/<div>/g, '<br>').replace(/<\/div>/g, '');
-      // textarea.innerHTML = textarea.innerHTML.replace(/<div>(.*?)<\/div>/g, "$1");
-      // replace only the last div
-
-      if (mainElem.preText) {
-        console.log("preText", mainElem.preText.replace("\n", "*"));
-        textarea.innerHTML += mainElem.preText 
-      }
-      textarea.innerHTML += targetNode.innerHTML;
-      console.log(" targetNode.innerHTML", targetNode.innerHTML);
+      
+      // console.log(" textarea.innerHTML", textarea.innerHTML.replace("\n", "*"));
+      // console.log("preText", mainElem.preText.replace("\n", "*"));
+      // console.log(" targetNode.innerHTML", targetNode.innerHTML.replace("\n", "*"));
+      
+      textarea.innerHTML += mainElem.preText + targetNode.innerHTML;
       mainElem.preText = '';
-
       const range = document.createRange();
       range.selectNodeContents(textarea);
       range.collapse(false);
       const sel = window.getSelection();
       sel.removeAllRanges();
       sel.addRange(range);
-      
+
       targetNode.innerHTML = '';
       add2comp.classList.add('hide');
       copyButton.classList.add('hide');
-
-      // highlightedText.addEventListener("input", function() {
-      //   console.log("input");
-      //   highlightedText.classList.remove("highlighted-text");
-      // });
     });
 
 
@@ -606,6 +642,7 @@ class popUpClass extends HTMLElement {
     this.minimizeButtons(id_target, id_minimize);
     this.closeButtons(id_target, id_close);
     this.doubleClick(id_target + "prompt");
+    this.copyButtonListener(id_target);
     if (this.shadowRoot.getElementById(id_target + "submit")) {
       this.runClick(id_target);
       this.stopButton(id_target);
@@ -631,62 +668,57 @@ class popUpClass extends HTMLElement {
     });
   }
 
+  showCopyToClipboardBtn(target_id) {
+    this.shadowRoot.getElementById("copy_to_clipboard" + target_id).classList.remove("hide");
+  }
 
 
-
-  updatePopupHeader(request, target_id) {
+  updatePopupHeader(request, targetId) {
+    // reset 
     this.probabilities = [];
     this.clearnewlines = true;
     this.tokens = 0;
-    // check from storage if the  chrome.storage.sync.set({ 'advancedSettings': { "showProb": true or false} }); is true or false
+
     chrome.storage.sync.get(['advancedSettings'], (result) => {
-      if (result.advancedSettings.showProb) {
-        this.showProbabilities = true;
-      }
-      else {
-        this.showProbabilities = false;
-      }
+      this.showProbabilities = result.advancedSettings.showProb;
     });
-    const element = this.shadowRoot.getElementById(target_id);
-    element.bodyData = request.body_data;
+
+    const element = this.shadowRoot.getElementById(targetId);
+    element.bodyData = request.bodyData;
     element.text = request.text;
     element.preText = '';
 
-    var symbol = symbolFromModel(request.body_data.model)
-    this.shadowRoot.getElementById(target_id + "symbol").innerHTML = symbol;
-    this.shadowRoot.getElementById(target_id + "symbol").title = request.body_data.model;
-    this.shadowRoot.getElementById(target_id + "header").innerHTML = "<i> " + request.text + "</i>";
-    // if tempeature is greater than 0 make the regenearte button visible
-    if (request.body_data.temperature > 0) {
-      // if regenate button exists, make it visible
-      if (this.shadowRoot.getElementById("regenerate" + target_id)) {
-        this.shadowRoot.getElementById("regenerate" + target_id).removeAttribute("hidden");
+    const symbol = symbolFromModel(request.bodyData.model);
+    this.shadowRoot.getElementById(`${targetId}symbol`).innerHTML = symbol;
+    this.shadowRoot.getElementById(`${targetId}symbol`).title = request.bodyData.model;
+    this.shadowRoot.getElementById(`${targetId}header`).innerHTML = `<i> ${request.text} </i>`;
 
-        // attach a listener to the regenerate button, but only once
-        if (!this.alreadyCalled[target_id]) {
-          this.regenerateButton(target_id, element);
-          this.alreadyCalled[target_id] = true;
-        }
+    if (request.bodyData.temperature > 0 && this.shadowRoot.getElementById(`regenerate${targetId}`)) {
+      this.shadowRoot.getElementById(`regenerate${targetId}`).removeAttribute('hidden');
+
+      if (!this.alreadyCalled[targetId]) {
+        this.regenerateButton(targetId, element);
+        this.alreadyCalled[targetId] = true;
       }
     }
   }
 
 
-  regenerateButton(id_target, element) {
-    this.shadowRoot.getElementById("regenerate" + id_target).addEventListener("click", () => {
+
+  regenerateButton(targetId, element) {
+    this.shadowRoot.getElementById(`regenerate${targetId}`).addEventListener("click", () => {
       if (this.stream_on == true) { this.stop_stream = true; } //stop the actual stream if it is on, and then restart it (remains on)
-      this.shadowRoot.getElementById(id_target + "text").innerHTML = "";
+      this.shadowRoot.getElementById(`${targetId}text`).innerHTML = "";
+      this.clearProbability(targetId);
+
       var promptDict = {
         "prompt": element.text,
         "model": element.bodyData.model,
         "temperature": element.bodyData.temperature,
         "max_tokens": element.bodyData.max_tokens,
-        "popupID": id_target,
+        "popupID": targetId,
       }
       chrome.runtime.sendMessage({ text: "launchGPT", prompt: promptDict });
-
-      this.shadowRoot.getElementById(`${id_target}probability`).innerHTML = '';
-
     });
   };
 
@@ -730,10 +762,8 @@ class popUpClass extends HTMLElement {
       // if choices is a key in message, it means usual stream
       if (message.choices) {
         var text = message.choices[0].text
-        // if self.tokens is the first or second and text is a new line character, we don't add it
+        // if the first charcters are newlines character, we don't add it to the popup, but save it in a string
         if (this.clearnewlines && text == "\n") {
-          // console.log('new line \\n skipped from GPT stream')
-          // save the text in a string and append to a string it to the popup as an attribute
           const element = this.shadowRoot.getElementById(target_id);
           element.preText += text;
           return
@@ -769,42 +799,31 @@ class popUpClass extends HTMLElement {
       this.toggleRunStop(target_id);
       const complete_completion = this.shadowRoot.getElementById(target_id + "text").innerHTML
       // add a button to copy the text to clipboard
-      this.addCopyToClipboardBtn(target_id, complete_completion);
+      this.showCopyToClipboardBtn(target_id);
 
       //save prompt to local storage 
-      const body_data = JSON.parse(message.body_data)
-      const model = body_data.model
+      const bodyData = JSON.parse(message.bodyData)
+      const model = bodyData.model
       const cost = computeCost(this.tokens, model)
-      // update in body_data the final probability in logprobs
-      body_data.logprobs = final_prob + " %";
-      // revert body_data to string
+      // update in bodyData the final probability in logprobs
+      bodyData.logprobs = final_prob + " %";
+      // revert bodyData to string
 
       // save the result.choices[0].text in the storage 
       chrome.storage.local.get('history', function (items) {
         if (typeof items.history !== 'undefined') {
-          items.history.push([JSON.stringify(body_data), complete_completion, cost]);// add the result to the history
+          items.history.push([JSON.stringify(bodyData), complete_completion, cost]);// add the result to the history
           chrome.storage.local.set({ 'history': items.history });
         }
         else {
-          items.history = [[JSON.stringify(body_data), complete_completion, cost]]; // initialize the history array
+          items.history = [[JSON.stringify(bodyData), complete_completion, cost]]; // initialize the history array
           chrome.storage.local.set({ 'history': items.history });
         }
       });
     }
   }
 
-  addCopyToClipboardBtn(target_id, complete_completion) {
-    this.shadowRoot.getElementById("copy_to_clipboard" + target_id).classList.remove("hide");
-    this.shadowRoot.getElementById("copy_to_clipboard" + target_id).addEventListener("click", () => {
-      this.copyToClipboard(complete_completion);
-      // invert color for 1 second
 
-      this.shadowRoot.getElementById("copy_to_clipboard" + target_id).classList.toggle('invertcolor');
-      setTimeout(() => {
-        this.shadowRoot.getElementById("copy_to_clipboard" + target_id).classList.toggle('invertcolor');
-      }, 500);
-    });
-  }
 }
 
 window.customElements.define("mini-popup", popUpClass);
