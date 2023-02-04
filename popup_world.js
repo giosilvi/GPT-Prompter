@@ -81,7 +81,7 @@ const flypopup = (id, { text = "none", left = 0, top = 0, symbol = "ↁ" }) => `
       </div>
     </div>
   </div>
-  <div contentEditable="true" id="${id}textarea" class='textarea'>${text}</div>
+  <p contentEditable="true" id="${id}textarea" class='textarea'>${text}</p>
     <button type="button" id="${id}submit" class="submitbutton" title="Alt+Enter">Submit</button>
     <button type="button" id="${id}stop" class="submitbutton hide" title="Alt+Enter" style='background-color: red;'>Stop</button>
     <button type="button" id="${id}add2comp" class="submitbutton hide" style=" width: 65px;" title="Alt+A">Add &#8682;</button>
@@ -335,7 +335,9 @@ class popUpClass extends HTMLElement {
       const range = document.createRange();
       // if there is text in childNodes[0], set the cursor position to the end of the text
       if (txtArea.childNodes[0]) {
+        // sets the start of the range to the end of the text in the text area's first child node. The position is determined by the `cursorPosition` variable plus 1.
         range.setStart(txtArea.childNodes[0], cursorPosition + 1);
+        //collapses the range to the cursor position.
         range.collapse(true);
         const sel = window.getSelection();
         sel.removeAllRanges();
@@ -421,7 +423,7 @@ class popUpClass extends HTMLElement {
         element.preText = '';
         // Create a prompt object to send to the runtime
         const promptObj = {
-          prompt: this.shadowRoot.getElementById(`${targetId}textarea`).innerHTML,
+          prompt: this.shadowRoot.getElementById(`${targetId}textarea`).textContent,
           model: element.bodyData.model,
           temperature: element.bodyData.temperature,
           max_tokens: element.bodyData.max_tokens,
@@ -551,15 +553,25 @@ class popUpClass extends HTMLElement {
     // let highlightId = 0;
 
     add2comp.addEventListener("click", function () {
-      // const highlightedText = document.createElement("span");
-      // highlightedText.id = "highlightedText";
-      // highlightedText.classList.add("highlighted-text");
-      // highlightedText.textContent = targetNode.textContent;
-      // textarea.appendChild(highlightedText);
+      textarea.innerHTML = textarea.innerHTML.replace(/<div><br>/g, '<br>').replace(/<div>/g, '<br>').replace(/<\/div>/g, '');
+      // textarea.innerHTML = textarea.innerHTML.replace(/<div>(.*?)<\/div>/g, "$1");
+      // replace only the last div
 
-      textarea.innerHTML += mainElem.preText + targetNode.innerHTML;
+      if (mainElem.preText) {
+        console.log("preText", mainElem.preText.replace("\n", "*"));
+        textarea.innerHTML += mainElem.preText 
+      }
+      textarea.innerHTML += targetNode.innerHTML;
+      console.log(" targetNode.innerHTML", targetNode.innerHTML);
       mainElem.preText = '';
 
+      const range = document.createRange();
+      range.selectNodeContents(textarea);
+      range.collapse(false);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      
       targetNode.innerHTML = '';
       add2comp.classList.add('hide');
       copyButton.classList.add('hide');
@@ -638,6 +650,7 @@ class popUpClass extends HTMLElement {
     const element = this.shadowRoot.getElementById(target_id);
     element.bodyData = request.body_data;
     element.text = request.text;
+    element.preText = '';
 
     var symbol = symbolFromModel(request.body_data.model)
     this.shadowRoot.getElementById(target_id + "symbol").innerHTML = symbol;
@@ -722,7 +735,7 @@ class popUpClass extends HTMLElement {
           // console.log('new line \\n skipped from GPT stream')
           // save the text in a string and append to a string it to the popup as an attribute
           const element = this.shadowRoot.getElementById(target_id);
-          element.preText = element.preText + text;
+          element.preText += text;
           return
         }
         else {
