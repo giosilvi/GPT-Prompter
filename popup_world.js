@@ -50,7 +50,9 @@ const minipopup = (id, { left = 0, top = 0 }) => `
       <div id="${id}header" class="promptheader" style="white-space: pre-wrap;" title=" Double-click to expand">
       </div>
       <div style='justify-content: flex-end; display:flex!important; align-items: flex-start;  right: 0;'> 
-      <button class='minibuttons symbolmodel' id="${id}symbol"></button>
+        <span class='minibuttons symbolmodel' id="${id}temptext" style="cursor: default;" title="Temperature"></span>
+        <input type="range" class="minibuttons tempslider" id="${id}temperature"  min="0" max="1" step="0.01"  title="Temperature">
+        <button class='minibuttons symbolmodel' id="${id}symbol"></button>
         <button class='minibuttons' id="pin${id}" title="Pin the popup" hidden>&#128204;&#xFE0E;</button>
         <button class='minibuttons' id="regenerate${id}" title="Regenerate prompt (Alt+Enter)" hidden>&#8635;&#xFE0E;</button>
         <button class='minibuttons' id="minimize${id}" title="Minimize/maximize completion">&#128469;&#xFE0E;</button>
@@ -58,10 +60,11 @@ const minipopup = (id, { left = 0, top = 0 }) => `
       </div>
     </div>
   </div>
-  <span id="${id}probability" style="color: #777676; float: right; line-height: .5;"></span>
-  <p id="${id}text" class='popupcompletion'></p>
-  <button class='minibuttons copybutton hide' id='copy_to_clipboard${id}' title='Copy to clipboard (Alt+C)'>&#x2398;&#xFE0E;</button>
-  
+  <div id="${id}completion">
+    <span id="${id}probability" style="color: #777676; float: right; line-height: .5;"></span>
+    <p id="${id}text" class='popupcompletion'></p>
+    <button class='minibuttons copybutton hide' id='copy_to_clipboard${id}' style="cursor: copy;" title='Copy completion to clipboard (Alt+C)'>&#x2398;&#xFE0E;</button>
+  </div>
 </div>
 `;
 
@@ -69,11 +72,13 @@ const minipopup = (id, { left = 0, top = 0 }) => `
 const flypopup = (id, { text = "none", left = 0, top = 0, symbol = "ↁ" }) => `
 <div class="popuptext onylonthefly" id="${id}" style="left: ${left}px; top:${top}px">
   <div id="${id}prompt" class="popupprompt">
-  <div id="${id}grabbable" class="grabbable">
-    <div id="${id}header" class="promptheader" title=" Double-click to expand">
-     <b>Prompt On-the-Fly</b> (<b>Alt+P</b> - Open , <b>Alt+Enter</b> - Submit, <b>Esc</b> - Close)
-    </div>
+    <div id="${id}grabbable" class="grabbable">
+      <div id="${id}header" class="promptheader" title="Double-click to expand">
+        <b>Prompt On-the-Fly</b> (<b>Alt+P</b> - Open , <b>Alt+Enter</b> - Submit, <b>Esc</b> - Close)
+      </div>
       <div style='justify-content: flex-end; display:flex!important; align-items: flex-start; right: 0;'>
+        <span class='minibuttons symbolmodel' id="${id}temptext" style="cursor: default;" title="Temperature"></span>
+        <input type="range" class="minibuttons tempslider" id="${id}temperature"  min="0" max="1" step="0.01"  title="Temperature">
         <button class='minibuttons symbolmodel' id="${id}symbol">${symbol}</button>
         <button class='minibuttons' id="pin${id}" title="Pin the popup" hidden>&#128204;&#xFE0E;</button>
         <button class='minibuttons' id="minimize${id}" title="Minimize/maximize completion">&#128469;&#xFE0E;</button>
@@ -81,13 +86,16 @@ const flypopup = (id, { text = "none", left = 0, top = 0, symbol = "ↁ" }) => `
       </div>
     </div>
   </div>
+ 
   <span contentEditable="true" id="${id}textarea" class='textarea'>${text}</span>
     <button type="button" id="${id}submit" class="submitbutton" title="Alt+Enter">Submit</button>
     <button type="button" id="${id}stop" class="submitbutton hide" title="Alt+Enter" style='background-color: red;'>Stop</button>
     <button type="button" id="${id}add2comp" class="submitbutton hide" style=" width: 65px;" title="Alt+A">Add &#8682;</button>
     <span id="${id}probability" style="color: #777676; float: right; line-height: .5;"></span>
-  <p id="${id}text" class='popupcompletion'></p>
-  <button class='minibuttons copybutton hide' id='copy_to_clipboard${id}' title='Copy to clipboard (Alt+C)'>&#x2398;&#xFE0E;</button>
+  <div id="${id}completion">
+    <p id="${id}text" class='popupcompletion'></p>
+    <button class='minibuttons copybutton hide' id='copy_to_clipboard${id}' style="cursor: copy;" title='Copy completion to clipboard (Alt+C)'>&#x2398;&#xFE0E;</button>
+  </div>
 </div>
 `;
 
@@ -125,8 +133,11 @@ const styled = `
   
 .textarea:hover {
     background-color: #333333; /* slightly lighter background color */
-    
 }
+.textarea::placeholder {
+  color: lightgray;
+}
+
 .symbolmodel {
   color: #3ee2ba!important; 
   border-radius: 16px;
@@ -217,11 +228,6 @@ const styled = `
   display: none;
   height: auto;
 }
-.resetresize {
-  resize: none!important;
-  height: auto!important;
-  width: auto!important;
-}
 
 .minibuttons{
   color: #fff;
@@ -242,6 +248,26 @@ const styled = `
 .highlighted-text {
   background-color: #175043;
 }
+.tempslider {
+  width: 30px;
+  transition: all 0.3s ease-in-out;
+  }
+.tempslider:hover {
+    width: 100px;
+  }
+input[type=range] {
+    -webkit-appearance: none;
+    background-color: rgb(100, 100, 100);
+  }
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 15px;
+  background-color: var(--thumb-color);
+  overflow: visible;
+  cursor: pointer;
+  border: 3px solid #10a37f;
 `;
 
 class popUpClass extends HTMLElement {
@@ -303,6 +329,7 @@ class popUpClass extends HTMLElement {
 
   ontheflypopup(selectionText, bodyData, cursorPosition) {
     // Create a new element to hold the pop-up
+
     const popUpElement = document.createElement('div');
     popUpElement.innerHTML = flypopup(this.ids, {
       text: selectionText,
@@ -317,6 +344,13 @@ class popUpClass extends HTMLElement {
 
     // toggle the 'show' class on the element with the ID specified in this.ids
     const element = this.shadowRoot.getElementById(this.ids);
+    // attach the bodyData to the element
+    element.bodyData = bodyData;
+    this.updateTemperature(this.ids);
+    this.runClick(this.ids);
+    this.stopButton(this.ids);
+    this.showAdd2CompletionButton(this.ids);
+
     // update title of <button class='minibuttons symbolmodel' id="${id}symbol"></button> inside the popup
     const symbolmodel = this.shadowRoot.getElementById(this.ids + 'symbol');
     symbolmodel.title = bodyData.model;
@@ -345,8 +379,7 @@ class popUpClass extends HTMLElement {
         sel.addRange(range);
       }
     }
-    // attach the bodyData to the element
-    element.bodyData = bodyData;
+
   }
 
 
@@ -366,15 +399,20 @@ class popUpClass extends HTMLElement {
 
 
   minimizeButtons(id_target, id_button) {
-    this.shadowRoot.getElementById(id_button).addEventListener("click", () => {
-      this.shadowRoot.getElementById(id_target + "text").classList.toggle('hide');
-      this.shadowRoot.getElementById(id_target).classList.toggle('resetresize');
-      // toggle html in minimize button
-      if (this.shadowRoot.getElementById(id_button).innerHTML == "🗕︎") {
-        this.shadowRoot.getElementById(id_button).innerHTML = "&#128470;&#xFE0E;";
+    const button = this.shadowRoot.getElementById(id_button);
+    button.addEventListener("click", () => {
+      const element = this.shadowRoot.getElementById(id_target)
+      // toggle class to minimize
+      this.shadowRoot.getElementById(`${id_target}completion`).classList.toggle('hide');
+      // set the height and width to auto
+      element.style.height = "auto";
+      element.style.width = "auto";
+
+      if (button.innerHTML == "🗕︎") {
+        button.innerHTML = "&#128470;&#xFE0E;";
       }
       else {
-        this.shadowRoot.getElementById(id_button).innerHTML = "&#128469;&#xFE0E;";
+        button.innerHTML = "&#128469;&#xFE0E;";
       }
     });
   }
@@ -417,6 +455,10 @@ class popUpClass extends HTMLElement {
         this.clearProbability(targetId);
         this.resetTextElement(targetId);
 
+        // remove hide from the id text element
+        this.removeHideFromCompletion(targetId);
+
+
         const promptObj = {
           prompt: this.getTextareaValue(targetId),
           model: this.getBodyData(targetId, 'model'),
@@ -442,7 +484,9 @@ class popUpClass extends HTMLElement {
     });
   }
 
-
+  removeHideFromCompletion(targetId) {
+    this.shadowRoot.getElementById(`${targetId}completion`).classList.remove('hide');
+  }
   clearProbability(targetId) {
     this.shadowRoot.getElementById(`${targetId}probability`).innerHTML = '';
   }
@@ -450,7 +494,7 @@ class popUpClass extends HTMLElement {
   resetTextElement(targetId) {
     this.shadowRoot.getElementById(`${targetId}text`).innerHTML = '';
     const element = this.shadowRoot.getElementById(targetId);
-    element.preText = '';
+    element.preText = "";
   }
 
   getTextareaValue(targetId) {
@@ -466,16 +510,18 @@ class popUpClass extends HTMLElement {
   }
 
   removeBRFromTextarea(targetId) {
-    this.getTextareaElement(targetId).addEventListener("keydown", (e) => {
+    const textarea = this.getTextareaElement(targetId);
+    textarea.addEventListener("keydown", (e) => {
       if (e.target.innerHTML.includes("<br>")) {
         e.target.innerHTML = e.target.innerHTML.replace(/<br>/g, "");
       }
     });
+    this.putCursorAtTheEnd(textarea);
   }
 
   handleKeydown(targetId, e) {
     if (e.key === 'Escape') {
-      this.closePopup(`mclose${targetId}`);
+      this.closePopup(targetId);
     }
     else if (e.altKey) {
       if (e.key === 'Enter') {
@@ -499,8 +545,11 @@ class popUpClass extends HTMLElement {
     }
   }
 
-  closePopup(id_close) {
-    this.shadowRoot.getElementById(id_close).click();
+  closePopup(targetId) {
+    const closePopup = this.shadowRoot.getElementById(`mclose${targetId}`);
+    if (closePopup) {
+      closePopup.click();
+    }
   }
 
   clickCopyToClipboard(targetId) {
@@ -598,31 +647,28 @@ class popUpClass extends HTMLElement {
     const copyButton = this.shadowRoot.getElementById(`copy_to_clipboard${id_target}`);
     // let highlightId = 0;
 
-    add2comp.addEventListener("click", function () {
-      
+    add2comp.addEventListener("click", () => {
+
       // console.log(" textarea.innerHTML", textarea.innerHTML.replace("\n", "*"));
       // console.log("preText", mainElem.preText.replace("\n", "*"));
       // console.log(" targetNode.innerHTML", targetNode.innerHTML.replace("\n", "*"));
-      
       textarea.innerHTML += mainElem.preText + targetNode.innerHTML;
       mainElem.preText = '';
-      const range = document.createRange();
-      range.selectNodeContents(textarea);
-      range.collapse(false);
-      const sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(range);
-
       targetNode.innerHTML = '';
-      add2comp.classList.add('hide');
+      this.putCursorAtTheEnd(textarea);
+
+      // add2comp.classList.add('hide');
       copyButton.classList.add('hide');
     });
 
 
     const observer = new MutationObserver((mutationsList) => {
       for (let mutation of mutationsList) {
-        if (mutation.type === 'childList' && mutation.addedNodes.length) {
+        if (mutation.type === 'childList' && mutation.addedNodes.length) { // if text is added
           add2comp.classList.remove('hide');
+        }
+        else if (mutation.type === 'childList' && mutation.removedNodes.length) { // if text is removed
+          add2comp.classList.add('hide');
         }
       }
     });
@@ -630,6 +676,40 @@ class popUpClass extends HTMLElement {
     const config = { childList: true };
     observer.observe(targetNode, config);
 
+  }
+
+  putCursorAtTheEnd(textarea) {
+    const range = document.createRange();
+    range.selectNodeContents(textarea);
+    range.collapse(false);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+
+  updateTemperature(id_target) {
+    // read the temperature from the element.bodyData.temperature
+    const element = this.shadowRoot.getElementById(id_target);
+    const temperature = element.bodyData.temperature;
+    // update the temperature slider
+    const temperatureSlider = this.shadowRoot.getElementById(id_target + 'temperature');
+    temperatureSlider.value = temperature;
+    temperatureSlider.style.setProperty("--thumb-color", `hsl(${200 - temperature * 200}, 100%, 50%)`);
+    // update the temperatureSlider title
+    temperatureSlider.title = "Temperature: " + temperature;
+    // update the temperature listner
+    temperatureSlider.addEventListener('input', function () {
+      var value = this.value;
+      var thumb = this.previousElementSibling;
+      // parse the value as 2 decimal float
+      value = parseFloat(value).toFixed(2);
+      this.title = "Temperature: " + value;
+      thumb.textContent = value;
+      // update the temperature in the element.bodyData.temperature as float
+      element.bodyData.temperature = parseFloat(value);
+      //color the thumb
+      this.style.setProperty("--thumb-color", `hsl(${200 - this.value * 200}, 100%, 50%)`);
+    });
   }
 
   buttonForPopUp(id_target) {
@@ -643,26 +723,23 @@ class popUpClass extends HTMLElement {
     this.closeButtons(id_target, id_close);
     this.doubleClick(id_target + "prompt");
     this.copyButtonListener(id_target);
-    if (this.shadowRoot.getElementById(id_target + "submit")) {
-      this.runClick(id_target);
-      this.stopButton(id_target);
-    }
-    if (this.shadowRoot.getElementById(id_target + "add2comp")) {
-      this.showAdd2CompletionButton(id_target);
-    }
+    this.keysShortcuts(id_target);
+  }
 
-    // add a listener to escape key to close the popup
+  keysShortcuts(id_target) {
     let popupElement = this.shadowRoot.getElementById(id_target);
     popupElement.tabIndex = -1; // allow the element to receive focus and listen to keyboard events even if it is not in the natural tab order of the document
     popupElement.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') {
-        this.closePopup(id_close);
+        this.closePopup(id_target);
       } else if (event.altKey) {
         if (event.key === 'c') {
           this.clickCopyToClipboard(id_target);
         }
         else if (event.key === 'Enter') {
           this.regenerateOrRun(id_target);
+          // capture the event and prevent it from bubbling up
+          event.preventDefault();
         }
       }
     });
@@ -681,12 +758,14 @@ class popUpClass extends HTMLElement {
 
     chrome.storage.sync.get(['advancedSettings'], (result) => {
       this.showProbabilities = result.advancedSettings.showProb;
+      this.autoAdd = result.advancedSettings.autoAdd;
     });
 
     const element = this.shadowRoot.getElementById(targetId);
     element.bodyData = request.bodyData;
     element.text = request.text;
-    element.preText = '';
+    element.preText = "";
+    this.updateTemperature(targetId);
 
     const symbol = symbolFromModel(request.bodyData.model);
     this.shadowRoot.getElementById(`${targetId}symbol`).innerHTML = symbol;
@@ -708,7 +787,10 @@ class popUpClass extends HTMLElement {
   regenerateButton(targetId, element) {
     this.shadowRoot.getElementById(`regenerate${targetId}`).addEventListener("click", () => {
       if (this.stream_on == true) { this.stop_stream = true; } //stop the actual stream if it is on, and then restart it (remains on)
-      this.shadowRoot.getElementById(`${targetId}text`).innerHTML = "";
+      const textElement = this.shadowRoot.getElementById(`${targetId}text`);
+      textElement.innerHTML = "";
+
+      this.removeHideFromCompletion(targetId);
       this.clearProbability(targetId);
 
       var promptDict = {
@@ -719,6 +801,8 @@ class popUpClass extends HTMLElement {
         "popupID": targetId,
       }
       chrome.runtime.sendMessage({ text: "launchGPT", prompt: promptDict });
+      // remove hide from the id text element
+
     });
   };
 
@@ -756,6 +840,15 @@ class popUpClass extends HTMLElement {
   }
 
   updatepopup(message, target_id, stream) {
+    const textarea = this.shadowRoot.getElementById(target_id + "textarea");
+    const element = this.shadowRoot.getElementById(target_id);
+    const promptarea = this.shadowRoot.getElementById(target_id + "text")
+    var specialCase = false;
+    if (textarea && this.autoAdd) {
+      specialCase = true;
+    }
+
+
     //if stream is true
     if (stream) {
       this.stream_on = true;
@@ -764,22 +857,35 @@ class popUpClass extends HTMLElement {
         var text = message.choices[0].text
         // if the first charcters are newlines character, we don't add it to the popup, but save it in a string
         if (this.clearnewlines && text == "\n") {
-          const element = this.shadowRoot.getElementById(target_id);
+
           element.preText += text;
+          if (specialCase) {
+            // add text to textarea
+            textarea.innerHTML += text;
+            element.preText = "";
+          }
           return
         }
         else {
           this.computeProbability(message);
           this.updateProbability(target_id + "probability");
           this.clearnewlines = false;
-          this.shadowRoot.getElementById(target_id + "text").innerHTML += text;
+          // check if element {target_id}textarea exists
+          if (specialCase) {
+            // add text to textarea
+            textarea.innerHTML += text;
+          }
+          else {
+            // add text to usual completion
+            promptarea.innerHTML += text;
+          }
         }
       }
       // if message has a key "error"
       else if (message.error) {
         var text = message.error.message
         var type = message.error.type
-        this.shadowRoot.getElementById(target_id + "text").innerHTML += type + "<br>" + text;
+        promptarea.innerHTML += type + "<br>" + text;
         this.tokens = 0;
         this.stream_on = false;
         //show run button and hide stop button
@@ -797,9 +903,8 @@ class popUpClass extends HTMLElement {
       const final_prob = this.updateProbability(target_id + "probability", true);
       // show run button and hide stop button
       this.toggleRunStop(target_id);
-      const complete_completion = this.shadowRoot.getElementById(target_id + "text").innerHTML
-      // add a button to copy the text to clipboard
-      this.showCopyToClipboardBtn(target_id);
+      const complete_completion = promptarea.innerHTML
+
 
       //save prompt to local storage 
       const bodyData = JSON.parse(message.bodyData)
@@ -807,9 +912,18 @@ class popUpClass extends HTMLElement {
       const cost = computeCost(this.tokens, model)
       // update in bodyData the final probability in logprobs
       bodyData.logprobs = final_prob + " %";
-      // revert bodyData to string
+      // focus depending on the case
+      if (textarea) { textarea.focus(); console.log("focus on textarea") }
+      else { element.focus(); }
 
-      // save the result.choices[0].text in the storage 
+      if (specialCase) {
+        this.putCursorAtTheEnd(textarea);
+      }
+      else {
+        this.showCopyToClipboardBtn(target_id);
+      }
+
+      // save the completion in the history
       chrome.storage.local.get('history', function (items) {
         if (typeof items.history !== 'undefined') {
           items.history.push([JSON.stringify(bodyData), complete_completion, cost]);// add the result to the history

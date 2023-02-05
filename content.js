@@ -43,6 +43,7 @@ document.addEventListener('contextmenu', function (e) {
   function addListenersForDrag() {
     popUpShadow.listOfActivePopups.forEach((id) => {
       const elem = popUpShadow.shadowRoot.getElementById(`${id}grabbable`);
+      // check if I am hovering ${id}temperature"
       elem.addEventListener('mousedown', mouseDown, false);
     });
   }
@@ -65,6 +66,10 @@ document.addEventListener('contextmenu', function (e) {
   
   
   function mouseDown(e) {
+    // check if I am hovering ${id}temperature"
+    if (e.target.id.includes('temperature')) {
+      return;
+    }
     e.preventDefault(); // prevent the selection of the text below the popup
     const id = this.id;
     offsetX = undefined;

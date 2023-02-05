@@ -363,13 +363,45 @@ function addListenerToProbabilityToggle() {
     document.getElementById('probabilityToggle').addEventListener('click', function () {
         // get the value of the probabilityToggle
         var probabilityToggle = document.getElementById('probabilityToggle').checked;
-        // save the value in the storage
-        chrome.storage.sync.set({ 'advancedSettings': { "showProb": probabilityToggle } }, function () {
-            // Notify that we saved
-            console.log('Your probabilityToggle was saved.');
+        // retrieve advancedSettings from the storage
+        chrome.storage.sync.get('advancedSettings', function (items) {
+            // add ProbabilityToggle to the advancedSettings
+            items.advancedSettings.showProb = probabilityToggle;
+            // save the value in the storage
+            chrome.storage.sync.set({ 'advancedSettings': items.advancedSettings }, function () {
+                // Notify that we saved
+                console.log('Your advanced settings were saved.');
+            }
+            );
         });
     });
 }
+
+// redo the same for autoAddToggle
+function addListenerToAutoAddToggle() {
+    chrome.storage.sync.get('advancedSettings', function (items) {
+        // Check that the advanced setting  exists
+        if (typeof items.advancedSettings !== 'undefined') {
+            // set the value of the autoAddToggle
+            document.getElementById('autoAddToggle').checked = items.advancedSettings.autoAdd;
+        }
+    });
+    document.getElementById('autoAddToggle').addEventListener('click', function () {
+        var autoAddToggle = document.getElementById('autoAddToggle').checked;
+        // retrieve advancedSettings from the storage
+        chrome.storage.sync.get('advancedSettings', function (items) {
+            // add autoAddToggle to the advancedSettings
+            items.advancedSettings.autoAdd = autoAddToggle;
+            // save the value in the storage
+            chrome.storage.sync.set({ 'advancedSettings': items.advancedSettings }, function () {
+                // Notify that we saved
+                console.log('Your advanced settings were saved.');
+            }
+            );
+        });
+    });
+}
+
 
 function checkInputOfPromptDesigner() {
     document.getElementById('promptinput').addEventListener('keyup', onkey, false);
@@ -405,6 +437,7 @@ function checkInputOfPromptDesigner() {
 document.addEventListener('DOMContentLoaded', function () {
     checkInputOfPromptDesigner();
     addListenerToProbabilityToggle();
+    addListenerToAutoAddToggle();
 }
 );
 
