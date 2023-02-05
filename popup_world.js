@@ -694,7 +694,7 @@ class popUpClass extends HTMLElement {
     // update the temperature slider
     const temperatureSlider = this.shadowRoot.getElementById(id_target + 'temperature');
     temperatureSlider.value = temperature;
-    temperatureSlider.style.setProperty("--thumb-color", `hsl(${200 - temperature * 200}, 100%, 50%)`);
+    temperatureSlider.style.setProperty("--thumb-color", `hsl(${240 - temperature * 240}, 100%, 50%)`);
     // update the temperatureSlider title
     temperatureSlider.title = "Temperature: " + temperature;
     // update the temperature listner
@@ -708,7 +708,7 @@ class popUpClass extends HTMLElement {
       // update the temperature in the element.bodyData.temperature as float
       element.bodyData.temperature = parseFloat(value);
       //color the thumb
-      this.style.setProperty("--thumb-color", `hsl(${200 - this.value * 200}, 100%, 50%)`);
+      this.style.setProperty("--thumb-color", `hsl(${240 - this.value * 240}, 100%, 50%)`);
     });
   }
 

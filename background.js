@@ -146,6 +146,7 @@ chrome.runtime.onInstalled.addListener(function (details) {
             // if showProb is not set, set it to true
         if (typeof items.advancedSettings.showProb == 'undefined') {
                 items.advancedSettings.showProb = true;
+                items.advancedSettings.autoAdd = false;
         }
         // save 
         chrome.storage.sync.set({ 'advancedSettings': items.advancedSettings });

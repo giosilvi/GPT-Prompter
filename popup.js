@@ -355,8 +355,11 @@ function addListenerToProbabilityToggle() {
     chrome.storage.sync.get('advancedSettings', function (items) {
         // Check that the advanced setting  exists
         if (typeof items.advancedSettings !== 'undefined') {
-            // set the value of the probabilityToggle
-            document.getElementById('probabilityToggle').checked = items.advancedSettings.showProb;
+            // Check that the showProb exists
+            if (typeof items.advancedSettings.showProb !== 'undefined') {
+                // set the value of the probabilityToggle
+                document.getElementById('probabilityToggle').checked = items.advancedSettings.showProb;
+            }
         }
     });
     // add listener to the probabilityToggle
@@ -382,8 +385,11 @@ function addListenerToAutoAddToggle() {
     chrome.storage.sync.get('advancedSettings', function (items) {
         // Check that the advanced setting  exists
         if (typeof items.advancedSettings !== 'undefined') {
-            // set the value of the autoAddToggle
-            document.getElementById('autoAddToggle').checked = items.advancedSettings.autoAdd;
+            // Check that the autoAdd exists
+            if (typeof items.advancedSettings.autoAdd !== 'undefined') {
+                // set the value of the autoAddToggle
+                document.getElementById('autoAddToggle').checked = items.advancedSettings.autoAdd;
+                }
         }
     });
     document.getElementById('autoAddToggle').addEventListener('click', function () {
