@@ -161,7 +161,6 @@ const styled = `
     width: -webkit-fill-available;
     background-color: #202123;
     font-family: 'Roboto', sans-serif!important;
-    font-size: 14px;
     color: #fff;
     resize: none;
     overflow: hidden;
@@ -242,6 +241,7 @@ const styled = `
   color: #fff;
   display: block;
   justify-content:center;
+  
   opacity:0;
   position:fixed;
   width:auto;
@@ -251,6 +251,7 @@ const styled = `
   z-index: 10001;
   line-height:1.4;
   margin-right:10px!important;
+  font-size: 14px;
   font-family: 'Roboto', sans-serif!important;
   resize:both;
   overflow:auto;
@@ -414,6 +415,8 @@ class popUpClass extends HTMLElement {
           this.style.width = this.scrollWidth + 'px';
         }
       });
+      // trigger the input event to set the height of the text area
+      txtArea.dispatchEvent(new Event('input'));
       txtArea.focus();
 
       const range = document.createRange();
