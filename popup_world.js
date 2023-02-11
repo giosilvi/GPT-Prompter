@@ -46,24 +46,25 @@ const minipopup = (id, { left = 0, top = 0 }) => `
 <div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px">
   <div id="${id}prompt" class="popupprompt">
     <div id="${id}grabbable" class="grabbable">
-    
-      <div id="${id}header" class="promptheader" style="white-space: pre-wrap;" title=" Double-click to expand">
-      </div>
-      <div style='justify-content: flex-end; display:flex!important; align-items: flex-start;  right: 0;'> 
+      <div style='position:relative; z-index:3; float:right;'>
         <span class='minibuttons symbolmodel' id="${id}temptext" style="cursor: default;" title="Temperature"></span>
         <input type="range" class="minibuttons tempslider" id="${id}temperature"  min="0" max="1" step="0.01"  title="Temperature">
         <button class='minibuttons symbolmodel' id="${id}symbol"></button>
-        <button class='minibuttons' id="pin${id}" title="Pin the popup" hidden>&#128204;&#xFE0E;</button>
-        <button class='minibuttons' id="regenerate${id}" title="Regenerate prompt (Alt+Enter)" hidden>&#8635;&#xFE0E;</button>
-        <button class='minibuttons' id="minimize${id}" title="Minimize/maximize completion">&#128469;&#xFE0E;</button>
-        <button class='minibuttons' id="mclose${id}" title="Close popup (Esc)">&#128473;&#xFE0E;</button>
+        <button class='minibuttons regeneratebutton' id="regenerate${id}" title="Regenerate prompt (Alt+Enter)" hidden></button>
+        <button class='minibuttons pinbutton' id="pin${id}" title="Pin the popup" hidden></button>
+        <button class='minibuttons minimize-button' id="minimize${id}" title="Minimize/maximize completion"></button>
+        <button class='minibuttons close-button' id="mclose${id}"  title="Close popup (Esc)"></button>
+      </div>
+      <div id="${id}header" class="promptheader" style="white-space: pre-wrap;" title=" Double-click to expand">
       </div>
     </div>
   </div>
   <div id="${id}completion">
-    <span id="${id}probability" style="color: #777676; float: right; line-height: .5;"></span>
     <p id="${id}text" class='popupcompletion'></p>
-    <button class='minibuttons copybutton hide' id='copy_to_clipboard${id}' style="cursor: copy;" title='Copy completion to clipboard (Alt+C)'>&#x2398;&#xFE0E;</button>
+    <div style="float:right">
+      <span id="${id}probability" style="color: #777676; float: left; margin-bottom: 0em; margin-top: 0.25em;"></span>
+      <button class='minibuttons copybutton hide' id='copy_to_clipboard${id}' style="cursor: copy;" title='Copy completion to clipboard (Alt+C)'></button>
+    </div>
   </div>
 </div>
 `;
@@ -73,34 +74,68 @@ const flypopup = (id, { text = "none", left = 0, top = 0, symbol = "ↁ" }) => `
 <div class="popuptext onylonthefly" id="${id}" style="left: ${left}px; top:${top}px">
   <div id="${id}prompt" class="popupprompt">
     <div id="${id}grabbable" class="grabbable">
-      <div id="${id}header" class="promptheader" title="Double-click to expand">
-        <b>Prompt On-the-Fly</b> (<b>Alt+P</b> - Open , <b>Alt+Enter</b> - Submit, <b>Esc</b> - Close)
-      </div>
-      <div style='justify-content: flex-end; display:flex!important; align-items: flex-start; right: 0;'>
+      <div style='position:relative; z-index:3; float:right;'>
         <span class='minibuttons symbolmodel' id="${id}temptext" style="cursor: default;" title="Temperature"></span>
         <input type="range" class="minibuttons tempslider" id="${id}temperature"  min="0" max="1" step="0.01"  title="Temperature">
         <button class='minibuttons symbolmodel' id="${id}symbol">${symbol}</button>
-        <button class='minibuttons' id="pin${id}" title="Pin the popup" hidden>&#128204;&#xFE0E;</button>
-        <button class='minibuttons' id="minimize${id}" title="Minimize/maximize completion">&#128469;&#xFE0E;</button>
-        <button class='minibuttons' id="mclose${id}"  title="Close popup (Esc)">&#128473;&#xFE0E;</button>
+        <button class='minibuttons pinbutton' id="pin${id}" title="Pin the popup" hidden></button>
+        <button class='minibuttons minimize-button' id="minimize${id}" title="Minimize/maximize completion"></button>
+        <button class='minibuttons close-button' id="mclose${id}"  title="Close popup (Esc)"></button>
+      </div>
+      <div id="${id}header" class="promptheader" title="Double-click to expand">
+          <b>Prompt On-the-Fly</b> (<b>Alt+P</b> - Open , <b>Alt+Enter</b> - Submit, <b>Esc</b> - Close)
       </div>
     </div>
   </div>
- 
-  <span contentEditable="true" id="${id}textarea" class='textarea'>${text}</span>
+  <div id="${id}completion">
+  <div>
+  <textarea contentEditable="true" id="${id}textarea" class='textarea'>${text}</textarea>
+  </div>
     <button type="button" id="${id}submit" class="submitbutton" title="Alt+Enter">Submit</button>
     <button type="button" id="${id}stop" class="submitbutton hide" title="Alt+Enter" style='background-color: red;'>Stop</button>
     <button type="button" id="${id}add2comp" class="submitbutton hide" style=" width: 65px;" title="Alt+A">Add &#8682;</button>
-    <span id="${id}probability" style="color: #777676; float: right; line-height: .5;"></span>
-  <div id="${id}completion">
     <p id="${id}text" class='popupcompletion'></p>
-    <button class='minibuttons copybutton hide' id='copy_to_clipboard${id}' style="cursor: copy;" title='Copy completion to clipboard (Alt+C)'>&#x2398;&#xFE0E;</button>
-  </div>
+    <div style="float:right">
+      <span id="${id}probability" style="color: #777676; float: left; margin-bottom: 0em; margin-top: 0.25em;"></span>
+      <button class='minibuttons copybutton hide' id='copy_to_clipboard${id}' style="cursor: copy;" title='Copy completion to clipboard (Alt+C)'></button>
+    </div>
+    </div>
 </div>
 `;
 
 
 const styled = `
+@font-face {
+  font-family: 'Material Icons';
+  src: url('https://fonts.googleapis.com/icon?family=Material+Icons');
+}
+
+.close-button:before  {
+  font-family: 'Material Icons';
+  content: '\u2715';
+}
+.minimize-button:before {
+  font-family: 'Material Icons';
+  content: '\uD83D\uDDD5';
+}
+.minimize-button.expanded:before {
+  font-family: 'Material Icons';
+  content: '\uD83D\uDDD6';
+}
+.copybutton:before {
+  font-family: 'Material Icons';
+  content: '\uD83D\uDCCB';
+}
+.pinbutton:before {
+  font-family: 'Material Icons';
+  content: '\uD83D\uDCCC';
+}
+
+.regeneratebutton:before {
+  font-family: 'Material Icons';
+  content: "\u21BB";
+}
+
 .promptheader:after {
   content: "";
   position: absolute;
@@ -114,8 +149,6 @@ const styled = `
 
 .copybutton {
   float:right;
-  line-height: 1;
-  margin-top: -1em;
   margin-bottom: -1em;
 }
 
@@ -123,9 +156,17 @@ const styled = `
     border: 1px solid #bbbbbb;
     margin-bottom:10px;
     margin-top:10px;
-    white-space: pre-wrap;
+    white-space: nowrap;
     display: inline-block;
     width: -webkit-fill-available;
+    background-color: #202123;
+    font-family: 'Roboto', sans-serif!important;
+    font-size: 14px;
+    color: #fff;
+    resize: none;
+    overflow: hidden;
+    max-width:900px;
+}
 }
 .textarea:focus{
     border: 1px solid #ffffff;
@@ -140,7 +181,6 @@ const styled = `
 
 .symbolmodel {
   color: #3ee2ba!important; 
-  border-radius: 16px;
 }
 
 .grabbable {
@@ -149,7 +189,7 @@ const styled = `
   cursor: -moz-grab;
   cursor: -webkit-grab;
   color: #3ee2ba;
-  display: flex; 
+  display: block; 
   justify-content: space-between; 
   position: relative;
 }
@@ -205,11 +245,11 @@ const styled = `
   opacity:0;
   position:fixed;
   width:auto;
-  min-width:200px;
-  max-width:800px;
+  min-width:300px;
+  max-width:900px;
   max-height: -webkit-fill-available;
   z-index: 10001;
-  line-height:1.6;
+  line-height:1.4;
   margin-right:10px!important;
   font-family: 'Roboto', sans-serif!important;
   resize:both;
@@ -217,11 +257,11 @@ const styled = `
   transform: scale(0);
   transform-origin: top left;
   transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
-  
 }
+
 .show {
   opacity: 0.9;
-  padding: 20px;
+  padding: 15px;
   transform: scale(1);
 }
 .hide {
@@ -232,8 +272,7 @@ const styled = `
 .minibuttons{
   color: #fff;
   background-color: #000;
-  cursor: pointer;
-  margin-left:5px; 
+  cursor: pointer; 
   font-size:15px;
   border-radius: 8px;
   z-index: 2;
@@ -250,6 +289,7 @@ const styled = `
 }
 .tempslider {
   width: 30px;
+  height: 10px;
   transition: all 0.3s ease-in-out;
   }
 .tempslider:hover {
@@ -332,7 +372,7 @@ class popUpClass extends HTMLElement {
 
     const popUpElement = document.createElement('div');
     popUpElement.innerHTML = flypopup(this.ids, {
-      text: selectionText,
+      text: selectionText.replace(/<[^>]+>/g, ''),
       left: this.mousePosition.left,
       top: this.mousePosition.top,
       symbol: symbolFromModel(bodyData.model)
@@ -365,13 +405,25 @@ class popUpClass extends HTMLElement {
     if (txtArea) {
       // Stop the event from bubbling up to the document
       txtArea.addEventListener('keydown', (e) => { e.stopPropagation(); });
+      txtArea.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+        // after a millisecond, 
+        
+        if (this.scrollWidth > this.offsetWidth) {
+          this.style.width = this.scrollWidth + 'px';
+        }
+      });
       txtArea.focus();
 
       const range = document.createRange();
       // if there is text in childNodes[0], set the cursor position to the end of the text
       if (txtArea.childNodes[0]) {
-        // sets the start of the range to the end of the text in the text area's first child node. The position is determined by the `cursorPosition` variable plus 1.
-        range.setStart(txtArea.childNodes[0], cursorPosition + 1);
+        // if cursorPosition is -1 , set it to zero
+        if (cursorPosition === -1) { cursorPosition = 0; }        
+
+        // sets the start of the range to the end of the text in the text area's first child node.
+        range.setStart(txtArea.childNodes[0], cursorPosition);
         //collapses the range to the cursor position.
         range.collapse(true);
         const sel = window.getSelection();
@@ -407,13 +459,7 @@ class popUpClass extends HTMLElement {
       // set the height and width to auto
       element.style.height = "auto";
       element.style.width = "auto";
-
-      if (button.innerHTML == "🗕︎") {
-        button.innerHTML = "&#128470;&#xFE0E;";
-      }
-      else {
-        button.innerHTML = "&#128469;&#xFE0E;";
-      }
+      button.classList.toggle('expanded');
     });
   }
   closeButtons(id_target, id_button) {
@@ -454,6 +500,10 @@ class popUpClass extends HTMLElement {
         this.toggleRunStop(targetId);
         this.clearProbability(targetId);
         this.resetTextElement(targetId);
+        // get the textarea element
+        const textarea = this.getTextareaElement(targetId);
+        // set the width of the text are to-webkit-fill-available
+        textarea.style.width = '-webkit-fill-available';
 
         // remove hide from the id text element
         this.removeHideFromCompletion(targetId);
@@ -471,7 +521,7 @@ class popUpClass extends HTMLElement {
     }
 
     // Remove <br> from textarea
-    this.removeBRFromTextarea(targetId);
+    // this.removeBRFromTextarea(targetId);
 
     // Add keydown event listener to textarea
     this.getTextareaElement(targetId).addEventListener("keydown", this.handleKeydown.bind(this, targetId));
@@ -498,7 +548,7 @@ class popUpClass extends HTMLElement {
   }
 
   getTextareaValue(targetId) {
-    return this.shadowRoot.getElementById(`${targetId}textarea`).textContent;
+    return this.shadowRoot.getElementById(`${targetId}textarea`).value;
   }
 
   getBodyData(targetId, property) {
@@ -652,13 +702,16 @@ class popUpClass extends HTMLElement {
       // console.log(" textarea.innerHTML", textarea.innerHTML.replace("\n", "*"));
       // console.log("preText", mainElem.preText.replace("\n", "*"));
       // console.log(" targetNode.innerHTML", targetNode.innerHTML.replace("\n", "*"));
-      textarea.innerHTML += mainElem.preText + targetNode.innerHTML;
+      textarea.value += mainElem.preText + targetNode.innerText;
       mainElem.preText = '';
-      targetNode.innerHTML = '';
+      targetNode.innerText = '';
       this.putCursorAtTheEnd(textarea);
 
       // add2comp.classList.add('hide');
       copyButton.classList.add('hide');
+      // trigger input event to update the textarea
+      const event = new Event('input');
+      textarea.dispatchEvent(event);
     });
 
 
@@ -832,7 +885,8 @@ class popUpClass extends HTMLElement {
   updateProbability(id, return_prob = false) {
     if (this.probabilities.length > 0 && this.showProbabilities) {
       const probability = 100 * this.probabilities.reduce((a, b) => a + b, 0) / this.probabilities.length;
-      this.shadowRoot.getElementById(id).innerHTML = "Tokens prob.: " + probability.toFixed(2) + "%";
+      const tokens = this.tokens;
+      this.shadowRoot.getElementById(id).innerHTML = tokens +" tokens - avg. prob.: " + probability.toFixed(2) + "%";
       if (return_prob) {
         return probability.toFixed(2);
       }
@@ -857,11 +911,10 @@ class popUpClass extends HTMLElement {
         var text = message.choices[0].text
         // if the first charcters are newlines character, we don't add it to the popup, but save it in a string
         if (this.clearnewlines && text == "\n") {
-
           element.preText += text;
           if (specialCase) {
             // add text to textarea
-            textarea.innerHTML += text;
+            textarea.value += text;
             element.preText = "";
           }
           return
@@ -873,11 +926,13 @@ class popUpClass extends HTMLElement {
           // check if element {target_id}textarea exists
           if (specialCase) {
             // add text to textarea
-            textarea.innerHTML += text;
+            textarea.value += text;
+            const event = new Event('input');
+            textarea.dispatchEvent(event);
           }
           else {
             // add text to usual completion
-            promptarea.innerHTML += text;
+            promptarea.innerText += text;
           }
         }
       }
@@ -903,7 +958,7 @@ class popUpClass extends HTMLElement {
       const final_prob = this.updateProbability(target_id + "probability", true);
       // show run button and hide stop button
       this.toggleRunStop(target_id);
-      const complete_completion = promptarea.innerHTML
+      const complete_completion = promptarea.innerText;
 
 
       //save prompt to local storage 
@@ -913,7 +968,7 @@ class popUpClass extends HTMLElement {
       // update in bodyData the final probability in logprobs
       bodyData.logprobs = final_prob + " %";
       // focus depending on the case
-      if (textarea) { textarea.focus(); console.log("focus on textarea") }
+      if (textarea) { textarea.focus();}
       else { element.focus(); }
 
       if (specialCase) {

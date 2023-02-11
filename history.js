@@ -172,8 +172,8 @@ function export_history() {
         // if li element is not hidden
         if (li[i].style.display != 'none') {
             // from li[i].innerHTML get the prompt, completion , and remove any <br> element
-            var prompt = li[i].innerHTML.split('prompt:')[1].split('completion:')[0].replace(/<br>/g, '');
-            var completion = li[i].innerHTML.split('completion:')[1].split('Cost:')[0].replace(/<br>/g, '');
+            var prompt = li[i].innerText.split('prompt:')[1].split('completion:')[0].replace(/<br>/g, '');
+            var completion = li[i].innerText.split('completion:')[1].split('Cost:')[0].replace(/<br>/g, '');
             // combine the prompt and completion to dictionary
             var prompt_completion = { 'prompt': prompt, 'completion': completion };
             // add the dictionary to the history_to_save array
