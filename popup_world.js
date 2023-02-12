@@ -405,8 +405,10 @@ class popUpClass extends HTMLElement {
     const txtArea = this.shadowRoot.getElementById(this.ids + 'textarea');
     if (txtArea) {
       // Stop the event from bubbling up to the document
-      txtArea.addEventListener('keydown', (e) => { e.stopPropagation(); });
-      txtArea.addEventListener('input', function() {
+      txtArea.addEventListener('keydown', (e) => { e.stopPropagation();});
+      // stop the event from bubbling up to the document
+      txtArea.addEventListener('keyup', (e) => { e.stopPropagation();});
+      txtArea.addEventListener('input', function(e) {
         this.style.height = 'auto';
         this.style.height = (this.scrollHeight) + 'px';
         if (this.scrollHeight > this.offsetHeight) {
