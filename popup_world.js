@@ -162,7 +162,7 @@ const styled = `
     background-color: #202123;
     font-family: 'Roboto', sans-serif!important;
     color: #fff;
-    resize: none;
+    resize: auto;
     overflow: hidden;
     max-width:900px;
 }
@@ -373,7 +373,7 @@ class popUpClass extends HTMLElement {
 
     const popUpElement = document.createElement('div');
     popUpElement.innerHTML = flypopup(this.ids, {
-      text: selectionText.replace(/<[^>]+>/g, ''),
+      text: selectionText,
       left: this.mousePosition.left,
       top: this.mousePosition.top,
       symbol: symbolFromModel(bodyData.model)
@@ -409,30 +409,42 @@ class popUpClass extends HTMLElement {
       txtArea.addEventListener('input', function() {
         this.style.height = 'auto';
         this.style.height = (this.scrollHeight) + 'px';
-        // after a millisecond, 
-        
+        if (this.scrollHeight > this.offsetHeight) {
+          this.style.height = this.scrollHeight + 'px';
+        }
         if (this.scrollWidth > this.offsetWidth) {
           this.style.width = this.scrollWidth + 'px';
+        }
+
+
+        // if the wideth is greate than 900px, set the  white-space: to pre-wrap
+        if (this.scrollWidth > 900) {
+          this.style.whiteSpace = 'pre-wrap';
+        }
+        else {
+          this.style.whiteSpace = 'nowrap';
+          // this.style.width = '100%';
         }
       });
       // trigger the input event to set the height of the text area
       txtArea.dispatchEvent(new Event('input'));
       txtArea.focus();
+      txtArea.selectionEnd = txtArea.selectionStart = cursorPosition;
 
-      const range = document.createRange();
-      // if there is text in childNodes[0], set the cursor position to the end of the text
-      if (txtArea.childNodes[0]) {
-        // if cursorPosition is -1 , set it to zero
-        if (cursorPosition === -1) { cursorPosition = 0; }        
+      // const range = document.createRange();
+      // // if there is text in childNodes[0], set the cursor position to the end of the text
+      // if (txtArea.childNodes[0]) {
+      //   // if cursorPosition is -1 , set it to zero
+      //   if (cursorPosition === -1) { cursorPosition = 0; }        
 
-        // sets the start of the range to the end of the text in the text area's first child node.
-        range.setStart(txtArea.childNodes[0], cursorPosition);
-        //collapses the range to the cursor position.
-        range.collapse(true);
-        const sel = window.getSelection();
-        sel.removeAllRanges();
-        sel.addRange(range);
-      }
+      //   // sets the start of the range to the end of the text in the text area's first child node.
+      //   range.setStart(txtArea.childNodes[0], cursorPosition);
+      //   //collapses the range to the cursor position.
+      //   range.collapse(true);
+      //   const sel = window.getSelection();
+      //   sel.removeAllRanges();
+      //   sel.addRange(range);
+      // }
     }
 
   }
@@ -503,11 +515,6 @@ class popUpClass extends HTMLElement {
         this.toggleRunStop(targetId);
         this.clearProbability(targetId);
         this.resetTextElement(targetId);
-        // get the textarea element
-        const textarea = this.getTextareaElement(targetId);
-        // set the width of the text are to-webkit-fill-available
-        textarea.style.width = '-webkit-fill-available';
-
         // remove hide from the id text element
         this.removeHideFromCompletion(targetId);
 
@@ -520,6 +527,8 @@ class popUpClass extends HTMLElement {
           popupID: targetId,
         };
         chrome.runtime.sendMessage({ text: 'launchGPT', prompt: promptObj });
+        // get the textarea element
+        this.resetAutoWidthTextArea(targetId);
       });
     }
 
@@ -535,6 +544,12 @@ class popUpClass extends HTMLElement {
         this.shadowRoot.getElementById(`${targetId}add2comp`).click();
       }
     });
+  }
+
+  resetAutoWidthTextArea(targetId) {
+    const textarea = this.getTextareaElement(targetId);
+    // set the width of the text are to-webkit-fill-available
+    textarea.style.width = '-webkit-fill-available';
   }
 
   removeHideFromCompletion(targetId) {
@@ -713,8 +728,7 @@ class popUpClass extends HTMLElement {
       // add2comp.classList.add('hide');
       copyButton.classList.add('hide');
       // trigger input event to update the textarea
-      const event = new Event('input');
-      textarea.dispatchEvent(event);
+      
     });
 
 
@@ -735,12 +749,10 @@ class popUpClass extends HTMLElement {
   }
 
   putCursorAtTheEnd(textarea) {
-    const range = document.createRange();
-    range.selectNodeContents(textarea);
-    range.collapse(false);
-    const sel = window.getSelection();
-    sel.removeAllRanges();
-    sel.addRange(range);
+    const event = new Event('input');
+    textarea.dispatchEvent(event);
+    textarea.focus();
+    textarea.selectionEnd =textarea.selectionStart = textarea.value.length;
   }
 
   updateTemperature(id_target) {
