@@ -62,7 +62,7 @@ const minipopup = (id, { left = 0, top = 0 }) => `
   <div id="${id}completion">
     <p id="${id}text" class='popupcompletion'></p>
     <div style="float:right">
-      <span id="${id}probability" style="color: #777676; float: left; margin-bottom: 0em; margin-top: 0.25em;"></span>
+      <span id="${id}probability" class="tkn_prb"></span>
       <button class='minibuttons copybutton hide' id='copy_to_clipboard${id}' style="cursor: copy;" title='Copy completion to clipboard (Alt+C)'></button>
     </div>
   </div>
@@ -96,7 +96,7 @@ const flypopup = (id, { text = "none", left = 0, top = 0, symbol = "ↁ" }) => `
     <button type="button" id="${id}add2comp" class="submitbutton hide" style=" width: 65px;" title="Alt+A">Add &#8682;</button>
     <p id="${id}text" class='popupcompletion'></p>
     <div style="float:right">
-      <span id="${id}probability" style="color: #777676; float: left; margin-bottom: 0em; margin-top: 0.25em;"></span>
+      <span id="${id}probability" class="tkn_prb" ></span>
       <button class='minibuttons copybutton hide' id='copy_to_clipboard${id}' style="cursor: copy;" title='Copy completion to clipboard (Alt+C)'></button>
     </div>
     </div>
@@ -105,6 +105,14 @@ const flypopup = (id, { text = "none", left = 0, top = 0, symbol = "ↁ" }) => `
 
 
 const styled = `
+.tkn_prb {
+  color: #777676;
+  float: left; 
+  margin-bottom: 0em; 
+  margin-top: 0.25em;
+  margin-right: 0.5em;
+}
+
 @font-face {
   font-family: 'Material Icons';
   src: url('https://fonts.googleapis.com/icon?family=Material+Icons');
@@ -159,10 +167,11 @@ const styled = `
     white-space: nowrap;
     display: inline-block;
     width: -webkit-fill-available;
+    heigth: -webkit-fill-available;
     background-color: #202123;
     font-family: 'Roboto', sans-serif!important;
     color: #fff;
-    resize: auto;
+    resize: none;
     overflow: hidden;
     max-width:900px;
 }
@@ -225,6 +234,7 @@ const styled = `
   clear: left;
   cursor: text;
   white-space: pre-wrap;
+  margin-block-end: 0em;
 }
 .popupprompt {
   height: 2.6em;
@@ -253,7 +263,7 @@ const styled = `
   margin-right:10px!important;
   font-size: 14px;
   font-family: 'Roboto', sans-serif!important;
-  resize:both;
+  resize:horizontal;
   overflow:auto;
   transform: scale(0);
   transform-origin: top left;
@@ -408,25 +418,25 @@ class popUpClass extends HTMLElement {
       txtArea.addEventListener('keydown', (e) => { e.stopPropagation();});
       // stop the event from bubbling up to the document
       txtArea.addEventListener('keyup', (e) => { e.stopPropagation();});
-      txtArea.addEventListener('input', function(e) {
-        this.style.height = 'auto';
-        this.style.height = (this.scrollHeight) + 'px';
-        if (this.scrollHeight > this.offsetHeight) {
-          this.style.height = this.scrollHeight + 'px';
+      txtArea.addEventListener('input', (e) => {
+        txtArea.style.height = 'auto';
+        txtArea.style.height = (txtArea.scrollHeight) + 'px';
+        if (txtArea.scrollHeight > txtArea.offsetHeight) {
+          txtArea.style.height = txtArea.scrollHeight + 'px';
         }
-        if (this.scrollWidth > this.offsetWidth) {
-          this.style.width = this.scrollWidth + 'px';
+        if (txtArea.scrollWidth > txtArea.offsetWidth) {
+          element.style.width = txtArea.scrollWidth + 'px';
         }
 
 
         // if the wideth is greate than 900px, set the  white-space: to pre-wrap
-        if (this.scrollWidth > 900) {
-          this.style.whiteSpace = 'pre-wrap';
+        if (txtArea.scrollWidth > 900) {
+          txtArea.style.whiteSpace = 'pre-wrap';
         }
-        else {
-          this.style.whiteSpace = 'nowrap';
-          // this.style.width = '100%';
-        }
+        // else {
+        //   this.style.whiteSpace = 'nowrap';
+        //   // this.style.width = '100%';
+        // }
       });
       // trigger the input event to set the height of the text area
       txtArea.dispatchEvent(new Event('input'));

@@ -107,7 +107,6 @@ chrome.runtime.onInstalled.addListener(function (details) {
     // if (details.reason === "install") {
     //     chrome.action.openPopup(); // open popup not a function, but is in documentation
     //   }
-
     checkAPIKey();
     // add one prompt to the storage
     chrome.storage.sync.get('customprompt', function (items) {
@@ -143,17 +142,14 @@ chrome.runtime.onInstalled.addListener(function (details) {
             // set advancedSettings as a dictionary
             items.advancedSettings = {};
         }
-            // if showProb is not set, set it to true
+        // if showProb is not set, set it to true
         if (typeof items.advancedSettings.showProb == 'undefined') {
-                items.advancedSettings.showProb = true;
-                items.advancedSettings.autoAdd = false;
+            items.advancedSettings.showProb = true;
+            items.advancedSettings.autoAdd = false;
         }
         // save 
         chrome.storage.sync.set({ 'advancedSettings': items.advancedSettings });
     });
-
-
-
 });
 
 
@@ -190,7 +186,7 @@ chrome.runtime.onMessage.addListener((message, sender) => {
 // with the message "shouldReenableContextMenu" and a callback function that will handle the response from the content script.
 
 let contextMenuEnabled = false;
-function updateContextMenu(tab) {
+function updateContextMenu(tab, contextMenuEnabled) {
     chrome.contextMenus.update("GPT-Prompter", { enabled: false });
     // console.log('Check if content script is running...');
     contextMenuEnabled = false;
@@ -212,14 +208,14 @@ function updateContextMenu(tab) {
 chrome.tabs.onActivated.addListener(function (activeInfo) {
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         if (tabs[0].status === 'complete') {
-            updateContextMenu(tabs[0]);
+            updateContextMenu(tabs[0], contextMenuEnabled);
         }
     });
 });
 // on Updated
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
     if (changeInfo.status === 'complete') {
-        updateContextMenu(tab);
+        updateContextMenu(tab, contextMenuEnabled);
     }
 });
 
