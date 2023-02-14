@@ -185,8 +185,8 @@ chrome.runtime.onMessage.addListener((message, sender) => {
 // Then it will check if the new tab is complete, if it is, it will send a message to the content script of the new tab 
 // with the message "shouldReenableContextMenu" and a callback function that will handle the response from the content script.
 
-let contextMenuEnabled = false;
-function updateContextMenu(tab, contextMenuEnabled) {
+let contextMenuEnabled = true;
+function updateContextMenu(tab) {
     chrome.contextMenus.update("GPT-Prompter", { enabled: false });
     // console.log('Check if content script is running...');
     contextMenuEnabled = false;
@@ -203,19 +203,20 @@ function updateContextMenu(tab, contextMenuEnabled) {
             console.log('Error.')
         }
     });
+    return contextMenuEnabled;
 }
 
 chrome.tabs.onActivated.addListener(function (activeInfo) {
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         if (tabs[0].status === 'complete') {
-            updateContextMenu(tabs[0], contextMenuEnabled);
+            contextMenuEnabled = updateContextMenu(tabs[0]);
         }
     });
 });
 // on Updated
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
     if (changeInfo.status === 'complete') {
-        updateContextMenu(tab, contextMenuEnabled);
+        contextMenuEnabled = updateContextMenu(tab);
     }
 });
 
@@ -254,7 +255,8 @@ function launchPromptOnTheFly(selectionText, prompt) {
 
 // Shortcut to launch the prompt on the fly
 chrome.commands.onCommand.addListener(function (command) {
-    // if command is prompt-on-the-fly, and the context menu is enabled, launch the prompt on the fly    
+    // if command is prompt-on-the-fly, and the context menu is enabled, launch the prompt on the fly   
+    console.log('Command: ' + command + ' Context menu enabled: ' + contextMenuEnabled) 
     if (command === "prompt-on-the-fly" && contextMenuEnabled) {
         chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
             // Get the current tab

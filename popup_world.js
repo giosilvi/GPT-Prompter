@@ -46,7 +46,7 @@ const minipopup = (id, { left = 0, top = 0 }) => `
 <div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px">
   <div id="${id}prompt" class="popupprompt">
     <div id="${id}grabbable" class="grabbable">
-      <div style='position:relative; z-index:3; float:right;'>
+      <div style='position:relative; z-index:3; float:right; height:30px'>
         <span class='minibuttons symbolmodel' id="${id}temptext" style="cursor: default;" title="Temperature"></span>
         <input type="range" class="minibuttons tempslider" id="${id}temperature"  min="0" max="1" step="0.01"  title="Temperature">
         <button class='minibuttons symbolmodel' id="${id}symbol"></button>
@@ -74,7 +74,7 @@ const flypopup = (id, { text = "none", left = 0, top = 0, symbol = "ↁ" }) => `
 <div class="popuptext onylonthefly" id="${id}" style="left: ${left}px; top:${top}px">
   <div id="${id}prompt" class="popupprompt">
     <div id="${id}grabbable" class="grabbable">
-      <div style='position:relative; z-index:3; float:right;'>
+      <div style='position:relative; z-index:3; float:right; height:30px'>
         <span class='minibuttons symbolmodel' id="${id}temptext" style="cursor: default;" title="Temperature"></span>
         <input type="range" class="minibuttons tempslider" id="${id}temperature"  min="0" max="1" step="0.01"  title="Temperature">
         <button class='minibuttons symbolmodel' id="${id}symbol">${symbol}</button>
@@ -287,6 +287,7 @@ const styled = `
   font-size:15px;
   border-radius: 8px;
   z-index: 2;
+  height:100%;
 }
 .minibuttons:hover{
   background-color: #333333;
