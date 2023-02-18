@@ -44,6 +44,18 @@ h1 h2 {
   
 }
 
+.card-header:hover {
+  cursor: pointer;
+  background-color: #58c6a8;;
+  /* color: white; */
+}
+
+/* hover effect for the toggle switches */
+.custom-control-label:hover {
+  cursor: pointer;
+  background-color: #f8f9fa;
+}
+
 .apikeybutton {
   align-items: center;
   justify-content: space-around;
@@ -164,7 +176,7 @@ body ul .draggable:hover:after {
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 7;
   -webkit-box-orient: vertical;
 }
 
@@ -224,4 +236,8 @@ body ul .draggable:hover:after {
 
 .hide {
   opacity: 0;
+}
+
+.whitehover:hover {
+  color: white;
 }

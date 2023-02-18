@@ -66,6 +66,23 @@ function makePromptList(items) {
         deleteButton.className = 'save';
         deleteButton.innerText = 'Delete';
         deleteButton.setAttribute('id', `del${i}`);
+        // add a toggle to make the prompt Two-Stage or not
+        var twoStageToggle = document.createElement('input');
+        twoStageToggle.setAttribute('type', 'checkbox');
+        twoStageToggle.setAttribute('id', `twoStage${i}`);
+        twoStageToggle.setAttribute('name', `twoStage${i}`);
+        // read the value of the checkbox from the storage
+        if (items.customprompt[i]['twoStage'] == true) {
+            twoStageToggle.setAttribute('checked', 'checked');
+        }        
+        // add text to the toggle
+        var twoStageToggleText = document.createElement('span');
+        twoStageToggleText.innerText = 'Two-Stage mode ';
+        twoStageToggleText.style.marginLeft = '10px';
+        twoStageToggleText.style.marginRight = '10px';
+
+
+
 
         // Add a textare for the title, make it hidden, make it one line, and 500px wide
         var titleInsertText = document.createElement('textarea');
@@ -91,6 +108,8 @@ function makePromptList(items) {
         li.appendChild(titleButton);
         li.appendChild(editButton);
         li.appendChild(deleteButton);
+        li.appendChild(twoStageToggle);
+        li.appendChild(twoStageToggleText);
         li.appendChild(document.createElement('br'));
         li.appendChild(titleInsertText);
 
@@ -127,15 +146,29 @@ function updateLowerButtons(items) {
                 erasePrompt(id);
             }, 600);
         });
+        // add a listener to the checkbox Two-Stage mode
+        const twoStageToggle = document.getElementById(`twoStage${id}`);
+        twoStageToggle.addEventListener('click', () => {
+            toggleTwoStage(id);
+        }
+        );
     });
 }
 
+function toggleTwoStage(id) {
+    chrome.storage.sync.get('customprompt', (items) => {
+        items.customprompt[id]['twoStage'] = !items.customprompt[id]['twoStage']; // toggle the value
+        chrome.storage.sync.set({ customprompt: items.customprompt });
+        // send the signal to update context menu
+        chrome.runtime.sendMessage({ text: 'newPromptList' });
+    });
+}
 
 function toggleSaveKeyButton() {
     const apiKeyInput = document.getElementById('apikey');
     const saveKeyButton = document.getElementById('saveKey');
     const deleteKeyButton = document.getElementById('deleteKey');
-    const linkToAPI = document.getElementById('linktoAPI');
+    const linkToAPI = document.getElementById('linkToAPI');
     const showKeyButton = document.getElementById('showKey');
 
     if (apiKeyInput.style.display === 'none') {
@@ -166,7 +199,7 @@ function hideSaveKey() {
     document.getElementById('apikey').style.display = 'none';
     document.getElementById('saveKey').style.display = 'none';
     document.getElementById('deleteKey').style.display = 'none';
-    document.getElementById('linktoAPI').style.display = 'none';
+    document.getElementById('linkToAPI').style.display = 'none';
     document.getElementById('showKey').style.display = 'block';
     document.getElementById('showKey').innerHTML = 'Show API';
 }
@@ -200,7 +233,7 @@ function savePrompt() {
                     // Notify that we saved
                     console.log('Your custom prompt was saved.');
                 })
-                chrome.runtime.sendMessage({ text: "new_prompt_list" });
+                chrome.runtime.sendMessage({ text: "newPromptList" });
                 document.getElementById('promptinput').value = 'Prompt created! Available in context menu (right click).';
                 document.getElementById("promptinput").style.color = "#10a37f"; //green color for the prompt created
             }
@@ -237,7 +270,7 @@ async function erasePrompt(index) {
             makePromptList(items);
             console.log('Your custom prompt was erased.');
 
-            chrome.runtime.sendMessage({ text: "new_prompt_list" });
+            chrome.runtime.sendMessage({ text: "newPromptList" });
         }
     } catch (error) {
         console.error(error);
@@ -276,7 +309,7 @@ function addTitle(index) {
     textTitle.addEventListener('blur', function () {
         saveTitle(index);
         textTitle.style.display = 'none';
-        chrome.runtime.sendMessage({ text: "new_prompt_list" });
+        chrome.runtime.sendMessage({ text: "newPromptList" });
     });
 }
 
@@ -489,10 +522,31 @@ document.addEventListener('DOMContentLoaded', function () {
 document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('createPrompt').addEventListener('click', savePrompt);
     document.getElementById('showKey').addEventListener('click', toggleSaveKeyButton);
-    document.getElementById('linktoAPI').addEventListener('click', openLink);
+    document.getElementById('linkToAPI').addEventListener('click', openLink);
+    document.getElementById('linkToReddit').addEventListener('click', openLink);
     document.getElementById('linktoLogprob').addEventListener('click', openLink);
+    var advancedSettingsHeader = document.getElementById("advancedSettingsHeader");
+    var advancedSettingsBody = document.getElementById("advancedSettingsBody");
+  
+    advancedSettingsHeader.addEventListener("click", showHideSettings(advancedSettingsBody));
+
+    //same for promptDesign
+    var promptDesignHeader = document.getElementById("promptDesignHeader");
+    var promptDesignBody = document.getElementById("promptDesignBody");
+    promptDesignHeader.addEventListener("click", showHideSettings(promptDesignBody));
+
+    //same for yourPrompts
+    var yourPromptsHeader = document.getElementById("yourPromptsHeader");
+    var yourPromptsBody = document.getElementById("yourPromptsBody");
+    yourPromptsHeader.addEventListener("click", showHideSettings(yourPromptsBody));
 
 }, false);
+
+function showHideSettings(advancedSettingsBody) {
+    return function () {
+        advancedSettingsBody.classList.toggle("collapse");
+    };
+}
 
 function openLink() {
     chrome.tabs.create({ active: true, url: this.href });
@@ -539,8 +593,8 @@ document.addEventListener('DOMContentLoaded', function () {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.message === "API_key_valid") {
         saveKey();
-        chrome.action.setIcon({ path: "icons/iconA16.png" });
-        document.getElementById("apikey").value = "The API KEY is valid. Hooray!";
+        chrome.action.setIcon({ path: "icons/NewiconA16.png" });
+        document.getElementById("apikey").value = "The API KEY is valid!";
         document.getElementById("apikey").style.color = "#10a37f"; //green color 
         setTimeout(() => {
             hideSaveKey();
@@ -549,7 +603,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }, 3000);
         //
     } else if (request.message === "API_key_invalid") {
-        document.getElementById("apikey").value = "The API KEY is invalid. Try again!";
+        document.getElementById("apikey").value = "The API KEY is invalid.";
         document.getElementById("apikey").style.color = "#e74c3c"; //red color
         setTimeout(() => {
             document.getElementById("apikey").value = "";
@@ -685,7 +739,7 @@ function reoderListinMemory() {
 
             });
         }
-        chrome.runtime.sendMessage({ text: "new_prompt_list" });
+        chrome.runtime.sendMessage({ text: "newPromptList" });
     }
     );
 }

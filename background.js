@@ -60,7 +60,7 @@ function createContextMenu() {
     // Create sub-context menu for prompt on the fly 🤖
     chrome.contextMenus.create({
         id: 'On-the-Fly',
-        title: '★ Prompt On-the-Fly ★',
+        title: '⚡️ Prompt On-the-Fly ',
         parentId: 'GPT-Prompter',
         contexts: ["all"]
     });
@@ -91,6 +91,10 @@ function createContextMenu() {
 }
 
 function passTitleOrPrompt(customprompt, symbol) {
+    // if the customprompt.twoStage is true,add a 2 stage symbol
+    if (customprompt.twoStage) {
+        symbol = symbol + ' ⏩';
+    }
     // if customprompt contains  a title return the title
     if (customprompt.title) {
         return `${symbol} ${customprompt.title.replaceAll('#TEXT#', '%s')}`;
@@ -123,14 +127,17 @@ chrome.runtime.onInstalled.addListener(function (details) {
                         "temperature": 0.1,
                         "max_tokens": 1024,
                         "prompt": items.customprompt[i],
+                        "twoStage": false,
                     }
                 }
             }
         }
         else { // if the prompt does not exist, create the default one
-            items.customprompt = [{ "model": "text-davinci-003", "temperature": 0.1, "max_tokens": 1024, "prompt": 'Tell me more about #TEXT# :' }];
+            items.customprompt = [{ "model": "text-davinci-003", "temperature": 0.1, "max_tokens": 1024, "prompt": 'Tell me more about #TEXT# :', "twoStage": false },
+            { "model": "text-davinci-003", "temperature": 0.1, "max_tokens": 1024, "prompt": 'Answer the question as truthfully as possible using the provided text, and if the answer is not contained within the text below, say "I don\'t know" \nContext:\n#TEXT# \n\nQ:', "title":"Two-stage Q&&A" ,"twoStage": true },];
+
         }
-        // save the new_prompt_list
+        // save the newPromptList
         chrome.storage.sync.set({ 'customprompt': items.customprompt });
         // create the context menu
         createContextMenu()
@@ -156,7 +163,7 @@ chrome.runtime.onInstalled.addListener(function (details) {
 // Listen for a signal to refresh the context menu
 chrome.runtime.onMessage.addListener((message, sender) => {
     // If the signal is to refresh the context menu
-    if (message.text === 'new_prompt_list') {
+    if (message.text === 'newPromptList') {
         createContextMenu();
     }
     // If the signal is to check the API key
@@ -311,6 +318,8 @@ chrome.contextMenus.onClicked.addListener(async (info, tabs) => {
                     // Update the prompt text with the selected text, if there is any
                     if (info.selectionText) {
                         prompt.prompt = prompt.prompt.replace(/#TEXT#/g, info.selectionText);
+                    }
+                    if (!prompt.twoStage && info.selectionText) {
                         // Send a message to the content script to show the popup
                         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
                             chrome.tabs.sendMessage(tabs[0].id, { message: 'showPopUp' });
@@ -325,8 +334,6 @@ chrome.contextMenus.onClicked.addListener(async (info, tabs) => {
                     }
                     else {
                         // launch prompt on the fly with the prompt object
-                        // but first substitute the #TEXT# placeholder with nothing
-                        // prompt.prompt = prompt.prompt.replace(/#TEXT#/g, '');
                         launchPromptOnTheFly(prompt.prompt, prompt);
                     }
                 } else {

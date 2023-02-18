@@ -434,30 +434,14 @@ class popUpClass extends HTMLElement {
         if (txtArea.scrollWidth > 900) {
           txtArea.style.whiteSpace = 'pre-wrap';
         }
-        // else {
-        //   this.style.whiteSpace = 'nowrap';
-        //   // this.style.width = '100%';
-        // }
       });
       // trigger the input event to set the height of the text area
-      txtArea.dispatchEvent(new Event('input'));
+      //wait 100ms to allow the popup to be rendered
+      
       txtArea.focus();
       txtArea.selectionEnd = txtArea.selectionStart = cursorPosition;
-
-      // const range = document.createRange();
-      // // if there is text in childNodes[0], set the cursor position to the end of the text
-      // if (txtArea.childNodes[0]) {
-      //   // if cursorPosition is -1 , set it to zero
-      //   if (cursorPosition === -1) { cursorPosition = 0; }        
-
-      //   // sets the start of the range to the end of the text in the text area's first child node.
-      //   range.setStart(txtArea.childNodes[0], cursorPosition);
-      //   //collapses the range to the cursor position.
-      //   range.collapse(true);
-      //   const sel = window.getSelection();
-      //   sel.removeAllRanges();
-      //   sel.addRange(range);
-      // }
+      txtArea.dispatchEvent(new Event('input'));
+      setTimeout(() => { txtArea.dispatchEvent(new Event('input')); }, 100);
     }
 
   }
@@ -488,6 +472,9 @@ class popUpClass extends HTMLElement {
       element.style.height = "auto";
       element.style.width = "auto";
       button.classList.toggle('expanded');
+    });
+    button.addEventListener("dblclick", (e) => {
+      e.stopPropagation();
     });
   }
   closeButtons(id_target, id_button) {
@@ -680,12 +667,16 @@ class popUpClass extends HTMLElement {
 
 
   togglerModel(id_target, id_symbol) {
-    this.shadowRoot.getElementById(id_symbol).addEventListener("click", () => {
+    //prevent double click to propagate to the parent
+    const symbolElement = this.shadowRoot.getElementById(id_symbol);
+    symbolElement.addEventListener("dblclick", (event) => {
+      event.stopPropagation();
+    });
+
+    symbolElement.addEventListener("click", (event) => {
       // toggle across the models, updating  element.bodyData.model
       const element = this.shadowRoot.getElementById(id_target);
       const model = element.bodyData.model;
-      const symbolElement = this.shadowRoot.getElementById(id_symbol)
-
       if (model === "text-davinci-003") {
         element.bodyData.model = "text-davinci-002";
         symbolElement.innerHTML = models["text-davinci-002"];
