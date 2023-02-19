@@ -50,7 +50,7 @@ const minipopup = (id, { left = 0, top = 0 }) => `
         <span class='minibuttons symbolmodel' id="${id}temptext" style="cursor: default;" title="Temperature"></span>
         <input type="range" class="minibuttons tempslider" id="${id}temperature"  min="0" max="1" step="0.01"  title="Temperature">
         <button class='minibuttons symbolmodel' id="${id}symbol"></button>
-        <button class='minibuttons regeneratebutton' id="regenerate${id}" title="Regenerate prompt (Alt+Enter)" hidden></button>
+        <button class='minibuttons regeneratebutton' id="regenerate${id}" title="Regenerate prompt (Alt+Enter)"></button>
         <button class='minibuttons pinbutton' id="pin${id}" title="Pin the popup" hidden></button>
         <button class='minibuttons minimize-button' id="minimize${id}" title="Minimize/maximize completion"></button>
         <button class='minibuttons close-button' id="mclose${id}"  title="Close popup (Esc)"></button>
@@ -844,14 +844,14 @@ class popUpClass extends HTMLElement {
     this.shadowRoot.getElementById(`${targetId}symbol`).title = request.bodyData.model;
     this.shadowRoot.getElementById(`${targetId}header`).innerHTML = `<i> ${request.text} </i>`;
 
-    if (request.bodyData.temperature > 0 && this.shadowRoot.getElementById(`regenerate${targetId}`)) {
-      this.shadowRoot.getElementById(`regenerate${targetId}`).removeAttribute('hidden');
+    if (this.shadowRoot.getElementById(`regenerate${targetId}`)) {
 
       if (!this.alreadyCalled[targetId]) {
         this.regenerateButton(targetId, element);
         this.alreadyCalled[targetId] = true;
       }
     }
+    
   }
 
 

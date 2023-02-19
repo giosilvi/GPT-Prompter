@@ -80,6 +80,8 @@ function makePromptList(items) {
         twoStageToggleText.innerText = 'Two-Stage mode ';
         twoStageToggleText.style.marginLeft = '10px';
         twoStageToggleText.style.marginRight = '10px';
+        // add title that appears on hover
+        twoStageToggleText.setAttribute('title', 'Two-Stage mode: the prompt is loaded with the selected text but is not sent immediatly so the user can add to it.');
 
 
 
@@ -212,7 +214,7 @@ function savePrompt() {
     var temp = parseFloat(document.getElementById("temp").value);
     var token = parseInt(document.getElementById("token").value);
     var text = document.getElementById("promptinput").value;
-    var bodyData = { "model": model, "temperature": temp, "max_tokens": token, "prompt": text, "echo": true, "stream": true }
+    var bodyData = { "model": model, "temperature": temp, "max_tokens": token, "prompt": text, "echo": true, "stream": true, "twoStage": false, "title": ""}
     // try to retrive the custom prompt from the storage API
     chrome.storage.sync.get('customprompt', function (items) {
         // Check that the prompt exists
