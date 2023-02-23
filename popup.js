@@ -329,7 +329,14 @@ function saveTitle(index) {
                 // save the title in the storage
                 chrome.storage.sync.set({ 'customprompt': items.customprompt }, function () {
                     // Notify that is saved
-                    console.log('Your custom prompt title was saved.');
+                    var error = chrome.runtime.lastError;  
+                    if (error) {
+                        alert(error);
+                        //if there is an runtime error, the title is not saved
+                    }
+                    else {
+                        console.log('Your custom prompt title was saved.');
+                    }
                 })
                 makePromptList(items); //update the list of prompts
 

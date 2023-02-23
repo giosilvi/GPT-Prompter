@@ -657,7 +657,7 @@ class popUpClass extends HTMLElement {
   }
   copyButtonListener(id_target) {
     this.shadowRoot.getElementById("copy_to_clipboard" + id_target).addEventListener("click", () => {
-      this.copyToClipboard(this.shadowRoot.getElementById(id_target + "text").innerHTML);
+      this.copyToClipboard(this.shadowRoot.getElementById(id_target + "text").innerText);
       this.shadowRoot.getElementById("copy_to_clipboard" + id_target).classList.toggle('invertcolor');
       setTimeout(() => {
         this.shadowRoot.getElementById("copy_to_clipboard" + id_target).classList.toggle('invertcolor');
