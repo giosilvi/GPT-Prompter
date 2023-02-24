@@ -23,6 +23,7 @@
         </div>
         <div class="row" style="padding:10px;">
             <div class="col-sm-6">
+                <a id="linkToGuide" class="apikeybutton" href="https://www.gptprompter.com/how-to-use-it" style="padding-left: 0.5em;">How to use GPT-Prompter</a>
                 <input type="text" class="form-control" id="apikey" placeholder="Insert your API Key">
             </div>
             <div class="col-sm-2">
@@ -38,8 +39,8 @@
                     id="showKey">Show API</button>
             </div>
         </div>
-        <div style="background-color: rgba(0,0,0,.0); padding-left:10px; margin-bottom:10px!important;">
-            <a id="linkToAPI" href="https://beta.openai.com/account/api-keys">Where can I generate my API key?</a>
+        <div class="col-sm-6">
+            <a id="linkToAPI" class="apikeybutton" href="https://beta.openai.com/account/api-keys">Where can I generate my API key?</a>
         </div>
         <div id="advanced settings" class="card text-bg-light" style="border-radius:0px; ">
             <div class="card-header" style="border:0" id="advancedSettingsHeader">
@@ -107,7 +108,7 @@
                     <label for="temperature" class="form-label col-sm-3">Temperature</label>
                     <input type="range" class="form-range col-sm-6" style="margin-right:30px; padding:0"
                         id="temperature" min="0" max="1" step="0.01" value="0.1">
-                    <input class="text-input col-sm-2" type="text" readonly="readonly"
+                    <input class="text-input col-sm-2" type="text" readonly="readonly" title="Sampling temperature to use."
                         style="text-align:right;border: 0;" id="temp" value="0.1">
 
                 </div>
@@ -118,7 +119,7 @@
                     <label for="maxtoken" class="form-label col-sm-3">Max tokens</label>
                     <input id="maxtoken" type="range" class="form-range col-sm-6" style="margin-right:30px;padding:0"
                         min="0" max="4000" step="1" value="1024">
-                    <input class="text-input col-sm-2" type="text" readonly="readonly"
+                    <input class="text-input col-sm-2" type="text" readonly="readonly" title="The maximum number of tokens to generate in the completion."
                         style="text-align:right;border: 0;" id="token" value="1024">
                 </div>
                 <div class="card-body">

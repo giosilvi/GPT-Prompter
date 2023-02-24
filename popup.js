@@ -171,6 +171,7 @@ function toggleSaveKeyButton() {
     const saveKeyButton = document.getElementById('saveKey');
     const deleteKeyButton = document.getElementById('deleteKey');
     const linkToAPI = document.getElementById('linkToAPI');
+    const linkToGuide = document.getElementById('linkToGuide');
     const showKeyButton = document.getElementById('showKey');
 
     if (apiKeyInput.style.display === 'none') {
@@ -178,6 +179,7 @@ function toggleSaveKeyButton() {
         saveKeyButton.style.display = 'block';
         deleteKeyButton.style.display = 'block';
         linkToAPI.style.display = 'block';
+        linkToGuide.style.display = 'none';
         showKeyButton.innerHTML = 'Hide API';
 
         chrome.storage.sync.get('APIKEY', (items) => {
@@ -190,6 +192,7 @@ function toggleSaveKeyButton() {
         saveKeyButton.style.display = 'none';
         deleteKeyButton.style.display = 'none';
         linkToAPI.style.display = 'none';
+        linkToGuide.style.display = 'block';
         showKeyButton.innerHTML = 'Show API';
     }
 }
@@ -202,6 +205,7 @@ function hideSaveKey() {
     document.getElementById('saveKey').style.display = 'none';
     document.getElementById('deleteKey').style.display = 'none';
     document.getElementById('linkToAPI').style.display = 'none';
+    document.getElementById('linkToGuide').style.display = 'block';
     document.getElementById('showKey').style.display = 'block';
     document.getElementById('showKey').innerHTML = 'Show API';
 }
@@ -532,6 +536,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('createPrompt').addEventListener('click', savePrompt);
     document.getElementById('showKey').addEventListener('click', toggleSaveKeyButton);
     document.getElementById('linkToAPI').addEventListener('click', openLink);
+    document.getElementById('linkToGuide').addEventListener('click', openLink);
     document.getElementById('linkToReddit').addEventListener('click', openLink);
     document.getElementById('linktoLogprob').addEventListener('click', openLink);
     var advancedSettingsHeader = document.getElementById("advancedSettingsHeader");
