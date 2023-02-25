@@ -50,9 +50,30 @@ document.addEventListener('contextmenu', function (e) {
   
   let offsetX, offsetY;
 
+  function mouseDown(e) {
+    // check if I am hovering ${id}temperature"
+    if (e.target.id.includes('temperature')) {
+      return;
+    }
+    e.preventDefault(); // prevent the selection of the text below the popup
+    const id = this.id;
+    // set element id width to auto
+  
+    offsetX = undefined;
+    offsetY = undefined;
+    const wrapper = (event) => {
+      spanMove(event, id);
+    }
+    window.addEventListener('mousemove', wrapper, true);
+    // add a listener to the mouse up event, to remove the wrapper function when the mouse is up
+    window.addEventListener('mouseup', () => {
+      window.removeEventListener('mousemove', wrapper, true);
+    }, false);
+  }
+  
   function spanMove(e, id) {
     const fullPopup = popUpShadow.shadowRoot.getElementById(id.replace('grabbable', ''));
-  
+    // fullPopup.style.width = 'auto';
     if (!offsetX && !offsetY) {
       offsetX = e.clientX - fullPopup.offsetLeft;
       offsetY = e.clientY - fullPopup.offsetTop;
@@ -65,24 +86,6 @@ document.addEventListener('contextmenu', function (e) {
   }
   
   
-  function mouseDown(e) {
-    // check if I am hovering ${id}temperature"
-    if (e.target.id.includes('temperature')) {
-      return;
-    }
-    e.preventDefault(); // prevent the selection of the text below the popup
-    const id = this.id;
-    offsetX = undefined;
-    offsetY = undefined;
-    const wrapper = (event) => {
-      spanMove(event, id);
-    }
-    window.addEventListener('mousemove', wrapper, true);
-    // add a listener to the mouse up event, to remove the wrapper function when the mouse is up
-    window.addEventListener('mouseup', () => {
-      window.removeEventListener('mousemove', wrapper, true);
-    }, false);
-  }
 
 
 

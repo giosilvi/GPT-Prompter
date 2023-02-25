@@ -202,7 +202,11 @@ const styled = `
   position: relative;
 }
 .grabbable:hover {
-  background-color: #282828; /* slightly lighter background color */
+  // background-color: #282828; /* slightly lighter background color */
+  // background: linear-gradient(0deg, #202123 ,#165c4b, #202123);
+  // background: linear-gradient(90deg, #202123 ,#165c4b, #202123);
+  background: radial-gradient(closest-side,#165c4b, #202123);
+  z-index: 2;
 }
 
 /* (Optional) Apply a "closed-hand" cursor during drag operation. */
@@ -426,14 +430,16 @@ class popUpClass extends HTMLElement {
           txtArea.style.height = txtArea.scrollHeight + 'px';
         }
         if (txtArea.scrollWidth > txtArea.offsetWidth) {
-          element.style.width = txtArea.scrollWidth + 'px';
+          // element.style.width = txtArea.scrollWidth + 'px';
+          element.style.width = '-webkit-fill-available'
+          txtArea.style.whiteSpace = 'pre-wrap'
         }
 
 
         // if the wideth is greate than 900px, set the  white-space: to pre-wrap
-        if (txtArea.scrollWidth > 900) {
-          txtArea.style.whiteSpace = 'pre-wrap';
-        }
+        // if (txtArea.scrollWidth > 900) {
+        //   txtArea.style.whiteSpace = 'pre-wrap';
+        // }
       });
       // trigger the input event to set the height of the text area
       //wait 100ms to allow the popup to be rendered
