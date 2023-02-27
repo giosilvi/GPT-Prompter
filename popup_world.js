@@ -5,8 +5,8 @@ const models = {
   "text-curie-001": "🅲",
   "text-babbage-001": "🅑",
   "text-ada-001": "🅐",
-  "code-davinci-002": "🆇"
-}
+  "code-davinci-002": "🆇",
+};
 
 function symbolFromModel(model) {
   // check if the model is in the dictionary
@@ -16,31 +16,23 @@ function symbolFromModel(model) {
   return null;
 }
 
-
 // const highlightColor = "#d2f4d3";//"rgb(16, 163, 255)";
 const DaVinciCost = 0.02 / 1000;
 const CurieCost = 0.002 / 1000;
 const BabbageCost = 0.0005 / 1000;
 const AdaCost = 0.0004 / 1000;
 
-
 function computeCost(tokens, model) {
   var cost = 0;
-  if (model == "text-davinci-003")
-    cost = tokens * DaVinciCost;
-  else if (model == "text-davinci-002")
-    cost = tokens * DaVinciCost;
-  else if (model == "text-curie-001")
-    cost = tokens * CurieCost;
-  else if (model == "text-babbage-001")
-    cost = tokens * BabbageCost;
-  else if (model == "text-ada-001")
-    cost = tokens * AdaCost;
+  if (model == "text-davinci-003") cost = tokens * DaVinciCost;
+  else if (model == "text-davinci-002") cost = tokens * DaVinciCost;
+  else if (model == "text-curie-001") cost = tokens * CurieCost;
+  else if (model == "text-babbage-001") cost = tokens * BabbageCost;
+  else if (model == "text-ada-001") cost = tokens * AdaCost;
   return cost.toFixed(5);
 }
 
-
-// 
+//
 
 const minipopup = (id, { left = 0, top = 0 }) => `
 <div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px">
@@ -68,7 +60,6 @@ const minipopup = (id, { left = 0, top = 0 }) => `
   </div>
 </div>
 `;
-
 
 const flypopup = (id, { text = "none", left = 0, top = 0, symbol = "ↁ" }) => `
 <div class="popuptext onylonthefly" id="${id}" style="left: ${left}px; top:${top}px">
@@ -102,7 +93,6 @@ const flypopup = (id, { text = "none", left = 0, top = 0, symbol = "ↁ" }) => `
     </div>
 </div>
 `;
-
 
 const styled = `
 .tkn_prb {
@@ -344,7 +334,7 @@ class popUpClass extends HTMLElement {
     this.attachShadow({ mode: "open" }); // here we create the shadow DOM
     const style = document.createElement("style");
     style.textContent = styled;
-    this.shadowRoot.appendChild(style); // here append the style to the shadowRoot    
+    this.shadowRoot.appendChild(style); // here append the style to the shadowRoot
     this.ids = 0;
     this.tokens = 0;
     this.probabilities = [];
@@ -362,23 +352,26 @@ class popUpClass extends HTMLElement {
   attributeChangedCallback(name, oldValue, newValue) {
     if (name === "mousePosition") {
       if (this.mousePosition.left + 150 > window.innerWidth) {
-        var position = this.mousePosition
-        position.left = window.innerWidth - 150
+        var position = this.mousePosition;
+        position.left = window.innerWidth - 150;
         this.lastpop = minipopup(this.ids, position);
+      } else {
+        this.lastpop = minipopup(this.ids, this.mousePosition);
       }
-      else { this.lastpop = minipopup(this.ids, this.mousePosition); }
     }
   }
   defaultpopup() {
     // Create a new element to hold the pop-up
-    const popUpElement = document.createElement('div');
+    const popUpElement = document.createElement("div");
     popUpElement.innerHTML = this.lastpop;
 
     // Append the new element to the shadow root
     this.shadowRoot.appendChild(popUpElement);
 
     // Toggle the 'show' class on the element with the ID specified in this.ids
-    setTimeout(() => { this.shadowRoot.getElementById(this.ids).classList.toggle('show'); }, 10);
+    setTimeout(() => {
+      this.shadowRoot.getElementById(this.ids).classList.toggle("show");
+    }, 10);
     // Set up event listeners for the buttons and other actions
     this.buttonForPopUp(this.ids);
   }
@@ -386,14 +379,13 @@ class popUpClass extends HTMLElement {
   ontheflypopup(selectionText, bodyData, cursorPosition) {
     // Create a new element to hold the pop-up
 
-    const popUpElement = document.createElement('div');
+    const popUpElement = document.createElement("div");
     popUpElement.innerHTML = flypopup(this.ids, {
       text: selectionText,
       left: this.mousePosition.left,
       top: this.mousePosition.top,
-      symbol: symbolFromModel(bodyData.model)
+      symbol: symbolFromModel(bodyData.model),
     });
-
 
     // Append the new element to the shadow root
     this.shadowRoot.appendChild(popUpElement);
@@ -408,33 +400,38 @@ class popUpClass extends HTMLElement {
     this.showAdd2CompletionButton(this.ids);
 
     // update title of <button class='minibuttons symbolmodel' id="${id}symbol"></button> inside the popup
-    const symbolmodel = this.shadowRoot.getElementById(this.ids + 'symbol');
+    const symbolmodel = this.shadowRoot.getElementById(this.ids + "symbol");
     symbolmodel.title = bodyData.model;
     // pause for 1 second to allow the popup to be rendered
-    setTimeout(() => { element.classList.toggle('show'); }, 10);
+    setTimeout(() => {
+      element.classList.toggle("show");
+    }, 10);
 
     // Set up event listeners for the buttons and other actions
     this.buttonForPopUp(this.ids);
 
-    // Get the text area element 
-    const txtArea = this.shadowRoot.getElementById(this.ids + 'textarea');
+    // Get the text area element
+    const txtArea = this.shadowRoot.getElementById(this.ids + "textarea");
     if (txtArea) {
       // Stop the event from bubbling up to the document
-      txtArea.addEventListener('keydown', (e) => { e.stopPropagation();});
+      txtArea.addEventListener("keydown", (e) => {
+        e.stopPropagation();
+      });
       // stop the event from bubbling up to the document
-      txtArea.addEventListener('keyup', (e) => { e.stopPropagation();});
-      txtArea.addEventListener('input', (e) => {
-        txtArea.style.height = 'auto';
-        txtArea.style.height = (txtArea.scrollHeight) + 'px';
+      txtArea.addEventListener("keyup", (e) => {
+        e.stopPropagation();
+      });
+      txtArea.addEventListener("input", (e) => {
+        txtArea.style.height = "auto";
+        txtArea.style.height = txtArea.scrollHeight + "px";
         if (txtArea.scrollHeight > txtArea.offsetHeight) {
-          txtArea.style.height = txtArea.scrollHeight + 'px';
+          txtArea.style.height = txtArea.scrollHeight + "px";
         }
         if (txtArea.scrollWidth > txtArea.offsetWidth) {
           // element.style.width = txtArea.scrollWidth + 'px';
-          element.style.width = '-webkit-fill-available'
-          txtArea.style.whiteSpace = 'pre-wrap'
+          element.style.width = "-webkit-fill-available";
+          txtArea.style.whiteSpace = "pre-wrap";
         }
-
 
         // if the wideth is greate than 900px, set the  white-space: to pre-wrap
         // if (txtArea.scrollWidth > 900) {
@@ -443,41 +440,44 @@ class popUpClass extends HTMLElement {
       });
       // trigger the input event to set the height of the text area
       //wait 100ms to allow the popup to be rendered
-      
+
       txtArea.focus();
       txtArea.selectionEnd = txtArea.selectionStart = cursorPosition;
-      txtArea.dispatchEvent(new Event('input'));
-      setTimeout(() => { txtArea.dispatchEvent(new Event('input')); }, 100);
+      txtArea.dispatchEvent(new Event("input"));
+      setTimeout(() => {
+        txtArea.dispatchEvent(new Event("input"));
+      }, 100);
     }
-
   }
-
 
   pinButtons(id_target, id_button) {
     this.shadowRoot.getElementById(id_button).addEventListener("click", () => {
       // if the element is in listOfUnpinnedPopups, remove it from there. If not, add it to the list
       if (this.listOfUnpinnedPopups.includes(id_target)) {
-        this.listOfUnpinnedPopups.splice(this.listOfUnpinnedPopups.indexOf(id_target), 1);
-
+        this.listOfUnpinnedPopups.splice(
+          this.listOfUnpinnedPopups.indexOf(id_target),
+          1
+        );
       } else {
         this.listOfUnpinnedPopups.push(id_target);
       }
       //toggle class to invertcolor
-      this.shadowRoot.getElementById(id_button).classList.toggle('invertcolor');
+      this.shadowRoot.getElementById(id_button).classList.toggle("invertcolor");
     });
   }
-
 
   minimizeButtons(id_target, id_button) {
     const button = this.shadowRoot.getElementById(id_button);
     button.addEventListener("click", () => {
-      const element = this.shadowRoot.getElementById(id_target)
+      const element = this.shadowRoot.getElementById(id_target);
       // toggle class to minimize
-      this.shadowRoot.getElementById(`${id_target}completion`).classList.toggle('hide');
+      this.shadowRoot
+        .getElementById(`${id_target}completion`)
+        .classList.toggle("hide");
       // set the height and width to auto
       element.style.height = "auto";
       element.style.width = "auto";
-      button.classList.toggle('expanded');
+      button.classList.toggle("expanded");
     });
     button.addEventListener("dblclick", (e) => {
       e.stopPropagation();
@@ -485,31 +485,40 @@ class popUpClass extends HTMLElement {
   }
   closeButtons(id_target, id_button) {
     this.shadowRoot.getElementById(id_button).addEventListener("click", () => {
-      this.shadowRoot.getElementById(id_target).classList.toggle('show');
-      setTimeout(() => { this.shadowRoot.getElementById(id_target).remove(); }, 500);
+      this.shadowRoot.getElementById(id_target).classList.toggle("show");
+      setTimeout(() => {
+        this.shadowRoot.getElementById(id_target).remove();
+      }, 500);
       // if the stream is on, stop it
       if (this.stream_on) {
         this.stop_stream = true;
         this.stream_on = false;
       }
 
-      this.listOfActivePopups = this.listOfActivePopups.filter(item => item !== id_target);
+      this.listOfActivePopups = this.listOfActivePopups.filter(
+        (item) => item !== id_target
+      );
       // remove from listOfUnpinnedPopups if it is there
       if (this.listOfUnpinnedPopups.includes(id_target)) {
-        this.listOfUnpinnedPopups.splice(this.listOfUnpinnedPopups.indexOf(id_target), 1);
+        this.listOfUnpinnedPopups.splice(
+          this.listOfUnpinnedPopups.indexOf(id_target),
+          1
+        );
       }
-
     });
   }
 
   doubleClick(id_target) {
-    this.shadowRoot.getElementById(id_target).addEventListener("dblclick", () => {
-      this.shadowRoot.getElementById(id_target).classList.toggle('expand');
-      // from id_target replace prompt with header, and get the element with the id header, toggle class nobackground
-      let promptHeader = this.shadowRoot.getElementById(id_target.replace('prompt', 'header'));
-      promptHeader.classList.toggle('promptheader');
-
-    });
+    this.shadowRoot
+      .getElementById(id_target)
+      .addEventListener("dblclick", () => {
+        this.shadowRoot.getElementById(id_target).classList.toggle("expand");
+        // from id_target replace prompt with header, and get the element with the id header, toggle class nobackground
+        let promptHeader = this.shadowRoot.getElementById(
+          id_target.replace("prompt", "header")
+        );
+        promptHeader.classList.toggle("promptheader");
+      });
   }
 
   runClick(targetId) {
@@ -524,15 +533,14 @@ class popUpClass extends HTMLElement {
         // remove hide from the id text element
         this.removeHideFromCompletion(targetId);
 
-
         const promptObj = {
           prompt: this.getTextareaValue(targetId),
-          model: this.getBodyData(targetId, 'model'),
-          temperature: this.getBodyData(targetId, 'temperature'),
-          max_tokens: this.getBodyData(targetId, 'max_tokens'),
+          model: this.getBodyData(targetId, "model"),
+          temperature: this.getBodyData(targetId, "temperature"),
+          max_tokens: this.getBodyData(targetId, "max_tokens"),
           popupID: targetId,
         };
-        chrome.runtime.sendMessage({ text: 'launchGPT', prompt: promptObj });
+        chrome.runtime.sendMessage({ text: "launchGPT", prompt: promptObj });
         // get the textarea element
         this.resetAutoWidthTextArea(targetId);
       });
@@ -542,31 +550,38 @@ class popUpClass extends HTMLElement {
     // this.removeBRFromTextarea(targetId);
 
     // Add keydown event listener to textarea
-    this.getTextareaElement(targetId).addEventListener("keydown", this.handleKeydown.bind(this, targetId));
+    this.getTextareaElement(targetId).addEventListener(
+      "keydown",
+      this.handleKeydown.bind(this, targetId)
+    );
 
     // Add alt + a keydown event listener to target element
-    this.shadowRoot.getElementById(targetId).addEventListener('keydown', (event) => {
-      if (event.altKey && event.key === 'a') {
-        this.shadowRoot.getElementById(`${targetId}add2comp`).click();
-      }
-    });
+    this.shadowRoot
+      .getElementById(targetId)
+      .addEventListener("keydown", (event) => {
+        if (event.altKey && event.key === "a") {
+          this.shadowRoot.getElementById(`${targetId}add2comp`).click();
+        }
+      });
   }
 
   resetAutoWidthTextArea(targetId) {
     const textarea = this.getTextareaElement(targetId);
     // set the width of the text are to-webkit-fill-available
-    textarea.style.width = '-webkit-fill-available';
+    textarea.style.width = "-webkit-fill-available";
   }
 
   removeHideFromCompletion(targetId) {
-    this.shadowRoot.getElementById(`${targetId}completion`).classList.remove('hide');
+    this.shadowRoot
+      .getElementById(`${targetId}completion`)
+      .classList.remove("hide");
   }
   clearProbability(targetId) {
-    this.shadowRoot.getElementById(`${targetId}probability`).innerHTML = '';
+    this.shadowRoot.getElementById(`${targetId}probability`).innerHTML = "";
   }
 
   resetTextElement(targetId) {
-    this.shadowRoot.getElementById(`${targetId}text`).innerHTML = '';
+    this.shadowRoot.getElementById(`${targetId}text`).innerHTML = "";
     const element = this.shadowRoot.getElementById(targetId);
     element.preText = "";
   }
@@ -594,17 +609,14 @@ class popUpClass extends HTMLElement {
   }
 
   handleKeydown(targetId, e) {
-    if (e.key === 'Escape') {
+    if (e.key === "Escape") {
       this.closePopup(targetId);
-    }
-    else if (e.altKey) {
-      if (e.key === 'Enter') {
+    } else if (e.altKey) {
+      if (e.key === "Enter") {
         this.submitOrStop(targetId);
-      }
-      else if (e.key === 'c') {
+      } else if (e.key === "c") {
         this.clickCopyToClipboard(targetId);
-      }
-      else if (e.key === 'a') {
+      } else if (e.key === "a") {
         this.shadowRoot.getElementById(`${targetId}add2comp`).click();
       }
     }
@@ -612,7 +624,7 @@ class popUpClass extends HTMLElement {
 
   submitOrStop(targetId) {
     const submitButton = this.shadowRoot.getElementById(`${targetId}submit`);
-    if (!submitButton.classList.contains('hide')) {
+    if (!submitButton.classList.contains("hide")) {
       submitButton.click();
     } else {
       this.shadowRoot.getElementById(`${targetId}stop`).click();
@@ -627,15 +639,18 @@ class popUpClass extends HTMLElement {
   }
 
   clickCopyToClipboard(targetId) {
-    const copyButton = this.shadowRoot.getElementById(`copy_to_clipboard${targetId}`);
+    const copyButton = this.shadowRoot.getElementById(
+      `copy_to_clipboard${targetId}`
+    );
     if (copyButton) {
       copyButton.click();
     }
   }
 
-
   regenerateOrRun(id_target) {
-    const regenerateButton = this.shadowRoot.getElementById(`regenerate${id_target}`);
+    const regenerateButton = this.shadowRoot.getElementById(
+      `regenerate${id_target}`
+    );
     if (regenerateButton) {
       regenerateButton.click();
     } else {
@@ -646,31 +661,42 @@ class popUpClass extends HTMLElement {
     }
   }
 
-
   stopButton(id_target) {
-    this.shadowRoot.getElementById(id_target + "stop").addEventListener("click", () => {
-      this.stop_stream = true;
-      this.toggleRunStop(id_target);
-
-    });
+    this.shadowRoot
+      .getElementById(id_target + "stop")
+      .addEventListener("click", () => {
+        this.stop_stream = true;
+        this.toggleRunStop(id_target);
+      });
   }
 
   toggleRunStop(id_target) {
     if (this.shadowRoot.getElementById(id_target + "submit")) {
-      this.shadowRoot.getElementById(id_target + "submit").classList.toggle('hide');
-      this.shadowRoot.getElementById(id_target + "stop").classList.toggle('hide');
+      this.shadowRoot
+        .getElementById(id_target + "submit")
+        .classList.toggle("hide");
+      this.shadowRoot
+        .getElementById(id_target + "stop")
+        .classList.toggle("hide");
     }
   }
   copyButtonListener(id_target) {
-    this.shadowRoot.getElementById("copy_to_clipboard" + id_target).addEventListener("click", () => {
-      this.copyToClipboard(this.shadowRoot.getElementById(id_target + "text").innerText);
-      this.shadowRoot.getElementById("copy_to_clipboard" + id_target).classList.toggle('invertcolor');
-      setTimeout(() => {
-        this.shadowRoot.getElementById("copy_to_clipboard" + id_target).classList.toggle('invertcolor');
-      }, 500);
-    });
+    this.shadowRoot
+      .getElementById("copy_to_clipboard" + id_target)
+      .addEventListener("click", () => {
+        this.copyToClipboard(
+          this.shadowRoot.getElementById(id_target + "text").innerText
+        );
+        this.shadowRoot
+          .getElementById("copy_to_clipboard" + id_target)
+          .classList.toggle("invertcolor");
+        setTimeout(() => {
+          this.shadowRoot
+            .getElementById("copy_to_clipboard" + id_target)
+            .classList.toggle("invertcolor");
+        }, 500);
+      });
   }
-
 
   togglerModel(id_target, id_symbol) {
     //prevent double click to propagate to the parent
@@ -686,28 +712,23 @@ class popUpClass extends HTMLElement {
       if (model === "text-davinci-003") {
         element.bodyData.model = "text-davinci-002";
         symbolElement.innerHTML = models["text-davinci-002"];
-      }
-      else if (model === "text-davinci-002") {
+      } else if (model === "text-davinci-002") {
         element.bodyData.model = "text-curie-001";
         symbolElement.innerHTML = models["text-curie-001"];
-      }
-      else if (model === "text-curie-001") {
+      } else if (model === "text-curie-001") {
         element.bodyData.model = "text-babbage-001";
         symbolElement.innerHTML = models["text-babbage-001"];
-      }
-      else if (model === "text-babbage-001") {
+      } else if (model === "text-babbage-001") {
         element.bodyData.model = "text-ada-001";
         symbolElement.innerHTML = models["text-ada-001"];
-      }
-      else if (model === "text-ada-001") {
+      } else if (model === "text-ada-001") {
         element.bodyData.model = "code-davinci-002";
         symbolElement.innerHTML = models["code-davinci-002"];
-      }
-      else if (model === "code-davinci-002") {
+      } else if (model === "code-davinci-002") {
         element.bodyData.model = "text-davinci-003";
         symbolElement.innerHTML = models["text-davinci-003"];
-      }
-      else { // default
+      } else {
+        // default
         element.bodyData.model = "text-davinci-003";
         symbolElement.innerHTML = models["text-davinci-003"];
       }
@@ -722,47 +743,49 @@ class popUpClass extends HTMLElement {
     const add2comp = this.shadowRoot.getElementById(id_target + "add2comp");
     const textarea = this.shadowRoot.getElementById(id_target + "textarea");
     // get copy to clipboard button
-    const copyButton = this.shadowRoot.getElementById(`copy_to_clipboard${id_target}`);
+    const copyButton = this.shadowRoot.getElementById(
+      `copy_to_clipboard${id_target}`
+    );
     // let highlightId = 0;
 
     add2comp.addEventListener("click", () => {
-
       // console.log(" textarea.innerHTML", textarea.innerHTML.replace("\n", "*"));
       // console.log("preText", mainElem.preText.replace("\n", "*"));
       // console.log(" targetNode.innerHTML", targetNode.innerHTML.replace("\n", "*"));
       textarea.value += mainElem.preText + targetNode.innerText;
-      mainElem.preText = '';
-      targetNode.innerText = '';
+      mainElem.preText = "";
+      targetNode.innerText = "";
       this.putCursorAtTheEnd(textarea);
 
       // add2comp.classList.add('hide');
-      copyButton.classList.add('hide');
+      copyButton.classList.add("hide");
       // trigger input event to update the textarea
-      
     });
-
 
     const observer = new MutationObserver((mutationsList) => {
       for (let mutation of mutationsList) {
-        if (mutation.type === 'childList' && mutation.addedNodes.length) { // if text is added
-          add2comp.classList.remove('hide');
-        }
-        else if (mutation.type === 'childList' && mutation.removedNodes.length) { // if text is removed
-          add2comp.classList.add('hide');
+        if (mutation.type === "childList" && mutation.addedNodes.length) {
+          // if text is added
+          add2comp.classList.remove("hide");
+        } else if (
+          mutation.type === "childList" &&
+          mutation.removedNodes.length
+        ) {
+          // if text is removed
+          add2comp.classList.add("hide");
         }
       }
     });
 
     const config = { childList: true };
     observer.observe(targetNode, config);
-
   }
 
   putCursorAtTheEnd(textarea) {
-    const event = new Event('input');
+    const event = new Event("input");
     textarea.dispatchEvent(event);
     textarea.focus();
-    textarea.selectionEnd =textarea.selectionStart = textarea.value.length;
+    textarea.selectionEnd = textarea.selectionStart = textarea.value.length;
   }
 
   updateTemperature(id_target) {
@@ -770,13 +793,18 @@ class popUpClass extends HTMLElement {
     const element = this.shadowRoot.getElementById(id_target);
     const temperature = element.bodyData.temperature;
     // update the temperature slider
-    const temperatureSlider = this.shadowRoot.getElementById(id_target + 'temperature');
+    const temperatureSlider = this.shadowRoot.getElementById(
+      id_target + "temperature"
+    );
     temperatureSlider.value = temperature;
-    temperatureSlider.style.setProperty("--thumb-color", `hsl(${240 - temperature * 240}, 100%, 50%)`);
+    temperatureSlider.style.setProperty(
+      "--thumb-color",
+      `hsl(${240 - temperature * 240}, 100%, 50%)`
+    );
     // update the temperatureSlider title
     temperatureSlider.title = "Temperature: " + temperature;
     // update the temperature listner
-    temperatureSlider.addEventListener('input', function () {
+    temperatureSlider.addEventListener("input", function () {
       var value = this.value;
       var thumb = this.previousElementSibling;
       // parse the value as 2 decimal float
@@ -786,7 +814,10 @@ class popUpClass extends HTMLElement {
       // update the temperature in the element.bodyData.temperature as float
       element.bodyData.temperature = parseFloat(value);
       //color the thumb
-      this.style.setProperty("--thumb-color", `hsl(${240 - this.value * 240}, 100%, 50%)`);
+      this.style.setProperty(
+        "--thumb-color",
+        `hsl(${240 - this.value * 240}, 100%, 50%)`
+      );
     });
   }
 
@@ -795,7 +826,7 @@ class popUpClass extends HTMLElement {
     const id_close = `mclose${id_target}`;
     const id_minimize = `minimize${id_target}`;
     const id_symbol = `${id_target}symbol`;
-    this.togglerModel(id_target, id_symbol)
+    this.togglerModel(id_target, id_symbol);
     this.pinButtons(id_target, id_pin);
     this.minimizeButtons(id_target, id_minimize);
     this.closeButtons(id_target, id_close);
@@ -807,14 +838,13 @@ class popUpClass extends HTMLElement {
   keysShortcuts(id_target) {
     let popupElement = this.shadowRoot.getElementById(id_target);
     popupElement.tabIndex = -1; // allow the element to receive focus and listen to keyboard events even if it is not in the natural tab order of the document
-    popupElement.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') {
+    popupElement.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
         this.closePopup(id_target);
       } else if (event.altKey) {
-        if (event.key === 'c') {
+        if (event.key === "c") {
           this.clickCopyToClipboard(id_target);
-        }
-        else if (event.key === 'Enter') {
+        } else if (event.key === "Enter") {
           this.regenerateOrRun(id_target);
           // capture the event and prevent it from bubbling up
           event.preventDefault();
@@ -824,17 +854,18 @@ class popUpClass extends HTMLElement {
   }
 
   showCopyToClipboardBtn(target_id) {
-    this.shadowRoot.getElementById("copy_to_clipboard" + target_id).classList.remove("hide");
+    this.shadowRoot
+      .getElementById("copy_to_clipboard" + target_id)
+      .classList.remove("hide");
   }
 
-
   updatePopupHeader(request, targetId) {
-    // reset 
+    // reset
     this.probabilities = [];
     this.clearnewlines = true;
     this.tokens = 0;
 
-    chrome.storage.sync.get(['advancedSettings'], (result) => {
+    chrome.storage.sync.get(["advancedSettings"], (result) => {
       this.showProbabilities = result.advancedSettings.showProb;
       this.autoAdd = result.advancedSettings.autoAdd;
     });
@@ -847,71 +878,76 @@ class popUpClass extends HTMLElement {
 
     const symbol = symbolFromModel(request.bodyData.model);
     this.shadowRoot.getElementById(`${targetId}symbol`).innerHTML = symbol;
-    this.shadowRoot.getElementById(`${targetId}symbol`).title = request.bodyData.model;
-    this.shadowRoot.getElementById(`${targetId}header`).innerHTML = `<i> ${request.text} </i>`;
+    this.shadowRoot.getElementById(`${targetId}symbol`).title =
+      request.bodyData.model;
+    this.shadowRoot.getElementById(
+      `${targetId}header`
+    ).innerHTML = `<i> ${request.text} </i>`;
 
     if (this.shadowRoot.getElementById(`regenerate${targetId}`)) {
-
       if (!this.alreadyCalled[targetId]) {
         this.regenerateButton(targetId, element);
         this.alreadyCalled[targetId] = true;
       }
     }
-    
   }
 
-
-
   regenerateButton(targetId, element) {
-    this.shadowRoot.getElementById(`regenerate${targetId}`).addEventListener("click", () => {
-      if (this.stream_on == true) { this.stop_stream = true; } //stop the actual stream if it is on, and then restart it (remains on)
-      const textElement = this.shadowRoot.getElementById(`${targetId}text`);
-      textElement.innerHTML = "";
+    this.shadowRoot
+      .getElementById(`regenerate${targetId}`)
+      .addEventListener("click", () => {
+        if (this.stream_on == true) {
+          this.stop_stream = true;
+        } //stop the actual stream if it is on, and then restart it (remains on)
+        const textElement = this.shadowRoot.getElementById(`${targetId}text`);
+        textElement.innerHTML = "";
 
-      this.removeHideFromCompletion(targetId);
-      this.clearProbability(targetId);
+        this.removeHideFromCompletion(targetId);
+        this.clearProbability(targetId);
 
-      var promptDict = {
-        "prompt": element.text,
-        "model": element.bodyData.model,
-        "temperature": element.bodyData.temperature,
-        "max_tokens": element.bodyData.max_tokens,
-        "popupID": targetId,
-      }
-      chrome.runtime.sendMessage({ text: "launchGPT", prompt: promptDict });
-      // remove hide from the id text element
-
-    });
-  };
+        var promptDict = {
+          prompt: element.text,
+          model: element.bodyData.model,
+          temperature: element.bodyData.temperature,
+          max_tokens: element.bodyData.max_tokens,
+          popupID: targetId,
+        };
+        chrome.runtime.sendMessage({ text: "launchGPT", prompt: promptDict });
+        // remove hide from the id text element
+      });
+  }
 
   copyToClipboard = async (text) => {
     try {
       await navigator.clipboard.writeText(text);
       // console.log('Text copied to clipboard');
     } catch (err) {
-      console.error('Failed to copy: ', err);
+      console.error("Failed to copy: ", err);
     }
   };
 
   computeProbability(message) {
     if (this.showProbabilities && message.choices[0].logprobs) {
       // get logprobs
-      var logprobs = message.choices[0].logprobs.token_logprobs[0]
+      var logprobs = message.choices[0].logprobs.token_logprobs[0];
       // convert logprobs to probabilities
-      var probs = Math.exp(logprobs)
+      var probs = Math.exp(logprobs);
       // add to list this.probabilities
       // check that probs is not NaN
       if (!isNaN(probs)) {
-        this.probabilities.push(probs)
+        this.probabilities.push(probs);
       }
     }
   }
 
   updateProbability(id, return_prob = false) {
     if (this.probabilities.length > 0 && this.showProbabilities) {
-      const probability = 100 * this.probabilities.reduce((a, b) => a + b, 0) / this.probabilities.length;
+      const probability =
+        (100 * this.probabilities.reduce((a, b) => a + b, 0)) /
+        this.probabilities.length;
       const tokens = this.tokens;
-      this.shadowRoot.getElementById(id).innerHTML = tokens +" tokens - avg. prob.: " + probability.toFixed(2) + "%";
+      this.shadowRoot.getElementById(id).innerHTML =
+        tokens + " tokens - avg. prob.: " + probability.toFixed(2) + "%";
       if (return_prob) {
         return probability.toFixed(2);
       }
@@ -921,19 +957,18 @@ class popUpClass extends HTMLElement {
   updatepopup(message, target_id, stream) {
     const textarea = this.shadowRoot.getElementById(target_id + "textarea");
     const element = this.shadowRoot.getElementById(target_id);
-    const promptarea = this.shadowRoot.getElementById(target_id + "text")
+    const promptarea = this.shadowRoot.getElementById(target_id + "text");
     var specialCase = false;
     if (textarea && this.autoAdd) {
       specialCase = true;
     }
-
 
     //if stream is true
     if (stream) {
       this.stream_on = true;
       // if choices is a key in message, it means usual stream
       if (message.choices) {
-        var text = message.choices[0].text
+        var text = message.choices[0].text;
         // if the first charcters are newlines character, we don't add it to the popup, but save it in a string
         if (this.clearnewlines && text == "\n") {
           element.preText += text;
@@ -942,9 +977,8 @@ class popUpClass extends HTMLElement {
             textarea.value += text;
             element.preText = "";
           }
-          return
-        }
-        else {
+          return;
+        } else {
           this.computeProbability(message);
           this.updateProbability(target_id + "probability");
           this.clearnewlines = false;
@@ -952,10 +986,9 @@ class popUpClass extends HTMLElement {
           if (specialCase) {
             // add text to textarea
             textarea.value += text;
-            const event = new Event('input');
+            const event = new Event("input");
             textarea.dispatchEvent(event);
-          }
-          else {
+          } else {
             // add text to usual completion
             promptarea.innerText += text;
           }
@@ -963,63 +996,65 @@ class popUpClass extends HTMLElement {
       }
       // if message has a key "error"
       else if (message.error) {
-        var text = message.error.message
-        var type = message.error.type
+        var text = message.error.message;
+        var type = message.error.type;
         promptarea.innerHTML += type + "<br>" + text;
         this.tokens = 0;
         this.stream_on = false;
         //show run button and hide stop button
         this.toggleRunStop(target_id);
-
       }
       // each message should be 1 token
       this.tokens++;
-
-    }
-    else {
+    } else {
       // if stream is false, it means that the stream is over
       this.stream_on = false;
       // compute the probability, get average of element in this.probabilities
-      const final_prob = this.updateProbability(target_id + "probability", true);
+      const final_prob = this.updateProbability(
+        target_id + "probability",
+        true
+      );
       // show run button and hide stop button
       this.toggleRunStop(target_id);
       const complete_completion = promptarea.innerText;
 
-
-      //save prompt to local storage 
-      const bodyData = JSON.parse(message.bodyData)
-      const model = bodyData.model
-      const cost = computeCost(this.tokens, model)
+      //save prompt to local storage
+      const bodyData = JSON.parse(message.bodyData);
+      const model = bodyData.model;
+      const cost = computeCost(this.tokens, model);
       // update in bodyData the final probability in logprobs
       bodyData.logprobs = final_prob + " %";
       // focus depending on the case
-      if (textarea) { textarea.focus();}
-      else { element.focus(); }
+      if (textarea) {
+        textarea.focus();
+      } else {
+        element.focus();
+      }
 
       if (specialCase) {
         this.putCursorAtTheEnd(textarea);
-      }
-      else {
+      } else {
         this.showCopyToClipboardBtn(target_id);
       }
 
       // save the completion in the history
-      chrome.storage.local.get('history', function (items) {
-        if (typeof items.history !== 'undefined') {
-          items.history.push([JSON.stringify(bodyData), complete_completion, cost]);// add the result to the history
-          chrome.storage.local.set({ 'history': items.history });
-        }
-        else {
-          items.history = [[JSON.stringify(bodyData), complete_completion, cost]]; // initialize the history array
-          chrome.storage.local.set({ 'history': items.history });
+      chrome.storage.local.get("history", function (items) {
+        if (typeof items.history !== "undefined") {
+          items.history.push([
+            JSON.stringify(bodyData),
+            complete_completion,
+            cost,
+          ]); // add the result to the history
+          chrome.storage.local.set({ history: items.history });
+        } else {
+          items.history = [
+            [JSON.stringify(bodyData), complete_completion, cost],
+          ]; // initialize the history array
+          chrome.storage.local.set({ history: items.history });
         }
       });
     }
   }
-
-
 }
 
 window.customElements.define("mini-popup", popUpClass);
-
-

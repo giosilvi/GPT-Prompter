@@ -3,7 +3,8 @@ document.body.appendChild(popUpShadow); //attach the shadowDOM to body
 
 // Listen to scroll event
 window.addEventListener("scroll", function () {
-  const x = window.scrollX, y = window.scrollY;
+  const x = window.scrollX,
+    y = window.scrollY;
   popUpShadow.listOfUnpinnedPopups.forEach((id) => {
     // show the button to pin the popup
     const pinButton = popUpShadow.shadowRoot.getElementById(`pin${id}`);
@@ -14,7 +15,7 @@ window.addEventListener("scroll", function () {
     }
     const elem = popUpShadow.shadowRoot.getElementById(parseInt(id));
     const elemTop = elem.offsetTop - (y - this.window.lastY);
-    
+
     const elemLeft = elem.offsetLeft - (x - this.window.lastX);
     elem.style.top = `${elemTop}px`;
     elem.style.left = `${elemLeft}px`;
@@ -23,73 +24,72 @@ window.addEventListener("scroll", function () {
   this.window.lastX = x;
 });
 
-
 const getSelectedText = () => window.getSelection().toString();
 
 document.addEventListener("contextmenu", () => {
-    if (getSelectedText().length > 0) {
-      setMousePosition("mousePosition_primary", getMarkerPosition());
-    }
-  });
-  
-document.addEventListener('contextmenu', function (e) {
-    var mousePos = getMousePosition(e);
-    setMousePosition("mousePosition_support", {
-      left: mousePos.x,
-      top: mousePos.y,
-    });
-  });
-
-  function addListenersForDrag() {
-    popUpShadow.listOfActivePopups.forEach((id) => {
-      const elem = popUpShadow.shadowRoot.getElementById(`${id}grabbable`);
-      // check if I am hovering ${id}temperature"
-      elem.addEventListener('mousedown', mouseDown, false);
-    });
+  if (getSelectedText().length > 0) {
+    setMousePosition("mousePosition_primary", getMarkerPosition());
   }
-  
-  let offsetX, offsetY;
+});
 
-  function mouseDown(e) {
+document.addEventListener("contextmenu", function (e) {
+  var mousePos = getMousePosition(e);
+  setMousePosition("mousePosition_support", {
+    left: mousePos.x,
+    top: mousePos.y,
+  });
+});
+
+function addListenersForDrag() {
+  popUpShadow.listOfActivePopups.forEach((id) => {
+    const elem = popUpShadow.shadowRoot.getElementById(`${id}grabbable`);
     // check if I am hovering ${id}temperature"
-    if (e.target.id.includes('temperature')) {
-      return;
-    }
-    e.preventDefault(); // prevent the selection of the text below the popup
-    const id = this.id;
-    // set element id width to auto
-  
-    offsetX = undefined;
-    offsetY = undefined;
-    const wrapper = (event) => {
-      spanMove(event, id);
-    }
-    window.addEventListener('mousemove', wrapper, true);
-    // add a listener to the mouse up event, to remove the wrapper function when the mouse is up
-    window.addEventListener('mouseup', () => {
-      window.removeEventListener('mousemove', wrapper, true);
-    }, false);
+    elem.addEventListener("mousedown", mouseDown, false);
+  });
+}
+
+let offsetX, offsetY;
+
+function mouseDown(e) {
+  // check if I am hovering ${id}temperature"
+  if (e.target.id.includes("temperature")) {
+    return;
   }
-  
-  function spanMove(e, id) {
-    const fullPopup = popUpShadow.shadowRoot.getElementById(id.replace('grabbable', ''));
-    // fullPopup.style.width = 'auto';
-    if (!offsetX && !offsetY) {
-      offsetX = e.clientX - fullPopup.offsetLeft;
-      offsetY = e.clientY - fullPopup.offsetTop;
-    }
-  
-    const mouseYPosition = e.clientY - offsetY;
-    const mouseXPosition = e.clientX - offsetX;
-    fullPopup.style.top = `${mouseYPosition}px`;
-    fullPopup.style.left = `${mouseXPosition}px`;
+  e.preventDefault(); // prevent the selection of the text below the popup
+  const id = this.id;
+  // set element id width to auto
+
+  offsetX = undefined;
+  offsetY = undefined;
+  const wrapper = (event) => {
+    spanMove(event, id);
+  };
+  window.addEventListener("mousemove", wrapper, true);
+  // add a listener to the mouse up event, to remove the wrapper function when the mouse is up
+  window.addEventListener(
+    "mouseup",
+    () => {
+      window.removeEventListener("mousemove", wrapper, true);
+    },
+    false
+  );
+}
+
+function spanMove(e, id) {
+  const fullPopup = popUpShadow.shadowRoot.getElementById(
+    id.replace("grabbable", "")
+  );
+  // fullPopup.style.width = 'auto';
+  if (!offsetX && !offsetY) {
+    offsetX = e.clientX - fullPopup.offsetLeft;
+    offsetY = e.clientY - fullPopup.offsetTop;
   }
-  
-  
 
-
-
-
+  const mouseYPosition = e.clientY - offsetY;
+  const mouseXPosition = e.clientX - offsetX;
+  fullPopup.style.top = `${mouseYPosition}px`;
+  fullPopup.style.left = `${mouseXPosition}px`;
+}
 
 // MOUSE POSITION FUNCTIONS
 
@@ -98,7 +98,7 @@ function getMousePosition(event) {
   const { clientX, clientY } = event || window.event;
   return {
     x: clientX,
-    y: clientY
+    y: clientY,
   };
 }
 
@@ -109,7 +109,10 @@ function setMousePosition(nameAttribute, mousePosition) {
 
 // Returns an object with left and top properties representing the position of the selected text
 function getMarkerPosition() {
-  const rangeBounds = window.getSelection().getRangeAt(0).getBoundingClientRect();
+  const rangeBounds = window
+    .getSelection()
+    .getRangeAt(0)
+    .getBoundingClientRect();
   return {
     left: rangeBounds.right + 5,
     top: rangeBounds.top,
@@ -119,13 +122,22 @@ function getMarkerPosition() {
 // Sets the mousePosition attribute of the popUpShadow element to the appropriate attribute, or a default value if none exists
 function setMousePositionToPopup() {
   if (popUpShadow.hasAttribute("mousePosition_primary")) {
-    popUpShadow.setAttribute("mousePosition", popUpShadow.getAttribute("mousePosition_primary"));
+    popUpShadow.setAttribute(
+      "mousePosition",
+      popUpShadow.getAttribute("mousePosition_primary")
+    );
     popUpShadow.removeAttribute("mousePosition_primary");
   } else if (popUpShadow.hasAttribute("mousePosition_support")) {
-    popUpShadow.setAttribute("mousePosition", popUpShadow.getAttribute("mousePosition_support"));
+    popUpShadow.setAttribute(
+      "mousePosition",
+      popUpShadow.getAttribute("mousePosition_support")
+    );
     popUpShadow.removeAttribute("mousePosition_support");
   } else {
-    popUpShadow.setAttribute("mousePosition", JSON.stringify({ left: 0, top: 0 }));
+    popUpShadow.setAttribute(
+      "mousePosition",
+      JSON.stringify({ left: 0, top: 0 })
+    );
   }
 }
 
@@ -134,16 +146,14 @@ function checkIdPopup(id) {
   return id === undefined || id === -1 ? popUpShadow.ids : parseInt(id);
 }
 
-
-
-chrome.runtime.onMessage.addListener((request,sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.greeting === "shouldReenableContextMenu") {
-    sendResponse({farewell: "yes"});
+    sendResponse({ farewell: "yes" });
     return;
- }
+  }
 
   if (request.getSelection) {
-    sendResponse({selection: window.getSelection().toString()});
+    sendResponse({ selection: window.getSelection().toString() });
     return;
   }
 
@@ -157,30 +167,37 @@ chrome.runtime.onMessage.addListener((request,sender, sendResponse) => {
   };
 
   switch (request.message) {
-    case 'showPopUp':
+    case "showPopUp":
       handleShowPopUp();
       popUpShadow.defaultpopup();
       addListenersForDrag();
       break;
-    case 'showPopUpOnTheFly':
+    case "showPopUpOnTheFly":
       handleShowPopUp();
-      popUpShadow.ontheflypopup(request.text, request.bodyData, request.cursorPosition);
+      popUpShadow.ontheflypopup(
+        request.text,
+        request.bodyData,
+        request.cursorPosition
+      );
       addListenersForDrag();
       break;
-    case 'GPTprompt':
+    case "GPTprompt":
       popUpShadow.updatePopupHeader(request, idPopup);
       break;
-    case 'GPTStream_completion':
-      const data = request.text.split('data: ');
-      if (popUpShadow.stop_stream && !popUpShadow.listOfUndesiredStreams.includes(request.uuid)) {
-        console.log('Stop stream with uuid', request.uuid);
+    case "GPTStream_completion":
+      const data = request.text.split("data: ");
+      if (
+        popUpShadow.stop_stream &&
+        !popUpShadow.listOfUndesiredStreams.includes(request.uuid)
+      ) {
+        console.log("Stop stream with uuid", request.uuid);
         popUpShadow.listOfUndesiredStreams.push(request.uuid);
         popUpShadow.stop_stream = false;
         popUpShadow.clearnewlines = true;
       }
       if (!popUpShadow.listOfUndesiredStreams.includes(request.uuid)) {
         for (let m = 1; m < data.length; m += 1) {
-          if (data[m].indexOf('[DONE]') === -1) {
+          if (data[m].indexOf("[DONE]") === -1) {
             const json = JSON.parse(data[m]);
             // console.log('json', json.choices[0].logprobs.token_logprobs[0])
             popUpShadow.updatepopup(json, idPopup, true);
@@ -202,7 +219,4 @@ chrome.runtime.onMessage.addListener((request,sender, sendResponse) => {
   }
 });
 
-
-
-
-console.log('GPT-prompter content script is running')
+console.log("GPT-prompter content script is running");

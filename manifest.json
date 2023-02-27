@@ -1,44 +1,38 @@
 {
-    "name": "GPT-Prompter",
-    "version": "0.0.2.9",
-    "description": "Fast custom prompts to GPT-3 API",
-    "manifest_version": 3,
-    "icons": {
-        "16": "icons/iconA16.png",
-        "48": "icons/NewiconA48.png",
-        "128": "icons/NewiconA128.png"
-    },
-    "permissions": [
-        "contextMenus",
-        "storage",
-        "commands"
-    ],
-    "content_scripts": [
-        {
-            "matches": [
-                "<all_urls>"
-            ],
-            "js": [
-                "node_modules/@webcomponents/custom-elements/custom-elements.min.js",
-                "content.js",
-                "popup_world.js"
-            ]
-        }
-    ],
-    "action": {
-        "default_popup": "popup.html",
-        "default_title": "GPT-Prompter"
-    },
-    "background": {
-        "service_worker": "background.js",
-        "type": "module"
-    },
-    "commands": {
-        "prompt-on-the-fly": {
-            "suggested_key": {
-                "default": "Alt+P"
-            },
-            "description": "Launches the Prompt-on-the-Fly functionality"
-        }
+  "name": "GPT-Prompter",
+  "version": "0.0.2.9",
+  "description": "Fast custom prompts to GPT-3 API",
+  "manifest_version": 3,
+  "icons": {
+    "16": "icons/iconA16.png",
+    "48": "icons/NewiconA48.png",
+    "128": "icons/NewiconA128.png"
+  },
+  "permissions": ["contextMenus", "storage", "commands"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": [
+        "node_modules/@webcomponents/custom-elements/custom-elements.min.js",
+        "content.js",
+        "popup_world.js"
+      ]
     }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "GPT-Prompter"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "commands": {
+    "prompt-on-the-fly": {
+      "suggested_key": {
+        "default": "Alt+P"
+      },
+      "description": "Launches the Prompt-on-the-Fly functionality"
+    }
+  }
 }
