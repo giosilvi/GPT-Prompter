@@ -1,160 +1,315 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
-        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+      crossorigin="anonymous"
+    />
     <title>GPT-Prompter</title>
-</head>
+  </head>
 
-<body>
-
-
-    <div class="container-sm" style="width: 600px;">
-        <div class="card text-center" style="border-radius:0px; background-color: rgba(0,0,0,.03); border:0;">
-            <div class="card-body">
-                <h5><img src="icons/NewiconA48.png" alt="logo" class="logoimage"> GPT-Prompter<br></h5>
-                <!-- <p class="card-text">Here are the instructions to configure the plugin to work properly</p> -->
-            </div>
+  <body>
+    <div class="container-sm" style="width: 600px">
+      <div
+        class="card text-center"
+        style="
+          border-radius: 0px;
+          background-color: rgba(0, 0, 0, 0.03);
+          border: 0;
+        "
+      >
+        <div class="card-body">
+          <h5>
+            <img src="icons/NewiconA48.png" alt="logo" class="logoimage" />
+            GPT-Prompter<br />
+          </h5>
+          <!-- <p class="card-text">Here are the instructions to configure the plugin to work properly</p> -->
         </div>
-        <div class="row" style="padding:10px;">
-            <div class="col-sm-6">
-                <a id="linkToGuide" class="apikeybutton" href="https://www.gptprompter.com/how-to-use-it" style="padding-left: 0.5em;">How to use GPT-Prompter</a>
-                <input type="text" class="form-control" id="apikey" placeholder="Insert your API Key">
-            </div>
-            <div class="col-sm-2">
-                <button type="button" class="apikeybutton" id="saveKey"
-                    style="color: #10a37f; cursor: pointer;">Save</button>
-            </div>
-            <div class="col-sm-2">
-                <button type="button" class="apikeybutton" id="deleteKey"
-                    style="color:red;margin-left: -20px; cursor: pointer;">Delete</button>
-            </div>
-            <div class="col-sm-2">
-                <button type="button" class="apikeybutton" style="cursor: pointer;"
-                    id="showKey">Show API</button>
-            </div>
-        </div>
+      </div>
+      <div class="row" style="padding: 10px">
         <div class="col-sm-6">
-            <a id="linkToAPI" class="apikeybutton" href="https://beta.openai.com/account/api-keys">Where can I generate my API key?</a>
+          <a
+            id="linkToGuide"
+            class="apikeybutton"
+            href="https://www.gptprompter.com/how-to-use-it"
+            style="padding-left: 0.5em"
+            >How to use GPT-Prompter</a
+          >
+          <input
+            type="text"
+            class="form-control"
+            id="apikey"
+            placeholder="Insert your API Key"
+          />
         </div>
-        <div id="advanced settings" class="card text-bg-light" style="border-radius:0px; ">
-            <div class="card-header" style="border:0" id="advancedSettingsHeader">
-                <img src="icons/NewiconA16.png" alt="logo" class="logo">
-                <b style="display: inline-block; line-height: 40px;"> Advanced Settings</b>
-            </div>
-            <div class="card-body collapse" id="advancedSettingsBody">
-                <div class="custom-control custom-switch">
-                    <input type="checkbox" class="custom-control-input" id="probabilityToggle" checked>
-                    <label class="custom-control-label" for="probabilityToggle">Show average tokens probabilities (<a
-                            id="linktoLogprob"
-                            href="https://beta.openai.com/docs/api-reference/completions/create#completions/create-logprobs">logprobs</a>)</label>
-                </div>
-                <div class="custom-control custom-switch">
-                    <input type="checkbox" class="custom-control-input" id="autoAddToggle">
-                    <label class="custom-control-label" for="autoAddToggle">Automatically Add completion to
-                        prompt</label>
-                </div>
-            </div>
+        <div class="col-sm-2">
+          <button
+            type="button"
+            class="apikeybutton"
+            id="saveKey"
+            style="color: #10a37f; cursor: pointer"
+          >
+            Save
+          </button>
         </div>
-        <div id="prompt_design" class="card text-bg-light" style="border-radius:0px; ">
-            <div class="card-header" id="promptDesignHeader">
-                <div style="display: inline-block; vertical-align: middle;">
-                    <img src="icons/NewiconA16.png" alt="logo" class="logo">
-                    <b style="display: inline-block; line-height: 40px;">Prompt Design</b>
-                </div>
-                    <a id="linkToReddit" href="https://www.reddit.com/r/GPTPrompter/"  class="save whitehover"
-                        style="position: absolute; right: 0;">Join
-                        our Reddit community</a>
-            </div>
-
-            <!--selector-->
-            <div id="promptDesignBody">
-                <div class="input-group mb-3">
-                    <div class="input-group-prepend">
-                        <label class="input-group-text" for="inputmodel" style="border:0">Model</label>
-                    </div>
-                    <select class="custom-select" id="inputmodel">
-                        <option selected value="text-davinci-003"
-                            title="Most capable GPT-3 model, most expensive ($0.02/ 1k tokens)">ↁ
-                            text-davinci-003</option>
-                        <option value="text-davinci-002" title="Capable GPT-3 model, most expensive ($0.02/ 1k tokens)">
-                            🅳
-                            text-davinci-002</option>
-                        <option value="text-curie-001"
-                            title="Very capable, but faster and lower cost than Davinci. ($0.002/ 1k tokens)">🅲
-                            text-curie-001</option>
-                        <option value="text-babbage-001"
-                            title="Capable of straightforward tasks, very fast, and lower cost. ($0.0005/ 1k tokens)">🅑
-                            text-babbage-001
-                        </option>
-                        <option value="text-ada-001"
-                            title="Capable of very simple tasks, fastest model and lowest cost. ($0.0004/ 1k tokens) ">
-                            🅐
-                            text-ada-001</option>
-                        <option value="code-davinci-002"
-                            title="Most capable in Codex series, can understand code. (Free, in beta for now)">🆇
-                            code-davinci-002</option>
-                    </select>
-                </div>
-
-                <!--temperature-->
-                <div class="row" style="margin-left:0px!important"
-                    title="What sampling temperature to use. Higher values means the model will take more risks. Try 0.9 for more creative applications, and 0 (argmax sampling) for ones with a well-defined answer.">
-                    <label for="temperature" class="form-label col-sm-3">Temperature</label>
-                    <input type="range" class="form-range col-sm-6" style="margin-right:30px; padding:0"
-                        id="temperature" min="0" max="1" step="0.01" value="0.1">
-                    <input class="text-input col-sm-2" type="text" readonly="readonly" title="Sampling temperature to use."
-                        style="text-align:right;border: 0;" id="temp" value="0.1">
-
-                </div>
-
-                <!--max token-->
-                <div class="row" style="margin-left:0px!important"
-                    title="The maximum number of tokens to generate in the completion.">
-                    <label for="maxtoken" class="form-label col-sm-3">Max tokens</label>
-                    <input id="maxtoken" type="range" class="form-range col-sm-6" style="margin-right:30px;padding:0"
-                        min="0" max="4000" step="1" value="1024">
-                    <input class="text-input col-sm-2" type="text" readonly="readonly" title="The maximum number of tokens to generate in the completion."
-                        style="text-align:right;border: 0;" id="token" value="1024">
-                </div>
-                <div class="card-body">
-                    <div style="display: flex; justify-content: center;">
-                        <span class="suggestion">The #TEXT# in the prompt is a placeholder that will be replaced with
-                            the
-                            text you have selected.</span>
-                    </div>
-                    <textarea class="form-control" id="promptinput" rows="3"
-                        title="The keyword #TEXT# is later replaced with the selected text. It cannot be erased here">Tell me more about #TEXT# :</textarea>
-                    <button type="button" id="createPrompt" class="list-group-item list-group-item-action text-center"
-                        style="background-color:#10a37f; color:white"><b>Create prompt</b></button>
-                </div>
-            </div>
+        <div class="col-sm-2">
+          <button
+            type="button"
+            class="apikeybutton"
+            id="deleteKey"
+            style="color: red; margin-left: -20px; cursor: pointer"
+          >
+            Delete
+          </button>
         </div>
-        <div class="card text-bg-light" style="border-radius:0px;">
-            <div class="card-header" id="yourPromptsHeader">
-                <div style="display: inline-block; vertical-align: middle;">
-                    <img src="icons/NewiconA16.png" alt="logo" class="logo">
-                    <b style="display: inline-block; line-height: 40px;">Your Prompts</b>
-                </div>
-                <button type="button" id="history" class="save whitehover" style="position: absolute; right: 0;">History of Your
-                    Prompts</button>
-            </div>
-
-
-
-            <div class="card-body" style="border:0" id="yourPromptsBody">
-                <ul id="list-of-prompts" class="list-group"></ul>
-            </div>
+        <div class="col-sm-2">
+          <button
+            type="button"
+            class="apikeybutton"
+            style="cursor: pointer"
+            id="showKey"
+          >
+            Show API
+          </button>
         </div>
+      </div>
+      <div class="col-sm-6">
+        <a
+          id="linkToAPI"
+          class="apikeybutton"
+          href="https://beta.openai.com/account/api-keys"
+          >Where can I generate my API key?</a
+        >
+      </div>
+      <div
+        id="advanced settings"
+        class="card text-bg-light"
+        style="border-radius: 0px"
+      >
+        <div class="card-header" style="border: 0" id="advancedSettingsHeader">
+          <img src="icons/NewiconA16.png" alt="logo" class="logo" />
+          <b style="display: inline-block; line-height: 40px">
+            Advanced Settings</b
+          >
+        </div>
+        <div class="card-body collapse" id="advancedSettingsBody">
+          <div class="custom-control custom-switch">
+            <input
+              type="checkbox"
+              class="custom-control-input"
+              id="probabilityToggle"
+              checked
+            />
+            <label class="custom-control-label" for="probabilityToggle"
+              >Show average tokens probabilities (<a
+                id="linktoLogprob"
+                href="https://beta.openai.com/docs/api-reference/completions/create#completions/create-logprobs"
+                >logprobs</a
+              >)</label
+            >
+          </div>
+          <div class="custom-control custom-switch">
+            <input
+              type="checkbox"
+              class="custom-control-input"
+              id="autoAddToggle"
+            />
+            <label class="custom-control-label" for="autoAddToggle"
+              >Automatically Add completion to prompt</label
+            >
+          </div>
+        </div>
+      </div>
+      <div
+        id="prompt_design"
+        class="card text-bg-light"
+        style="border-radius: 0px"
+      >
+        <div class="card-header" id="promptDesignHeader">
+          <div style="display: inline-block; vertical-align: middle">
+            <img src="icons/NewiconA16.png" alt="logo" class="logo" />
+            <b style="display: inline-block; line-height: 40px"
+              >Prompt Design</b
+            >
+          </div>
+          <a
+            id="linkToReddit"
+            href="https://www.reddit.com/r/GPTPrompter/"
+            class="save whitehover"
+            style="position: absolute; right: 0"
+            >Join our Reddit community</a
+          >
+        </div>
+
+        <!--selector-->
+        <div id="promptDesignBody">
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <label class="input-group-text" for="inputmodel" style="border: 0"
+                >Model</label
+              >
+            </div>
+            <select class="custom-select" id="inputmodel">
+              <option
+                selected
+                value="text-davinci-003"
+                title="Most capable GPT-3 model, most expensive ($0.02/ 1k tokens)"
+              >
+                ↁ text-davinci-003
+              </option>
+              <option
+                value="text-davinci-002"
+                title="Capable GPT-3 model, most expensive ($0.02/ 1k tokens)"
+              >
+                🅳 text-davinci-002
+              </option>
+              <option
+                value="text-curie-001"
+                title="Very capable, but faster and lower cost than Davinci. ($0.002/ 1k tokens)"
+              >
+                🅲 text-curie-001
+              </option>
+              <option
+                value="text-babbage-001"
+                title="Capable of straightforward tasks, very fast, and lower cost. ($0.0005/ 1k tokens)"
+              >
+                🅑 text-babbage-001
+              </option>
+              <option
+                value="text-ada-001"
+                title="Capable of very simple tasks, fastest model and lowest cost. ($0.0004/ 1k tokens) "
+              >
+                🅐 text-ada-001
+              </option>
+              <option
+                value="code-davinci-002"
+                title="Most capable in Codex series, can understand code. (Free, in beta for now)"
+              >
+                🆇 code-davinci-002
+              </option>
+            </select>
+          </div>
+
+          <!--temperature-->
+          <div
+            class="row"
+            style="margin-left: 0px !important"
+            title="What sampling temperature to use. Higher values means the model will take more risks. Try 0.9 for more creative applications, and 0 (argmax sampling) for ones with a well-defined answer."
+          >
+            <label for="temperature" class="form-label col-sm-3"
+              >Temperature</label
+            >
+            <input
+              type="range"
+              class="form-range col-sm-6"
+              style="margin-right: 30px; padding: 0"
+              id="temperature"
+              min="0"
+              max="1"
+              step="0.01"
+              value="0.1"
+            />
+            <input
+              class="text-input col-sm-2"
+              type="text"
+              readonly="readonly"
+              title="Sampling temperature to use."
+              style="text-align: right; border: 0"
+              id="temp"
+              value="0.1"
+            />
+          </div>
+
+          <!--max token-->
+          <div
+            class="row"
+            style="margin-left: 0px !important"
+            title="The maximum number of tokens to generate in the completion."
+          >
+            <label for="maxtoken" class="form-label col-sm-3">Max tokens</label>
+            <input
+              id="maxtoken"
+              type="range"
+              class="form-range col-sm-6"
+              style="margin-right: 30px; padding: 0"
+              min="0"
+              max="4000"
+              step="1"
+              value="1024"
+            />
+            <input
+              class="text-input col-sm-2"
+              type="text"
+              readonly="readonly"
+              title="The maximum number of tokens to generate in the completion."
+              style="text-align: right; border: 0"
+              id="token"
+              value="1024"
+            />
+          </div>
+          <div class="card-body">
+            <div style="display: flex; justify-content: center">
+              <span class="suggestion"
+                >The #TEXT# in the prompt is a placeholder that will be replaced
+                with the text you have selected.</span
+              >
+            </div>
+            <textarea
+              class="form-control"
+              id="promptinput"
+              rows="3"
+              title="The keyword #TEXT# is later replaced with the selected text. It cannot be erased here"
+            >
+Tell me more about #TEXT# :</textarea
+            >
+            <button
+              type="button"
+              id="createPrompt"
+              class="list-group-item list-group-item-action text-center"
+              style="background-color: #10a37f; color: white"
+            >
+              <b>Create prompt</b>
+            </button>
+            <button
+            type="button"
+            id="addPlaceHolder"
+            class="list-group-item list-group-item-action text-center"
+            style="background-color: #108da3; color: white"
+            hidden
+          >
+            <b>Add #TEXT# placeholder</b>
+          </button>
+          </div>
+        </div>
+      </div>
+      <div class="card text-bg-light" style="border-radius: 0px">
+        <div class="card-header" id="yourPromptsHeader">
+          <div style="display: inline-block; vertical-align: middle">
+            <img src="icons/NewiconA16.png" alt="logo" class="logo" />
+            <b style="display: inline-block; line-height: 40px">Your Prompts</b>
+          </div>
+          <button
+            type="button"
+            id="history"
+            class="save whitehover"
+            style="position: absolute; right: 0"
+          >
+            History of Your Prompts
+          </button>
+        </div>
+
+        <div class="card-body" style="border: 0" id="yourPromptsBody">
+          <ul id="list-of-prompts" class="list-group"></ul>
+        </div>
+      </div>
     </div>
 
     <script src="popup.js"></script>
-
-</body>
-
+  </body>
 </html>

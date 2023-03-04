@@ -101,6 +101,7 @@ function makePromptList(items) {
     );
 
     // Append all elements to the list item
+    li.appendChild(titleInsertText);
     if (titleExists) {
       li.appendChild(titleText);
       li.appendChild(document.createElement("br"));
@@ -117,7 +118,6 @@ function makePromptList(items) {
     li.appendChild(twoStageToggle);
     li.appendChild(twoStageToggleText);
     li.appendChild(document.createElement("br"));
-    li.appendChild(titleInsertText);
 
     // Append the list item to the 'list-of-prompts' node
     ul.appendChild(li);
@@ -157,14 +157,14 @@ function updateLowerButtons(items) {
   });
 }
 
-
 function toggleTwoStage(id) {
-    getFromStorage("customprompt").then((items) => {
-        items.customprompt[id]["twoStage"] = !items.customprompt[id]["twoStage"]; // toggle the value
-        setInStorage({ customprompt: items.customprompt });
-        // send the signal to update context menu
-        chrome.runtime.sendMessage({ text: "newPromptList" });
-    });
+  getFromStorage("customprompt", true).then((items) => {
+    items.customprompt[id]["twoStage"] = !items.customprompt[id]["twoStage"]; // toggle the value
+    setInStorage({ customprompt: items.customprompt }, true);
+    setInStorage({ customprompt: items.customprompt });
+    // send the signal to update context menu
+    chrome.runtime.sendMessage({ text: "newPromptList" });
+  });
 }
 
 function toggleSaveKeyButton() {
@@ -184,9 +184,9 @@ function toggleSaveKeyButton() {
     showKeyButton.innerHTML = "Hide API";
 
     getFromStorage("APIKEY").then((items) => {
-        if (typeof items.APIKEY !== "undefined") {
-            apiKeyInput.value = items.APIKEY;
-        }
+      if (typeof items.APIKEY !== "undefined") {
+        apiKeyInput.value = items.APIKEY;
+      }
     });
   } else {
     apiKeyInput.style.display = "none";
@@ -209,6 +209,22 @@ function hideSaveKey() {
   document.getElementById("showKey").innerHTML = "Show API";
 }
 
+function addPH(){
+  // add #TEXT# to the prompt, where the cursor is
+  var input = document.getElementById("promptinput");
+  var start = input.selectionStart;
+  var end = input.selectionEnd;
+  var text = input.value;
+  var before = text.substring(0, start);
+  var after = text.substring(end, text.length);
+  input.value = before + "#TEXT#" + after;
+  input.focus();
+  input.selectionStart = start + 6;
+  input.selectionEnd = start + 6;
+  // 
+  toggleHiddenCreateAndPH(true);
+}
+
 //add function to save the the custom prompt in storage
 function savePrompt() {
   document.getElementById("createPrompt").disabled = true;
@@ -228,7 +244,7 @@ function savePrompt() {
     title: "",
   };
   // try to retrive the custom prompt from the storage API
-    getFromStorage("customprompt").then((items) => {
+  getFromStorage("customprompt", true).then((items) => {
     // Check that the prompt exists
     if (typeof items.customprompt !== "undefined") {
       var prompt_already_present = false;
@@ -248,6 +264,7 @@ function savePrompt() {
       if (prompt_already_present == false) {
         items.customprompt.push(bodyData);
         makePromptList(items); //update the list of prompts
+        setInStorage({ customprompt: items.customprompt }, true);
         setInStorage({ customprompt: items.customprompt });
         chrome.runtime.sendMessage({ text: "newPromptList" });
         document.getElementById("promptinput").value =
@@ -277,10 +294,11 @@ function savePrompt() {
 //add a function to erase a custom prompt from the storage API provided the index of the prompt
 async function erasePrompt(index) {
   try {
-    const items = await getFromStorage("customprompt"); 
+    const items = await getFromStorage("customprompt", true);
 
     if (items && items.customprompt && index < items.customprompt.length) {
       items.customprompt.splice(index, 1); // splice: remove 1 element at index
+      await setInStorage({ customprompt: items.customprompt }, true);
       await setInStorage({ customprompt: items.customprompt });
 
       makePromptList(items);
@@ -293,15 +311,25 @@ async function erasePrompt(index) {
   }
 }
 
-async function getFromStorage(key) {
+async function getFromStorage(key, useLocalStorage = false) {
   return new Promise((resolve, reject) => {
-    chrome.storage.sync.get(key, (items) => {
-      if (chrome.runtime.lastError) {
-        reject(chrome.runtime.lastError);
-      } else {
-        resolve(items);
-      }
-    });
+    if (useLocalStorage) {
+      chrome.storage.local.get(key, (items) => {
+        if (chrome.runtime.lastError) {
+          reject(chrome.runtime.lastError);
+        } else {
+          resolve(items);
+        }
+      });
+    } else {
+      chrome.storage.sync.get(key, (items) => {
+        if (chrome.runtime.lastError) {
+          reject(chrome.runtime.lastError);
+        } else {
+          resolve(items);
+        }
+      });
+    }
   });
 }
 
@@ -343,23 +371,24 @@ async function saveTitle(index) {
   var title = document.getElementById(`title-text${index}`).value;
   // try to retrive the custom prompt from the storage API
   try {
-    const items = await getFromStorage("customprompt"); 
+    const items = await getFromStorage("customprompt", true);
 
     if (items && items.customprompt && index < items.customprompt.length) {
       // add the title to the prompt
       items.customprompt[index]["title"] = title;
       // save the title in the storage, use SetInStorage function
+      await setInStorage({ customprompt: items.customprompt }, true);
       await setInStorage({ customprompt: items.customprompt });
 
       makePromptList(items); //update the list of prompts
     }
   } catch (error) {
     console.error(error);
-    }
+  }
 }
 
 function editPrompt(index) {
-    getFromStorage("customprompt").then((items) => {
+  getFromStorage("customprompt", true).then((items) => {
     // Check that the prompt exists
     if (typeof items.customprompt !== "undefined") {
       // check that the index is valid
@@ -407,7 +436,7 @@ function saveKey() {
 // add listener to the probabilityToggle
 function addListenerToProbabilityToggle() {
   // set the value of the probabilityToggle retrieved from the storage
-    getFromStorage("advancedSettings").then((items) => {
+  getFromStorage("advancedSettings").then((items) => {
     // Check that the advanced setting  exists
     if (typeof items.advancedSettings !== "undefined") {
       // Check that the showProb exists
@@ -462,6 +491,19 @@ function addListenerToAutoAddToggle() {
     });
 }
 
+function toggleHiddenCreateAndPH(showCreatePrompt){
+  // if one is hidden, show it and hide the other, use setAttribute function
+  if(showCreatePrompt){
+    document.getElementById("createPrompt").removeAttribute("hidden");
+    document.getElementById("addPlaceHolder").setAttribute("hidden", "true");
+  }
+  else{
+    document.getElementById("createPrompt").setAttribute("hidden", "true");
+    document.getElementById("addPlaceHolder").removeAttribute("hidden");
+  }
+  
+}
+
 function checkInputOfPromptDesigner() {
   document
     .getElementById("promptinput")
@@ -474,7 +516,7 @@ function checkInputOfPromptDesigner() {
       // if not found
       //check if "#TEXT" is contained in inputtext
       if (inputtext.indexOf("#TEXT") != -1) {
-        // if found
+        console.log("found #TEXT");
         //if yes, replace it with "#TEXT#"
         inputtext = inputtext.replace("#TEXT", "#TEXT#");
         // update the input
@@ -482,13 +524,16 @@ function checkInputOfPromptDesigner() {
       }
       //check if "TEXT#" is contained in inputtext
       else if (inputtext.indexOf("TEXT#") != -1) {
+        console.log("found TEXT#");
         //if yes, replace it with "#TEXT#"
         inputtext = inputtext.replace("TEXT#", "#TEXT#");
         // update the input
         document.getElementById("promptinput").value = inputtext;
       } else {
-        document.getElementById("promptinput").value = "#TEXT#";
+        toggleHiddenCreateAndPH(false);
       }
+    } else {
+      toggleHiddenCreateAndPH(true);
     }
   }
 }
@@ -557,6 +602,7 @@ document.addEventListener(
     document
       .getElementById("createPrompt")
       .addEventListener("click", savePrompt);
+    document.getElementById("addPlaceHolder").addEventListener("click", addPH);
     document
       .getElementById("showKey")
       .addEventListener("click", toggleSaveKeyButton);
@@ -610,7 +656,7 @@ document.addEventListener(
   "DOMContentLoaded",
   function () {
     //retrieve from chrome storage the custom prompt
-    getFromStorage("customprompt").then((items) => {
+    getFromStorage("customprompt", true).then((items) => {
       //if it exists send an alert
       if (typeof items.customprompt !== "undefined") {
         makePromptList(items);
@@ -778,7 +824,7 @@ function newOrderFromID() {
 
 function reoderListinMemory() {
   // get the list of prompts from memory
-    getFromStorage("customprompt").then((items) => {
+  getFromStorage("customprompt", true).then((items) => {
     // Check that the API key exists
     if (typeof items.customprompt !== "undefined") {
       // alert(items.customprompt);
@@ -790,7 +836,8 @@ function reoderListinMemory() {
       for (var i = 0; i < newOrder.length; i++) {
         newList.push(list[newOrder[i]]);
       }
-      // save the new list in memory, uses SetInStorage function
+      // save the new list in memory, first locally and then in sync
+      setInStorage({ customprompt: newList }, true);
       setInStorage({ customprompt: newList });
 
       items.customprompt = newList;

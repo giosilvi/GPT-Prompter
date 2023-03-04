@@ -1,6 +1,7 @@
 import promptGPT3Prompting from "./gpt3.js";
 import symbolFromModel from "./sharedfunctions.js";
 
+
 // FUNCTIONS DECLARATION
 async function checkGPT(apikey) {
   // Get the API key from storage
@@ -69,7 +70,7 @@ function createContextMenu() {
   });
 
   // Retrieve list of custom prompts from storage
-  chrome.storage.sync.get("customprompt", function (items) {
+  chrome.storage.local.get("customprompt", function (items) {
     if (items.customprompt) {
       // Create a context menu for each custom prompt
       items.customprompt.forEach((prompt, index) => {
@@ -106,8 +107,9 @@ chrome.runtime.onInstalled.addListener(function (details) {
   //     chrome.action.openPopup(); // open popup not a function, but is in documentation
   //   }
   checkAPIKey();
+  transferCustomPrompts();
   // add one prompt to the storage
-  chrome.storage.sync.get("customprompt", function (items) {
+  chrome.storage.local.get("customprompt", function (items) {
     // Check that the prompt exists
     if (typeof items.customprompt !== "undefined") {
       // check if customprompt is a list of strings
@@ -150,7 +152,7 @@ chrome.runtime.onInstalled.addListener(function (details) {
       ];
     }
     // save the newPromptList
-    chrome.storage.sync.set({ customprompt: items.customprompt });
+    chrome.storage.local.set({ customprompt: items.customprompt });
     // create the context menu
     createContextMenu();
   });
@@ -338,7 +340,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tabs) => {
       10
     );
     // Retrieve the list of custom prompts from storage
-    chrome.storage.sync.get("customprompt", (items) => {
+    chrome.storage.local.get("customprompt", (items) => {
       // Check that the list of custom prompts exists
       if (Array.isArray(items.customprompt)) {
         // Check that the prompt number is valid
@@ -390,4 +392,50 @@ chrome.contextMenus.onClicked.addListener(async (info, tabs) => {
 // create Context Menu every time browser starts
 chrome.runtime.onStartup.addListener(function () {
   createContextMenu();
+  // sync custom prompts
+  transferCustomPrompts(); // TURN OFF FIRST
 });
+
+function transferCustomPrompts() {
+  console.log("Transferring custom prompts from sync to local storage...")
+  chrome.storage.sync.get("customprompt", function (syncItems) {
+    if (typeof syncItems.customprompt !== "undefined") {
+      chrome.storage.local.get("customprompt", function (localItems) {
+        if (typeof localItems.customprompt === "undefined") {
+          localItems.customprompt = [];
+        }
+        // copy custom prompts from sync storage to local storage
+        for (var i = 0; i < syncItems.customprompt.length; i++) {
+          var prompt = syncItems.customprompt[i];
+          if (!promptExists(prompt, localItems.customprompt)) {
+            localItems.customprompt.push(prompt);
+          }
+        }
+        // save custom prompts to local storage
+        chrome.storage.local.set(
+          { customprompt: localItems.customprompt },
+          function () {
+            console.log(
+              "Custom prompts were successfully transferred from sync to local storage."
+            );
+          }
+        );
+      });
+    }
+  });
+}
+
+// helper function to check if a prompt exists in an array of prompts
+function promptExists(prompt, promptList) {
+  for (var i = 0; i < promptList.length; i++) {
+    if (
+      promptList[i].model === prompt.model &&
+      promptList[i].temperature === prompt.temperature &&
+      promptList[i].max_tokens === prompt.max_tokens &&
+      promptList[i].prompt === prompt.prompt
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
