@@ -30,17 +30,7 @@ async function promptGPT3Prompting(prompt, items, tabs) {
   var uuid = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
   //send immediately text to the content script
   console.log(text, model, temperature, max_tokens);
-  const url = "https://api.openai.com/v1/completions";
-  var bodyData = {
-    "model": model,
-    "temperature": temperature,
-    "max_tokens": max_tokens,
-    "prompt": text,
-    "stream": true,
-    "logprobs": 1
-  };
-  // remove stream from bodyData
-  var str_bodyData = JSON.stringify(bodyData);
+  var { url, str_bodyData, bodyData } = chooseCompletion(model, temperature, max_tokens, text);
 
   fetch(url, {
     method: 'POST',
@@ -78,3 +68,31 @@ async function promptGPT3Prompting(prompt, items, tabs) {
 }
 
 export default promptGPT3Prompting;
+
+function chooseCompletion(model, temperature, max_tokens, text) {
+  if (model=="gpt-3.5-turbo") {
+    const url = "https://api.openai.com/v1/chat/completions";
+    var bodyData = {
+      "model": model,
+      "temperature": temperature,
+      "max_tokens": max_tokens,
+      "messages": JSON.parse(text),
+      "stream": true,
+    };
+    var str_bodyData = JSON.stringify(bodyData);
+    return { url, str_bodyData, bodyData };
+  }
+  else{
+  const url = "https://api.openai.com/v1/completions";
+  var bodyData = {
+    "model": model,
+    "temperature": temperature,
+    "max_tokens": max_tokens,
+    "prompt": text,
+    "stream": true,
+    "logprobs": 1
+  };
+  var str_bodyData = JSON.stringify(bodyData);
+  return { url, str_bodyData, bodyData };
+}
+}

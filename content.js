@@ -76,9 +76,7 @@ function mouseDown(e) {
 }
 
 function spanMove(e, id) {
-  const fullPopup = popUpShadow.shadowRoot.getElementById(
-    id.replace("grabbable", "")
-  );
+  const fullPopup = popUpShadow.shadowRoot.getElementById(id.replace("grabbable", ""));
   // fullPopup.style.width = 'auto';
   if (!offsetX && !offsetY) {
     offsetX = e.clientX - fullPopup.offsetLeft;
@@ -109,10 +107,7 @@ function setMousePosition(nameAttribute, mousePosition) {
 
 // Returns an object with left and top properties representing the position of the selected text
 function getMarkerPosition() {
-  const rangeBounds = window
-    .getSelection()
-    .getRangeAt(0)
-    .getBoundingClientRect();
+  const rangeBounds = window.getSelection().getRangeAt(0).getBoundingClientRect();
   return {
     left: rangeBounds.right + 5,
     top: rangeBounds.top,
@@ -122,22 +117,13 @@ function getMarkerPosition() {
 // Sets the mousePosition attribute of the popUpShadow element to the appropriate attribute, or a default value if none exists
 function setMousePositionToPopup() {
   if (popUpShadow.hasAttribute("mousePosition_primary")) {
-    popUpShadow.setAttribute(
-      "mousePosition",
-      popUpShadow.getAttribute("mousePosition_primary")
-    );
+    popUpShadow.setAttribute("mousePosition", popUpShadow.getAttribute("mousePosition_primary"));
     popUpShadow.removeAttribute("mousePosition_primary");
   } else if (popUpShadow.hasAttribute("mousePosition_support")) {
-    popUpShadow.setAttribute(
-      "mousePosition",
-      popUpShadow.getAttribute("mousePosition_support")
-    );
+    popUpShadow.setAttribute("mousePosition", popUpShadow.getAttribute("mousePosition_support"));
     popUpShadow.removeAttribute("mousePosition_support");
   } else {
-    popUpShadow.setAttribute(
-      "mousePosition",
-      JSON.stringify({ left: 0, top: 0 })
-    );
+    popUpShadow.setAttribute("mousePosition", JSON.stringify({ left: 0, top: 0 }));
   }
 }
 
@@ -174,39 +160,38 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       break;
     case "showPopUpOnTheFly":
       handleShowPopUp();
-      popUpShadow.ontheflypopup(
-        request.text,
-        request.bodyData,
-        request.cursorPosition
-      );
+      popUpShadow.ontheflypopup(request.text, request.bodyData, request.cursorPosition);
       addListenersForDrag();
       break;
     case "GPTprompt":
       popUpShadow.updatePopupHeader(request, idPopup);
       break;
     case "GPTStream_completion":
-      const data = request.text.split("data: ");
-      if (
-        popUpShadow.stop_stream &&
-        !popUpShadow.listOfUndesiredStreams.includes(request.uuid)
-      ) {
-        console.log("Stop stream with uuid", request.uuid);
-        popUpShadow.listOfUndesiredStreams.push(request.uuid);
-        popUpShadow.stop_stream = false;
-        popUpShadow.clearnewlines = true;
-      }
-      if (!popUpShadow.listOfUndesiredStreams.includes(request.uuid)) {
-        for (let m = 1; m < data.length; m += 1) {
-          if (data[m].indexOf("[DONE]") === -1) {
-            const json = JSON.parse(data[m]);
-            // console.log('json', json.choices[0].logprobs.token_logprobs[0])
-            popUpShadow.updatepopup(json, idPopup, true);
-          } else {
-            popUpShadow.updatepopup(request, idPopup, false);
+      try {
+        const lines = request.text
+          .toString()
+          .split("\n")
+          .filter((line) => line.trim() !== ""); // remove empty lines and split
+        if (popUpShadow.stop_stream && !popUpShadow.listOfUndesiredStreams.includes(request.uuid)) {
+          console.log("Stop stream with uuid", request.uuid);
+          popUpShadow.listOfUndesiredStreams.push(request.uuid);
+          popUpShadow.stop_stream = false;
+          popUpShadow.clearnewlines = true;
+        }
+        if (!popUpShadow.listOfUndesiredStreams.includes(request.uuid)) {
+          for (const line of lines) {
+            const message = line.replace(/^data: /, "");
+            if (message === "[DONE]") {
+              // console.log('json', json.choices[0].logprobs.token_logprobs[0])
+              popUpShadow.updatepopup(request, idPopup, false);
+            } else {
+              const parsed = JSON.parse(message);
+              popUpShadow.updatepopup(parsed, idPopup, true);
+            }
           }
         }
-      }
-      if (data.length === 1) {
+      } catch (e) {
+        console.error(e);
         const json = JSON.parse(request.text);
         if (json.error) {
           popUpShadow.updatepopup(json, idPopup, true);

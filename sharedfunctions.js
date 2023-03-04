@@ -1,4 +1,6 @@
+
 var models = {
+    "gpt-3.5-turbo" : "🅶",
     "text-davinci-003": "ↁ",
     "text-davinci-002": "🅳",
     "text-curie-001": "🅲",

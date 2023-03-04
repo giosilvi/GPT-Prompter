@@ -1,5 +1,6 @@
 // import symbolFromModel from './sharedfunctions.js'; //TODO:fix this
 const models = {
+  "gpt-3.5-turbo": "🅶",
   "text-davinci-003": "ↁ",
   "text-davinci-002": "🅳",
   "text-curie-001": "🅲",
@@ -98,7 +99,6 @@ const styled = `
 .tkn_prb {
   color: #777676;
   float: left; 
-  margin-bottom: 0em; 
   margin-top: 0.25em;
   margin-right: 0.5em;
 }
@@ -147,7 +147,7 @@ const styled = `
 
 .copybutton {
   float:right;
-  margin-bottom: -1em;
+  margin-bottom: -.5em;
 }
 
 .textarea{
@@ -532,10 +532,15 @@ class popUpClass extends HTMLElement {
         this.resetTextElement(targetId);
         // remove hide from the id text element
         this.removeHideFromCompletion(targetId);
+        let modelToUse = this.getBodyData(targetId, "model");
+        let textPrompt = this.getTextareaValue(targetId)
+        if (modelToUse === "gpt-3.5-turbo") {
+          textPrompt = JSON.stringify([{"role": "user", "content": textPrompt}])
+        }
 
         const promptObj = {
-          prompt: this.getTextareaValue(targetId),
-          model: this.getBodyData(targetId, "model"),
+          prompt: textPrompt,
+          model: modelToUse,
           temperature: this.getBodyData(targetId, "temperature"),
           max_tokens: this.getBodyData(targetId, "max_tokens"),
           popupID: targetId,
@@ -709,7 +714,10 @@ class popUpClass extends HTMLElement {
       // toggle across the models, updating  element.bodyData.model
       const element = this.shadowRoot.getElementById(id_target);
       const model = element.bodyData.model;
-      if (model === "text-davinci-003") {
+      if (model === "gpt-3.5-turbo") {
+        element.bodyData.model = "text-davinci-003";
+        symbolElement.innerHTML = models["text-davinci-003"];
+      } else if (model === "text-davinci-003") {
         element.bodyData.model = "text-davinci-002";
         symbolElement.innerHTML = models["text-davinci-002"];
       } else if (model === "text-davinci-002") {
@@ -725,8 +733,8 @@ class popUpClass extends HTMLElement {
         element.bodyData.model = "code-davinci-002";
         symbolElement.innerHTML = models["code-davinci-002"];
       } else if (model === "code-davinci-002") {
-        element.bodyData.model = "text-davinci-003";
-        symbolElement.innerHTML = models["text-davinci-003"];
+        element.bodyData.model = "gpt-3.5-turbo";
+        symbolElement.innerHTML = models["gpt-3.5-turbo"];
       } else {
         // default
         element.bodyData.model = "text-davinci-003";
@@ -966,11 +974,26 @@ class popUpClass extends HTMLElement {
     //if stream is true
     if (stream) {
       this.stream_on = true;
+      var text = "";
       // if choices is a key in message, it means usual stream
       if (message.choices) {
-        var text = message.choices[0].text;
+        // check if choices[0] has text or message
+        const envelope = message.choices[0];
+        if (envelope.text) {
+          text = envelope.text;
+        } else if (envelope.delta) {
+          if (envelope.delta.content) {
+            text = envelope.delta.content;
+          } else if (envelope.delta.role) {
+            text = "";
+            return
+          }
+          else {
+            text = "";
+          }
+        }
         // if the first charcters are newlines character, we don't add it to the popup, but save it in a string
-        if (this.clearnewlines && text == "\n") {
+        if (this.clearnewlines && (text == "\n" || text == "\n\n")) {
           element.preText += text;
           if (specialCase) {
             // add text to textarea
@@ -1019,6 +1042,7 @@ class popUpClass extends HTMLElement {
       const complete_completion = promptarea.innerText;
 
       //save prompt to local storage
+      console.log(message.bodyData);
       const bodyData = JSON.parse(message.bodyData);
       const model = bodyData.model;
       const cost = computeCost(this.tokens, model);

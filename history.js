@@ -37,14 +37,21 @@ function createListItem(item, index) {
   // add key and value pairs from prompt object to prompt content string
   // if key is 'prompt' put it as last
   for (var key in prompt) {
-    if (key !== "stream" && key !== "prompt") {
+    if (key !== "stream" && key !== "prompt" && key !== "messages") {
       var value = prompt[key];
       // wrap key in 'strong' element
       promptContent += `<strong>${key}:</strong> ${value}<br>`;
     }
   }
   // add prompt key and value to prompt content string
-  promptContent += `<strong>prompt:</strong> ${prompt["prompt"]}<br>`;
+  // if prompt can be parsed as JSON, add it as a string
+  // otherwise, add it as a string
+  if (prompt["model"] == "gpt-3.5-turbo") {
+    console.log(prompt["messages"]);
+    promptContent += `<strong>messages:</strong> ${JSON.stringify(prompt["messages"])}<br>`;
+  } else {
+    promptContent += `<strong>prompt:</strong> ${prompt["prompt"]}<br>`;
+  }
   // create completion content string
   var completionContent = `<strong>completion:</strong> ${item[1]}<br>`;
   // create cost content string with delete button
@@ -62,9 +69,7 @@ function createListItem(item, index) {
  * @param {number} totalCost - The total cost to display.
  */
 function updateTotalCostDisplay(totalCost) {
-  document.getElementById(
-    "totCost"
-  ).innerHTML = `<strong>Total cost:</strong> ${totalCost.toFixed(2)}$`;
+  document.getElementById("totCost").innerHTML = `<strong>Total cost:</strong> ${totalCost.toFixed(2)}$`;
 }
 
 // in javascript, to return two values, use an array
@@ -130,8 +135,7 @@ function delete_all() {
   chrome.storage.local.get("history", function (items) {
     if (typeof items.history !== "undefined") {
       items.history = [];
-      document.getElementById("history-of-prompts").innerHTML =
-        "History deleted";
+      document.getElementById("history-of-prompts").innerHTML = "History deleted";
       document.getElementById("totCost").innerHTML = "";
       update_lower_buttons(items);
       chrome.storage.local.set({ history: items.history }, function () {
@@ -167,14 +171,8 @@ function export_history() {
     // if li element is not hidden
     if (li[i].style.display != "none") {
       // from li[i].innerHTML get the prompt, completion , and remove any <br> element
-      var prompt = li[i].innerText
-        .split("prompt:")[1]
-        .split("completion:")[0]
-        .replace(/<br>/g, "");
-      var completion = li[i].innerText
-        .split("completion:")[1]
-        .split("Cost:")[0]
-        .replace(/<br>/g, "");
+      var prompt = li[i].innerText.split("prompt:")[1].split("completion:")[0].replace(/<br>/g, "");
+      var completion = li[i].innerText.split("completion:")[1].split("Cost:")[0].replace(/<br>/g, "");
       // combine the prompt and completion to dictionary
       var prompt_completion = { prompt: prompt, completion: completion };
       // add the dictionary to the history_to_save array
@@ -183,9 +181,7 @@ function export_history() {
   }
   // if the history_to_save array is not empty
   if (history_to_save.length > 0) {
-    var dataStr =
-      "data:text/json;charset=utf-8," +
-      encodeURIComponent(JSON.stringify(history_to_save));
+    var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(history_to_save));
     var search_term = document.getElementById("promptsearch").value;
     let exportFileDefaultName = "PrompterHistory_" + search_term + ".json";
 
@@ -204,11 +200,7 @@ document.addEventListener("DOMContentLoaded", function () {
     delete_all();
   });
   // add event listener to promptsearch for event keydown, and nest into it a listener for keyup
-  document
-    .getElementById("promptsearch")
-    .addEventListener("keyup", filter, false);
+  document.getElementById("promptsearch").addEventListener("keyup", filter, false);
   // add event listener to export button
-  document
-    .getElementById("export_to_json")
-    .addEventListener("click", export_history, false);
+  document.getElementById("export_to_json").addEventListener("click", export_history, false);
 });

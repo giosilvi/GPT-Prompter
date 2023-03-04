@@ -1,6 +1,6 @@
 import promptGPT3Prompting from "./gpt3.js";
 import symbolFromModel from "./sharedfunctions.js";
-
+const std_model = "gpt-3.5-turbo";
 
 // FUNCTIONS DECLARATION
 async function checkGPT(apikey) {
@@ -53,7 +53,14 @@ function createContextMenu() {
     contexts: ["all"],
   });
 
-  // Create sub-context menu for prompt on the fly 🤖
+  // Create sub-context menu for prompt on the fly 
+  chrome.contextMenus.create({
+    id: "ChatGPT",
+    title: "🤖 ChatGPT",
+    parentId: "GPT-Prompter",
+    contexts: ["all"],
+  });
+
   chrome.contextMenus.create({
     id: "On-the-Fly",
     title: "⚡️ Prompt On-the-Fly ",
@@ -95,7 +102,18 @@ function passTitleOrPrompt(customprompt, symbol) {
   if (customprompt.title) {
     return `${symbol} ${customprompt.title.replaceAll("#TEXT#", "%s")}`;
   } else {
-    return `${symbol} ${customprompt.prompt.replaceAll("#TEXT#", "%s")}`;
+    // if customprompt does not contain a title return the prompt
+    // check if the model is "gpt-3.5-turbo"
+    if (customprompt.model === "gpt-3.5-turbo") {
+      // if it is, json parse the prompt
+      const prompt = JSON.parse(customprompt.prompt);
+      // get the last element of the prompt
+      const lastElement = prompt[prompt.length - 1];
+      return `${symbol} ${lastElement['content'].replaceAll("#TEXT#", "%s")}`;
+    }
+    else{
+      return `${symbol} ${customprompt.prompt.replaceAll("#TEXT#", "%s")}`;
+    }
   }
 }
 
@@ -113,10 +131,7 @@ chrome.runtime.onInstalled.addListener(function (details) {
     // Check that the prompt exists
     if (typeof items.customprompt !== "undefined") {
       // check if customprompt is a list of strings
-      if (
-        items.customprompt.length > 0 &&
-        typeof items.customprompt[0] === "string"
-      ) {
+      if (items.customprompt.length > 0 && typeof items.customprompt[0] === "string") {
         console.log("Fixing the prompt list");
         //loop over the list of prompts
         for (var i = 0; i < items.customprompt.length; i++) {
@@ -210,20 +225,16 @@ function updateContextMenu(tab) {
   // console.log('Check if content script is running...');
   contextMenuEnabled = false;
   // if the tab is complete, send a message to the content script to check if the context menu should be re-enabled
-  chrome.tabs.sendMessage(
-    tab.id,
-    { greeting: "shouldReenableContextMenu" },
-    function (response) {
-      if (response && response.farewell === "yes") {
-        chrome.contextMenus.update("GPT-Prompter", { enabled: true });
-        contextMenuEnabled = true;
-      } else if (chrome.runtime.lastError) {
-        contextMenuEnabled = false;
-      } else {
-        console.log("Error.");
-      }
+  chrome.tabs.sendMessage(tab.id, { greeting: "shouldReenableContextMenu" }, function (response) {
+    if (response && response.farewell === "yes") {
+      chrome.contextMenus.update("GPT-Prompter", { enabled: true });
+      contextMenuEnabled = true;
+    } else if (chrome.runtime.lastError) {
+      contextMenuEnabled = false;
+    } else {
+      console.log("Error.");
     }
-  );
+  });
   return contextMenuEnabled;
 }
 
@@ -264,7 +275,7 @@ function launchPromptOnTheFly(selectionText, prompt) {
   } else {
     // if prompt is null, use the default one
     var bodyData = {
-      model: "text-davinci-003",
+      model: std_model,
       temperature: 0.1,
       max_tokens: 1024,
     };
@@ -283,36 +294,26 @@ function launchPromptOnTheFly(selectionText, prompt) {
 // Shortcut to launch the prompt on the fly
 chrome.commands.onCommand.addListener(function (command) {
   // if command is prompt-on-the-fly, and the context menu is enabled, launch the prompt on the fly
-  console.log(
-    "Command: " + command + " Context menu enabled: " + contextMenuEnabled
-  );
+  console.log("Command: " + command + " Context menu enabled: " + contextMenuEnabled);
   if (command === "prompt-on-the-fly" && contextMenuEnabled) {
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       // Get the current tab
       var tab = tabs[0];
       // Send a message to the content script to get the selected text
-      chrome.tabs.sendMessage(
-        tab.id,
-        { getSelection: true },
-        function (response) {
-          // Call the launchPromptOnTheFly function with the selected text and the current tab
-          launchPromptOnTheFly(response.selection, null);
-        }
-      );
+      chrome.tabs.sendMessage(tab.id, { getSelection: true }, function (response) {
+        // Call the launchPromptOnTheFly function with the selected text and the current tab
+        launchPromptOnTheFly(response.selection, null);
+      });
     });
   } else {
     //send a message to the content script to show a notification
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       //catch the error if the content script is not running
-      chrome.tabs.sendMessage(
-        tabs[0].id,
-        "GPT-Prompter: Content script not yet running. Wait for the page to load.",
-        function (response) {
-          if (chrome.runtime.lastError) {
-            console.log("Content script not available");
-          }
+      chrome.tabs.sendMessage(tabs[0].id, "GPT-Prompter: Content script not yet running. Wait for the page to load.", function (response) {
+        if (chrome.runtime.lastError) {
+          console.log("Content script not available");
         }
-      );
+      });
     });
   }
 });
@@ -335,10 +336,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tabs) => {
   // If the clicked context menu item is a custom prompt
   if (info.menuItemId.startsWith("customprompt-")) {
     // Extract the prompt number from the menu item's ID
-    const promptNumber = parseInt(
-      info.menuItemId.replace("customprompt-", ""),
-      10
-    );
+    const promptNumber = parseInt(info.menuItemId.replace("customprompt-", ""), 10);
     // Retrieve the list of custom prompts from storage
     chrome.storage.local.get("customprompt", (items) => {
       // Check that the list of custom prompts exists
@@ -349,10 +347,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tabs) => {
           const prompt = items.customprompt[promptNumber];
           // Update the prompt text with the selected text, if there is any
           if (info.selectionText) {
-            prompt.prompt = prompt.prompt.replace(
-              /#TEXT#/g,
-              info.selectionText
-            );
+            prompt.prompt = prompt.prompt.replace(/#TEXT#/g, info.selectionText);
           }
           if (!prompt.twoStage && info.selectionText) {
             // Send a message to the content script to show the popup
@@ -397,7 +392,7 @@ chrome.runtime.onStartup.addListener(function () {
 });
 
 function transferCustomPrompts() {
-  console.log("Transferring custom prompts from sync to local storage...")
+  console.log("Transferring custom prompts from sync to local storage...");
   chrome.storage.sync.get("customprompt", function (syncItems) {
     if (typeof syncItems.customprompt !== "undefined") {
       chrome.storage.local.get("customprompt", function (localItems) {
@@ -412,14 +407,9 @@ function transferCustomPrompts() {
           }
         }
         // save custom prompts to local storage
-        chrome.storage.local.set(
-          { customprompt: localItems.customprompt },
-          function () {
-            console.log(
-              "Custom prompts were successfully transferred from sync to local storage."
-            );
-          }
-        );
+        chrome.storage.local.set({ customprompt: localItems.customprompt }, function () {
+          console.log("Custom prompts were successfully transferred from sync to local storage.");
+        });
       });
     }
   });
