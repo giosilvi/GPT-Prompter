@@ -101,7 +101,7 @@ const flypopup = (id, { text = "none", left = 0, top = 0, symbol = "🅶" }) => 
 // `;
 
 const chatpopup = (id, {text = "", left = 0, top = 0, symbol = "🅶" }) => `
-<div class="popuptext onlychat" id="${id}" style="left: ${left}px; top:${top}px; width:500px;">
+<div class="popuptext onlychat" id="${id}" style="left: ${left}px; top:${top}px; width:520px;">
   <div id="${id}prompt" class="popupprompt">
     <div id="${id}grabbable" class="grabbable">
       <div style='position:relative; z-index:3; float:right; height:30px'>
@@ -272,7 +272,7 @@ const styled = `
   border: 2px solid rgb(16, 163, 127);
 }
 .onlychat{
-  border: 2px solid rgb(0, 247, 255);
+  border: 2px solid #6dc9ff;
 }
 
 .popupcompletion {
@@ -527,9 +527,6 @@ class popUpClass extends HTMLElement {
   chatGPTpopup(messages, bodyData, cursorPosition) {
     // Create a new element to hold the pop-up
     const popUpElement = document.createElement("div");
-    // copy the messages list to the popUpElement
-    
-    console.log(messages)
    
     // get the last message in the list
     var messageInTextArea = "";
@@ -547,8 +544,6 @@ class popUpClass extends HTMLElement {
       top: this.mousePosition.top,
       symbol: symbolFromModel(bodyData.model),
     });
-      //  attach  messagepopup() to the element <div id="${id}completion">
-      console.log(typeof popUpElement)
       
       
       // Append the new element to the shadow root
@@ -557,17 +552,16 @@ class popUpClass extends HTMLElement {
       const element = this.shadowRoot.getElementById(this.ids);
       // attach the bodyData to the element
       element.bodyData = bodyData;
+      // make a copy of the messages list and attach it to the element
       element.previousMessages = messages;
       // Set the system message in the popup
       if (messages[0]["role"] == "system"){
         this.shadowRoot.getElementById(this.ids + "system").innerText ="System: " + messages[0]["content"];
-        // remove the system message from the list
-        messages.shift()
       }
      
       // loop over the messages and add each message to one messagepopup, append the messagepopup to the div with id = this.ids + "completion"
       var that = this; // create a reference to the current object
-      for (var i = 0; i < messages.length; i++) {
+      for (var i = 1; i < messages.length; i++) {
         (function(index) {
           setTimeout(function() {
             var messagepopup = that.createChatElement(messages[index], that.ids + "message_" + index);
@@ -795,11 +789,10 @@ class popUpClass extends HTMLElement {
         setTimeout(() => {
           assistantmessage.classList.add("reveal")
 
-        }, 500);
+        }, 300);
         // scroll to the bottom of the chat element
         assistantmessage.scrollIntoView({behavior: "smooth", block: "end", inline: "nearest"});
 
-        console.log(previousmessages)
         // append the user text to the previous messages
         previousmessages.push({"role":"user", "content": userTextPrompt});
         let textPrompt = JSON.stringify(previousmessages);
@@ -1302,7 +1295,6 @@ class popUpClass extends HTMLElement {
       const complete_completion = promptarea.innerText;
 
       //save prompt to local storage
-      console.log(message.bodyData);
       const bodyData = JSON.parse(message.bodyData);
       const model = bodyData.model;
       const cost = computeCost(this.tokens, model);
@@ -1315,6 +1307,7 @@ class popUpClass extends HTMLElement {
       else if (chatarea) {
         chatarea.focus();
         this.showCopyToClipboardBtn(target_id);
+        element.previousMessages.push({"role":"assistant", "content": complete_completion});
       }
       else {
         element.focus();
