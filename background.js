@@ -53,7 +53,7 @@ function createContextMenu() {
     contexts: ["all"],
   });
 
-  // Create sub-context menu for prompt on the fly 
+  // Create sub-context menu for prompt on the fly
   chrome.contextMenus.create({
     id: "ChatGPT",
     title: "🤖 ChatGPT",
@@ -109,9 +109,8 @@ function passTitleOrPrompt(customprompt, symbol) {
       const prompt = JSON.parse(customprompt.prompt);
       // get the last element of the prompt
       const lastElement = prompt[prompt.length - 1];
-      return `${symbol} ${lastElement['content'].replaceAll("#TEXT#", "%s")}`;
-    }
-    else{
+      return `${symbol} ${lastElement["content"].replaceAll("#TEXT#", "%s")}`;
+    } else {
       return `${symbol} ${customprompt.prompt.replaceAll("#TEXT#", "%s")}`;
     }
   }
@@ -252,15 +251,34 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
   }
 });
 
-function launchPromptOnTheFly(selectionText, prompt) {
+function replacePlaceHolder(selectionText) {
+  // if there is a text /#TEXT#/g inside selectionText replace with nothing, and use the position to set the cursor later
   if (typeof selectionText == "undefined") {
     selectionText = "";
   }
-  // if there is a text /#TEXT#/g inside selectionText replace with nothing, and use the position to set the cursor later
   var cursorPosition = selectionText.search(/#TEXT#/g);
   if (cursorPosition !== -1) {
     selectionText = selectionText.replace(/#TEXT#/g, "");
   }
+  return [selectionText, cursorPosition];
+}
+
+function launchPopUpInPage(selectionText, prompt, command) {
+  // replace the placeholder
+  if (command == "showPopUpOnTheFly") {
+    var [selectionText, cursorPosition] = replacePlaceHolder(selectionText);
+  } else if (command == "showPopUpChatGPT") {
+    // loop over the selectionText and replace the placeholder
+    for (var i = 0; i < selectionText.length; i++) {
+
+      var [contentText, cursorPosition] = replacePlaceHolder(selectionText[i]["content"]);
+
+      selectionText[i]["content"] = contentText;
+    }
+  } else {
+    console.error("Unknown command: ", command);
+  }
+
   // if prompt is not null, use it
   if (prompt !== null) {
     var model = prompt["model"];
@@ -283,7 +301,7 @@ function launchPromptOnTheFly(selectionText, prompt) {
   // here we want to create a minipop-up to ask the user to insert the prompt
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     chrome.tabs.sendMessage(tabs[0].id, {
-      message: "showPopUpOnTheFly",
+      message: command,
       text: selectionText,
       bodyData: bodyData,
       cursorPosition: cursorPosition,
@@ -291,19 +309,32 @@ function launchPromptOnTheFly(selectionText, prompt) {
   });
 }
 
+function defaultChatPrompt(selectionText) {
+  var chatPrompt = [
+    { role: "system", content: "You are a helpful assistant." },
+    { role: "user", content: selectionText },
+  ];
+  return chatPrompt;
+}
+
 // Shortcut to launch the prompt on the fly
 chrome.commands.onCommand.addListener(function (command) {
   // if command is prompt-on-the-fly, and the context menu is enabled, launch the prompt on the fly
   console.log("Command: " + command + " Context menu enabled: " + contextMenuEnabled);
-  if (command === "prompt-on-the-fly" && contextMenuEnabled) {
+  if (contextMenuEnabled) {
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       // Get the current tab
       var tab = tabs[0];
-      // Send a message to the content script to get the selected text
-      chrome.tabs.sendMessage(tab.id, { getSelection: true }, function (response) {
-        // Call the launchPromptOnTheFly function with the selected text and the current tab
-        launchPromptOnTheFly(response.selection, null);
-      });
+      // Send a message to the content script
+      if (command === "prompt-on-the-fly") {
+        chrome.tabs.sendMessage(tab.id, { getSelection: true }, function (response) {
+          launchPopUpInPage(response.selection, null, "showPopUpOnTheFly");
+        });
+      } else if (command === "chatGPT") {
+        chrome.tabs.sendMessage(tab.id, { getSelection: true }, function (response) {
+          launchPopUpInPage(defaultChatPrompt(response.selection), null, "showPopUpChatGPT");
+        });
+      }
     });
   } else {
     //send a message to the content script to show a notification
@@ -362,25 +393,29 @@ chrome.contextMenus.onClicked.addListener(async (info, tabs) => {
               })();
             });
           } else {
-            // launch prompt on the fly with the prompt object
-            launchPromptOnTheFly(prompt.prompt, prompt);
+            if (prompt.model == "gpt-3.5-turbo") {
+              launchPopUpInPage(JSON.parse(prompt.prompt), prompt, "showPopUpChatGPT");
+            } else {
+              launchPopUpInPage(prompt.prompt, prompt, "showPopUpOnTheFly");
+            }
           }
         } else {
           // If the prompt number is invalid, send an error message to the tab and log a message to the console
           chrome.tabs.sendMessage(tabs.id, "Error: invalid prompt number");
-          console.log("Error: invalid prompt number");
         }
       } else {
         // If the list of custom prompts does not exist, send an error message to the tab and log a message to the console
         chrome.tabs.sendMessage(tabs.id, "Error: no prompt list found");
-        console.log("Error: no custom prompts");
       }
     });
   }
   // If the clicked context menu item is the "On-the-Fly" prompt
   else if (info.menuItemId === "On-the-Fly") {
     // Launch the "On-the-Fly" prompt with the selected text and the current tabs object
-    launchPromptOnTheFly(info.selectionText, null);
+    launchPopUpInPage(info.selectionText, null, "showPopUpOnTheFly");
+  } else if (info.menuItemId === "ChatGPT") {
+    const chatPrompt = defaultChatPrompt(info.selectionText);
+    launchPopUpInPage(chatPrompt, null, "showPopUpChatGPT");
   }
 });
 

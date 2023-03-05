@@ -764,12 +764,18 @@ function openLink() {
   chrome.tabs.create({ active: true, url: this.href });
 }
 
-function userOrAssistant(button) {
+function userOrAssistant(button,textarea) {
   button.addEventListener("click", function () {
     if (button.textContent.includes("user")) {
       button.textContent = "assistant";
+      if (textarea){
+      textarea.placeholder = "Type the assistant message here...";
+    }
     } else {
       button.textContent = "user";
+      if (textarea){
+      textarea.placeholder = "Type your message here...";
+      }
     }
   });
 }
@@ -786,7 +792,7 @@ function addMessageLogic() {
   const addMessageButton = document.getElementById("addChatGPTMessage");
   // add listener to the button button[id^='assistantOrUser-'], if clicked, change the text to the other one
   const button = document.querySelector("button[id^='assistantOrUser-']");
-  userOrAssistant(button);
+  userOrAssistant(button, messageContainer.lastElementChild.querySelector("textarea"));
   const remove = document.querySelector("button[id^='deleteChatGPTMessage-']");
   removeMessage(remove, messageContainer.lastElementChild);
 
@@ -810,13 +816,16 @@ function addMessageLogic() {
     const button = messageRow.querySelector("button[id^='assistantOrUser-']");
     if (button.textContent.includes("user")) {
       button.textContent = "assistant";
+      messageRow.querySelector("textarea").placeholder = "Type the assistant message here...";
+
     } else {
       button.textContent = "user";
+      messageRow.querySelector("textarea").placeholder = "Type your message here...";
     }
     button.setAttribute("id", "assistantOrUser-" + messageCount);
 
     // add listener to the button, if clicked, change the text to the other one
-    userOrAssistant(button);
+    userOrAssistant(button,messageRow.querySelector("textarea"));
     removeMessage(deleteBtn, messageRow);
 
     messageContainer.appendChild(messageRow);

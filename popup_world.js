@@ -62,8 +62,8 @@ const minipopup = (id, { left = 0, top = 0 }) => `
 </div>
 `;
 
-const flypopup = (id, { text = "none", left = 0, top = 0, symbol = "ↁ" }) => `
-<div class="popuptext onylonthefly" id="${id}" style="left: ${left}px; top:${top}px">
+const flypopup = (id, { text = "none", left = 0, top = 0, symbol = "🅶" }) => `
+<div class="popuptext onylonthefly" id="${id}" style="left: ${left}px; top:${top}px; ">
   <div id="${id}prompt" class="popupprompt">
     <div id="${id}grabbable" class="grabbable">
       <div style='position:relative; z-index:3; float:right; height:30px'>
@@ -91,6 +91,43 @@ const flypopup = (id, { text = "none", left = 0, top = 0, symbol = "ↁ" }) => `
       <span id="${id}probability" class="tkn_prb" ></span>
       <button class='minibuttons copybutton hide' id='copy_to_clipboard${id}' style="cursor: copy;" title='Copy completion to clipboard (Alt+C)'></button>
     </div>
+    </div>
+</div>
+`;
+
+
+// const messagepopup = (id, { text = "none"}) => `
+// <p id="${id}text" class='popupcompletion'>${text}</p>
+// `;
+
+const chatpopup = (id, {text = "", left = 0, top = 0, symbol = "🅶" }) => `
+<div class="popuptext onlychat" id="${id}" style="left: ${left}px; top:${top}px; width:500px;">
+  <div id="${id}prompt" class="popupprompt">
+    <div id="${id}grabbable" class="grabbable">
+      <div style='position:relative; z-index:3; float:right; height:30px'>
+        <span class='minibuttons symbolmodel' id="${id}temptext" style="cursor: default;" title="Temperature"></span>
+        <input type="range" class="minibuttons tempslider" id="${id}temperature"  min="0" max="1" step="0.01"  title="Temperature">
+        <button class='minibuttons symbolmodel' id="${id}symbol" title="gpt-3.5-turbo" disabled>${symbol}</button>
+        <button class='minibuttons pinbutton' id="pin${id}" title="Pin the popup" hidden></button>
+        <button class='minibuttons minimize-button' id="minimize${id}" title="Minimize/maximize completion"></button>
+        <button class='minibuttons close-button' id="mclose${id}"  title="Close popup (Esc)"></button>
+      </div>
+      <div id="${id}header" class="promptheader" title="Double-click to expand">
+      <b>ChatGPT</b> (<b>Alt+G</b> - Open , <b>Alt+Enter</b> - Submit, <b>Esc</b> - Close)
+      </div>
+    </div>
+  </div>
+  <div id="${id}completion" style="display:grid; overflow-y: auto; resize: vertical; padding: 5px; max-height: 800px">
+   <div id="${id}system" class="suggestion" style="margin-top: 10px;"></div>
+  </div>
+    <div id="${id}chat" style="display: flex;">
+      <button type="button" id="${id}submit" class="submitbutton chatsubmit" title="Alt+Enter">Submit</button>
+      <button type="button" id="${id}stop" class="submitbutton chatsubmit hide" title="Alt+Enter" style='background-color: red;'>Stop</button>
+      <textarea contentEditable="true" id="${id}chatarea" class='textarea'>${text}</textarea>
+    </div>
+    <div style="float:right">
+        <span id="${id}probability" class="tkn_prb" ></span>
+        <button class='minibuttons copybutton hide' id='copy_to_clipboard${id}' style="cursor: copy;" title='Copy completion to clipboard (Alt+C)'></button>
     </div>
 </div>
 `;
@@ -141,15 +178,26 @@ const styled = `
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(to bottom, transparent 0.6em, #202123 2.8em);
+  background: linear-gradient(to bottom, transparent 0.6em, rgb(54, 54, 54 ) 2.8em);
   z-index: 1;
   }
-
+.suggestion {
+    color: #e1e1e1;
+    font-style: italic;
+    font-size: smaller;
+    display: flex;
+    justify-content: space-around;
+}
+  }
 .copybutton {
   float:right;
   margin-bottom: -.5em;
 }
-
+.chatsubmit{
+  margin-bottom:10px;
+  margin-top:10px;
+  margin-right:10px;
+}
 .textarea{
     border: 1px solid #bbbbbb;
     margin-bottom:10px;
@@ -190,13 +238,12 @@ const styled = `
   display: block; 
   justify-content: space-between; 
   position: relative;
+  background:  rgb(54, 54, 54 );
+  
 }
 .grabbable:hover {
-  // background-color: #282828; /* slightly lighter background color */
-  // background: linear-gradient(0deg, #202123 ,#165c4b, #202123);
-  // background: linear-gradient(90deg, #202123 ,#165c4b, #202123);
-  background: radial-gradient(closest-side,#165c4b, #202123);
-  z-index: 2;
+  background: radial-gradient(closest-side,#165c4b, rgb(54, 54, 54 ));
+  z-index: 4;
 }
 
 /* (Optional) Apply a "closed-hand" cursor during drag operation. */
@@ -224,12 +271,50 @@ const styled = `
 .onylonthefly{
   border: 2px solid rgb(16, 163, 127);
 }
+.onlychat{
+  border: 2px solid rgb(0, 247, 255);
+}
+
 .popupcompletion {
   clear: left;
   cursor: text;
   white-space: pre-wrap;
   margin-block-end: 0em;
 }
+.singlemessage {
+  border : 1px solid #bbbbbb;
+  width: fit-content;
+  border-radius: 0.5em;
+  background-color: rgba(22,22,22,1);
+  padding: 5px;
+}
+
+.initialhidden {
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+}
+.reveal {
+  opacity: 1;
+}
+.user{
+ justify-items: end;
+}
+.user::after {
+    content: "user";
+    font-size: 10px;
+    font-style: italic;
+    color: #e1e1e1;
+    float: right;
+  }
+.assistant{
+  justify-items: start;
+}
+.assistant::after {
+    content: "assistant";
+    font-size: 10px;
+    font-style: italic;
+    color: #3ee2ba;
+  }
 .popupprompt {
   height: 2.6em;
   overflow-y: hidden;
@@ -240,13 +325,12 @@ const styled = `
 }
 .popuptext {
   align-items: center;
-  background-color: #202123;
+  background-color: rgba(33,33,33, 0);
   border-radius: 20px;
   color: #fff;
   display: block;
   justify-content:center;
-  
-  opacity:0;
+  padding: 15px;
   position:fixed;
   width:auto;
   min-width:300px;
@@ -261,12 +345,13 @@ const styled = `
   overflow:auto;
   transform: scale(0);
   transform-origin: top left;
-  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+
 }
 
 .show {
-  opacity: 0.9;
-  padding: 15px;
+  background-color: rgba(33,33,33, 0.9);
+ 
   transform: scale(1);
 }
 .hide {
@@ -399,9 +484,6 @@ class popUpClass extends HTMLElement {
     this.stopButton(this.ids);
     this.showAdd2CompletionButton(this.ids);
 
-    // update title of <button class='minibuttons symbolmodel' id="${id}symbol"></button> inside the popup
-    const symbolmodel = this.shadowRoot.getElementById(this.ids + "symbol");
-    symbolmodel.title = bodyData.model;
     // pause for 1 second to allow the popup to be rendered
     setTimeout(() => {
       element.classList.toggle("show");
@@ -414,19 +496,10 @@ class popUpClass extends HTMLElement {
     const txtArea = this.shadowRoot.getElementById(this.ids + "textarea");
     if (txtArea) {
       // Stop the event from bubbling up to the document
-      txtArea.addEventListener("keydown", (e) => {
-        e.stopPropagation();
-      });
-      // stop the event from bubbling up to the document
-      txtArea.addEventListener("keyup", (e) => {
-        e.stopPropagation();
-      });
+      this.stopBubblingEvent(txtArea);
       txtArea.addEventListener("input", (e) => {
         txtArea.style.height = "auto";
         txtArea.style.height = txtArea.scrollHeight + "px";
-        if (txtArea.scrollHeight > txtArea.offsetHeight) {
-          txtArea.style.height = txtArea.scrollHeight + "px";
-        }
         if (txtArea.scrollWidth > txtArea.offsetWidth) {
           // element.style.width = txtArea.scrollWidth + 'px';
           element.style.width = "-webkit-fill-available";
@@ -447,8 +520,125 @@ class popUpClass extends HTMLElement {
       setTimeout(() => {
         txtArea.dispatchEvent(new Event("input"));
       }, 100);
+
     }
   }
+
+  chatGPTpopup(messages, bodyData, cursorPosition) {
+    // Create a new element to hold the pop-up
+    const popUpElement = document.createElement("div");
+    // copy the messages list to the popUpElement
+    
+    console.log(messages)
+   
+    // get the last message in the list
+    var messageInTextArea = "";
+    if (messages[messages.length - 1]["role"] == "user"){
+      messageInTextArea = messages[messages.length - 1]["content"]
+      messages.pop() // remove the last message from the list
+    } else {
+      messageInTextArea = ""
+    }
+    
+
+    popUpElement.innerHTML = chatpopup(this.ids, {
+      text:  messageInTextArea,
+      left: this.mousePosition.left,
+      top: this.mousePosition.top,
+      symbol: symbolFromModel(bodyData.model),
+    });
+      //  attach  messagepopup() to the element <div id="${id}completion">
+      console.log(typeof popUpElement)
+      
+      
+      // Append the new element to the shadow root
+      this.shadowRoot.appendChild(popUpElement);
+      
+      const element = this.shadowRoot.getElementById(this.ids);
+      // attach the bodyData to the element
+      element.bodyData = bodyData;
+      element.previousMessages = messages;
+      // Set the system message in the popup
+      if (messages[0]["role"] == "system"){
+        this.shadowRoot.getElementById(this.ids + "system").innerText ="System: " + messages[0]["content"];
+        // remove the system message from the list
+        messages.shift()
+      }
+     
+      // loop over the messages and add each message to one messagepopup, append the messagepopup to the div with id = this.ids + "completion"
+      var that = this; // create a reference to the current object
+      for (var i = 0; i < messages.length; i++) {
+        (function(index) {
+          setTimeout(function() {
+            var messagepopup = that.createChatElement(messages[index], that.ids + "message_" + index);
+            that.shadowRoot.getElementById(that.ids + "completion").appendChild(messagepopup);
+            setTimeout(() => {
+            messagepopup.classList.add("reveal");
+            }, 50);
+          }, index * 50 + 500);
+        })(i);
+      }
+
+      // toggle the 'show' class on the element with the ID specified in this.ids
+      this.updateTemperature(this.ids);
+      this.runClickChat(this.ids);
+      this.stopButton(this.ids);
+
+      setTimeout(() => {
+        element.classList.toggle("show");
+      }, 10);
+
+      // Set up event listeners for the buttons and other actions
+      this.buttonForPopUp(this.ids, false);
+
+      // Get the text area element
+      const txtArea = this.shadowRoot.getElementById(this.ids + "chatarea");
+      
+      
+      this.stopBubblingEvent(txtArea);
+      txtArea.addEventListener("input", (e) => {
+        txtArea.style.height = "auto";
+        txtArea.style.height = txtArea.scrollHeight + "px";
+      });
+      txtArea.focus()
+  }
+
+  createChatElement(messages, idmessage) {
+    var messagepopup = document.createElement("div");
+    var innermessage = document.createElement("p");
+    messagepopup.className = "popupcompletion initialhidden";
+
+    innermessage.className = "singlemessage";
+    // add to messagepoup an equivalent of the role
+    messagepopup.classList.add(messages["role"]);
+    innermessage.innerText = messages["content"];
+    // if the role is user, shift the message to the right
+    if (messages["role"] == "user") {
+      innermessage.style.textAlign = "right";
+      // float the message to the right
+      innermessage.style.float = "right";
+    }
+    else {
+      innermessage.style.textAlign = "left";
+      // float the message to the left
+      innermessage.style.float = "left";
+      innermessage.style.color = "rgb(198 249 236)";
+    }
+    innermessage.id = idmessage;
+    messagepopup.appendChild(innermessage);
+    return messagepopup;
+  }
+
+  stopBubblingEvent(txtArea) {
+    txtArea.addEventListener("keydown", (e) => {
+      e.stopPropagation();
+    });
+    // stop the event from bubbling up to the document
+    txtArea.addEventListener("keyup", (e) => {
+      e.stopPropagation();
+    });
+  }
+  
 
   pinButtons(id_target, id_button) {
     this.shadowRoot.getElementById(id_button).addEventListener("click", () => {
@@ -544,6 +734,7 @@ class popUpClass extends HTMLElement {
           temperature: this.getBodyData(targetId, "temperature"),
           max_tokens: this.getBodyData(targetId, "max_tokens"),
           popupID: targetId,
+          type: "completion",
         };
         chrome.runtime.sendMessage({ text: "launchGPT", prompt: promptObj });
         // get the textarea element
@@ -569,6 +760,64 @@ class popUpClass extends HTMLElement {
         }
       });
   }
+
+  runClickChat(targetId) {
+    const submitButton = this.shadowRoot.getElementById(`${targetId}submit`);
+    const txtArea = this.shadowRoot.getElementById(`${targetId}chatarea`);
+    txtArea.addEventListener(
+      "keydown",
+      this.handleKeydown.bind(this, targetId)
+    );
+    // Add click event listener to submit button if it doesn't already have one
+    if (!submitButton.listener) {
+      submitButton.addEventListener("click", () => {
+        this.toggleRunStop(targetId);
+        let modelToUse = this.getBodyData(targetId, "model");
+        let userTextPrompt = txtArea.value
+        txtArea.value = ""
+        let chatElement = this.shadowRoot.getElementById(targetId);
+        let previousmessages = chatElement.previousMessages;
+        // add a Child to the chat element with id of id+"text", of type assistant
+        let completionElement = this.shadowRoot.getElementById(targetId + "completion")
+        let length_messages = completionElement.children.length
+        // if there is an element with targetId + "text" , change the id to targetId + "message_" + length_messages
+        if (this.shadowRoot.getElementById(targetId + "text")) {
+          this.shadowRoot.getElementById(targetId + "text").id = targetId + "message_" + length_messages
+        }
+        let usermessage = this.createChatElement({"role":"user","content": userTextPrompt },targetId + "message_" + length_messages-1);
+        completionElement.appendChild(usermessage);
+        setTimeout(() => {
+          usermessage.classList.add("reveal")
+        }, 10);
+        
+        let assistantmessage = this.createChatElement({"role":"assistant","content":"" },targetId + "text");
+        completionElement.appendChild(assistantmessage);
+        setTimeout(() => {
+          assistantmessage.classList.add("reveal")
+
+        }, 500);
+        // scroll to the bottom of the chat element
+        assistantmessage.scrollIntoView({behavior: "smooth", block: "end", inline: "nearest"});
+
+        console.log(previousmessages)
+        // append the user text to the previous messages
+        previousmessages.push({"role":"user", "content": userTextPrompt});
+        let textPrompt = JSON.stringify(previousmessages);
+        const promptObj = {
+          prompt: textPrompt,
+          model: modelToUse,
+          temperature: this.getBodyData(targetId, "temperature"),
+          max_tokens: this.getBodyData(targetId, "max_tokens"),
+          popupID: targetId,
+          type: "chat",
+        };
+        chrome.runtime.sendMessage({ text: "launchGPT", prompt: promptObj });
+      });
+    }
+    
+    // this.stopBubblingEvent(txtArea);
+  }
+
 
   resetAutoWidthTextArea(targetId) {
     const textarea = this.getTextareaElement(targetId);
@@ -614,14 +863,16 @@ class popUpClass extends HTMLElement {
   }
 
   handleKeydown(targetId, e) {
+   
     if (e.key === "Escape") {
       this.closePopup(targetId);
     } else if (e.altKey) {
+      e.preventDefault(); 
       if (e.key === "Enter") {
         this.submitOrStop(targetId);
       } else if (e.key === "c") {
         this.clickCopyToClipboard(targetId);
-      } else if (e.key === "a") {
+      } else if (e.key === "a" && this.shadowRoot.getElementById(`${targetId}add2comp`)) {
         this.shadowRoot.getElementById(`${targetId}add2comp`).click();
       }
     }
@@ -829,12 +1080,14 @@ class popUpClass extends HTMLElement {
     });
   }
 
-  buttonForPopUp(id_target) {
+  buttonForPopUp(id_target, set_toggler_model = true) {
     const id_pin = `pin${id_target}`;
     const id_close = `mclose${id_target}`;
     const id_minimize = `minimize${id_target}`;
+    if (set_toggler_model) {
     const id_symbol = `${id_target}symbol`;
     this.togglerModel(id_target, id_symbol);
+    }
     this.pinButtons(id_target, id_pin);
     this.minimizeButtons(id_target, id_minimize);
     this.closeButtons(id_target, id_close);
@@ -850,14 +1103,15 @@ class popUpClass extends HTMLElement {
       if (event.key === "Escape") {
         this.closePopup(id_target);
       } else if (event.altKey) {
+        event.preventDefault();
         if (event.key === "c") {
           this.clickCopyToClipboard(id_target);
         } else if (event.key === "Enter") {
           this.regenerateOrRun(id_target);
-          // capture the event and prevent it from bubbling up
-          event.preventDefault();
         }
       }
+      // capture the event and prevent it from bubbling up
+      event.stopPropagation();
     });
   }
 
@@ -964,6 +1218,7 @@ class popUpClass extends HTMLElement {
 
   updatepopup(message, target_id, stream) {
     const textarea = this.shadowRoot.getElementById(target_id + "textarea");
+    const chatarea = this.shadowRoot.getElementById(target_id + "chat");
     const element = this.shadowRoot.getElementById(target_id);
     const promptarea = this.shadowRoot.getElementById(target_id + "text");
     var specialCase = false;
@@ -984,6 +1239,7 @@ class popUpClass extends HTMLElement {
         } else if (envelope.delta) {
           if (envelope.delta.content) {
             text = envelope.delta.content;
+
           } else if (envelope.delta.role) {
             text = "";
             return
@@ -1006,14 +1262,18 @@ class popUpClass extends HTMLElement {
           this.updateProbability(target_id + "probability");
           this.clearnewlines = false;
           // check if element {target_id}textarea exists
-          if (specialCase) {
+          if (specialCase && textarea) {
             // add text to textarea
             textarea.value += text;
             const event = new Event("input");
             textarea.dispatchEvent(event);
+            
           } else {
             // add text to usual completion
+            //check the bodyData of the element
+
             promptarea.innerText += text;
+            promptarea.scrollIntoView({ behavior: "auto", block: "end"});
           }
         }
       }
@@ -1051,7 +1311,12 @@ class popUpClass extends HTMLElement {
       // focus depending on the case
       if (textarea) {
         textarea.focus();
-      } else {
+      } 
+      else if (chatarea) {
+        chatarea.focus();
+        this.showCopyToClipboardBtn(target_id);
+      }
+      else {
         element.focus();
       }
 
@@ -1082,3 +1347,4 @@ class popUpClass extends HTMLElement {
 }
 
 window.customElements.define("mini-popup", popUpClass);
+

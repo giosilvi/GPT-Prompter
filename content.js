@@ -163,6 +163,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       popUpShadow.ontheflypopup(request.text, request.bodyData, request.cursorPosition);
       addListenersForDrag();
       break;
+    case"showPopUpChatGPT":
+      handleShowPopUp();
+      console.log("ChatGPT");
+      popUpShadow.chatGPTpopup(request.text, request.bodyData, request.cursorPosition);
+      addListenersForDrag();
+      break;
     case "GPTprompt":
       popUpShadow.updatePopupHeader(request, idPopup);
       break;

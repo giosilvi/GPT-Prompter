@@ -269,20 +269,20 @@
                 id="systeminput"
                 rows="1"
                 title="Describe the assistant's personality."
-                style="width: 90%; margin-bottom: 10px; margin-left: 5%"
-                placeholder="Assistant's personality"
+                style="margin-bottom: 10px;"
+                placeholder="Insert assistant's description here..."
               >
 You are a helpful assistant.</textarea
               >
               <div id="message-container">
                 <div class="row" id="message-row-1">
-                  <div class="col-sm-2 ">
+                  <div class="col-sm-2 " style="padding-right:0px">
                   
                     <button
                       type="button"
                       class="btn btn-default btn-sm apikeybutton assistantOrUser"
                       id="assistantOrUser-1"
-                      style="cursor: pointer; color: #303030; width:6em;"
+                      style="cursor: pointer; color: #303030; width:6em; border: 2px #ededed solid;"
                     >user
                     </button>
                     <button
@@ -302,7 +302,7 @@ You are a helpful assistant.</textarea
                       id="systeminput-1"
                       rows="2"
                       title="User's input."
-                      style="margin-bottom: 10px; float: right"
+                      style="margin-bottom: 10px; float: right; border-radius: 1em;"
                       placeholder="Type your message here..."
                     ></textarea>
                   </div>
@@ -349,6 +349,7 @@ You are a helpful assistant.</textarea
                 id="promptinput"
                 rows="3"
                 title="The keyword #TEXT# is later replaced with the selected text. It cannot be erased here"
+                style = "margin-bottom: 10px; border-radius: 1em;"
                 placeholder="Type your prompt here... (with #TEXT# placeholder)"
               ></textarea
               >

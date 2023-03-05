@@ -33,6 +33,12 @@
         "default": "Alt+P"
       },
       "description": "Launches the Prompt-on-the-Fly functionality"
+    },
+    "chatGPT" : {
+      "suggested_key": {
+        "default": "Alt+G"
+      },
+      "description": "Launches the ChatGPT functionality"
     }
   }
 }
