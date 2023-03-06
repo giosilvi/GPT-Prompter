@@ -1,5 +1,5 @@
 # GPT-Prompter
-Open source Browser extension to get fast customizable prompts (e.g. explanations) of the selected text using OpenAI`s GPT-3 model. Available in the Chrome/Firefox web store.
+Open source Browser extension to get fast customizable prompts (e.g. explanations) of the selected text or chat using OpenAI`s GPT-3 model. Available in the Chrome/Firefox web store.
 
 To use it follows these steps:
 
@@ -14,3 +14,6 @@ To use it follows these steps:
 5- Select from the context menu (right click) the GPT-Prompter command to send the custom prompt to open the popup. 
 
 5- The default prompt is "Tell me more about <selected text>", but you can create anything you want with just the constrain that it has to contain a field for the selected text to be parsed in it.
+
+
+![Example of a chat conversation](ChatExample.png)
