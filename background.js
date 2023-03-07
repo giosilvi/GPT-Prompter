@@ -421,9 +421,9 @@ chrome.contextMenus.onClicked.addListener(async (info, tabs) => {
 
 // create Context Menu every time browser starts
 chrome.runtime.onStartup.addListener(function () {
-  createContextMenu();
-  // sync custom prompts
   transferCustomPrompts(); // TURN OFF FIRST
+  // sync custom prompts
+  createContextMenu();
 });
 
 function transferCustomPrompts() {

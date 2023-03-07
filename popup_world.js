@@ -18,6 +18,7 @@ function symbolFromModel(model) {
 }
 
 // const highlightColor = "#d2f4d3";//"rgb(16, 163, 255)";
+const ChatGPTCost = 0.002 / 1000;
 const DaVinciCost = 0.02 / 1000;
 const CurieCost = 0.002 / 1000;
 const BabbageCost = 0.0005 / 1000;
@@ -30,6 +31,7 @@ function computeCost(tokens, model) {
   else if (model == "text-curie-001") cost = tokens * CurieCost;
   else if (model == "text-babbage-001") cost = tokens * BabbageCost;
   else if (model == "text-ada-001") cost = tokens * AdaCost;
+  else if (model == "gpt-3.5-turbo") cost = tokens * ChatGPTCost;
   return cost.toFixed(5);
 }
 
@@ -41,7 +43,7 @@ const minipopup = (id, { left = 0, top = 0 }) => `
     <div id="${id}grabbable" class="grabbable">
       <div style='position:relative; z-index:3; float:right; height:30px'>
         <span class='minibuttons symbolmodel' id="${id}temptext" style="cursor: default;" title="Temperature"></span>
-        <input type="range" class="minibuttons tempslider" id="${id}temperature"  min="0" max="1" step="0.01"  title="Temperature">
+        <input type="range" class="minibuttons tempslider" id="${id}temperature"  min="0" max="2" step="0.01"  title="Temperature">
         <button class='minibuttons symbolmodel' id="${id}symbol"></button>
         <button class='minibuttons regeneratebutton' id="regenerate${id}" title="Regenerate prompt (Alt+Enter)"></button>
         <button class='minibuttons pinbutton' id="pin${id}" title="Pin the popup" hidden></button>
@@ -68,7 +70,7 @@ const flypopup = (id, { text = "none", left = 0, top = 0, symbol = "🅶" }) => 
     <div id="${id}grabbable" class="grabbable">
       <div style='position:relative; z-index:3; float:right; height:30px'>
         <span class='minibuttons symbolmodel' id="${id}temptext" style="cursor: default;" title="Temperature"></span>
-        <input type="range" class="minibuttons tempslider" id="${id}temperature"  min="0" max="1" step="0.01"  title="Temperature">
+        <input type="range" class="minibuttons tempslider" id="${id}temperature"  min="0" max="2" step="0.01"  title="Temperature">
         <button class='minibuttons symbolmodel' id="${id}symbol">${symbol}</button>
         <button class='minibuttons pinbutton' id="pin${id}" title="Pin the popup" hidden></button>
         <button class='minibuttons minimize-button' id="minimize${id}" title="Minimize/maximize completion"></button>
@@ -103,21 +105,21 @@ const flypopup = (id, { text = "none", left = 0, top = 0, symbol = "🅶" }) => 
 const chatpopup = (id, {text = "", left = 0, top = 0, symbol = "🅶" }) => `
 <div class="popuptext onlychat" id="${id}" style="left: ${left}px; top:${top}px; width:520px;">
   <div id="${id}prompt" class="popupprompt">
-    <div id="${id}grabbable" class="grabbable">
+    <div id="${id}grabbable" class="grabbable2">
       <div style='position:relative; z-index:3; float:right; height:30px'>
-        <span class='minibuttons symbolmodel' id="${id}temptext" style="cursor: default;" title="Temperature"></span>
-        <input type="range" class="minibuttons tempslider" id="${id}temperature"  min="0" max="1" step="0.01"  title="Temperature">
-        <button class='minibuttons symbolmodel' id="${id}symbol" title="gpt-3.5-turbo" disabled>${symbol}</button>
+        <span class='minibuttons ' id="${id}temptext" style="cursor: default;" title="Temperature"></span>
+        <input type="range" class="minibuttons tempslider" id="${id}temperature"  min="0" max="2" step="0.01"  title="Temperature">
+        <button class='minibuttons ' id="${id}symbol" title="gpt-3.5-turbo" disabled>${symbol}</button>
         <button class='minibuttons pinbutton' id="pin${id}" title="Pin the popup" hidden></button>
         <button class='minibuttons minimize-button' id="minimize${id}" title="Minimize/maximize completion"></button>
         <button class='minibuttons close-button' id="mclose${id}"  title="Close popup (Esc)"></button>
       </div>
-      <div id="${id}header" class="promptheader" title="Double-click to expand">
+      <div id="${id}header" class="promptheader chatcolor" title="Double-click to expand">
       <b>ChatGPT</b> (<b>Alt+G</b> - Open , <b>Alt+Enter</b> - Submit, <b>Esc</b> - Close)
       </div>
     </div>
   </div>
-  <div id="${id}completion" style="display:grid; overflow-y: auto; resize: vertical; padding: 5px; max-height: 800px">
+  <div id="${id}completion" style="display:grid; overflow-y: auto; resize: vertical; padding: 5px; max-height: 700px">
    <div id="${id}system" class="suggestion" style="margin-top: 10px;"></div>
   </div>
     <div id="${id}chat" style="display: flex;">
@@ -171,16 +173,16 @@ const styled = `
   content: "\u21BB";
 }
 
-.promptheader:after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(to bottom, transparent 0.6em, rgb(54, 54, 54 ) 2.8em);
-  z-index: 1;
-  }
+// .promptheader:after {
+//   content: "";
+//   position: absolute;
+//   top: 0;
+//   left: 0;
+//   width: 100%;
+//   height: 100%;
+//   background: linear-gradient(to bottom, transparent 0.6em, rgb(54, 54, 54 ) 2.8em);
+//   z-index: 1;
+//   }
 .suggestion {
     color: #e1e1e1;
     font-style: italic;
@@ -197,6 +199,7 @@ const styled = `
   margin-bottom:10px;
   margin-top:10px;
   margin-right:10px;
+  background-color: #71a799!important;
 }
 .textarea{
     border: 1px solid #bbbbbb;
@@ -229,6 +232,10 @@ const styled = `
   color: #3ee2ba!important; 
 }
 
+.chatcolor {
+  color: #71a799!important;
+}
+
 .grabbable {
   cursor: move; /* fallback if grab cursor is unsupported */
   cursor: grab;
@@ -238,11 +245,23 @@ const styled = `
   display: block; 
   justify-content: space-between; 
   position: relative;
-  background:  rgb(54, 54, 54 );
-  
+}
+.grabbable2 {
+  cursor: move; /* fallback if grab cursor is unsupported */
+  cursor: grab;
+  cursor: -moz-grab;
+  cursor: -webkit-grab;
+  color: #71a799;
+  display: block;
+  justify-content: space-between;
+  position: relative;
 }
 .grabbable:hover {
-  background: radial-gradient(closest-side,#165c4b, rgb(54, 54, 54 ));
+  background: radial-gradient(closest-side,#165c4b, rgba(54, 54, 54 , 0));
+  z-index: 4;
+}
+.grabbable2:hover {
+  background: radial-gradient(closest-side,#71a799, rgba(54, 54, 54 , 0));
   z-index: 4;
 }
 
@@ -272,7 +291,7 @@ const styled = `
   border: 2px solid rgb(16, 163, 127);
 }
 .onlychat{
-  border: 2px solid #6dc9ff;
+  border: 2px solid #71a799;
 }
 
 .popupcompletion {
@@ -287,6 +306,7 @@ const styled = `
   border-radius: 0.5em;
   background-color: rgba(22,22,22,1);
   padding: 5px;
+  max-width: 88%;
 }
 
 .initialhidden {
@@ -350,12 +370,13 @@ const styled = `
 }
 
 .show {
-  background-color: rgba(33,33,33, 0.9);
+  // background-color: rgba(33,33,33, 0.9);
+  background:radial-gradient(at center center, rgba(33, 35, 32, 0.85) 0%, rgb(52, 53, 65) 100%);
  
   transform: scale(1);
 }
 .hide {
-  display: none;
+  display: none!important;
   height: auto;
 }
 
@@ -398,7 +419,7 @@ input[type=range]::-webkit-slider-thumb {
   background-color: var(--thumb-color);
   overflow: visible;
   cursor: pointer;
-  border: 3px solid #10a37f;
+  border: 3px solid #333333;
 `;
 
 class popUpClass extends HTMLElement {
@@ -773,6 +794,8 @@ class popUpClass extends HTMLElement {
         let previousmessages = chatElement.previousMessages;
         // add a Child to the chat element with id of id+"text", of type assistant
         let completionElement = this.shadowRoot.getElementById(targetId + "completion")
+        // remove hide from the id text element
+        this.removeHideFromCompletion(targetId);
         let length_messages = completionElement.children.length
         // if there is an element with targetId + "text" , change the id to targetId + "message_" + length_messages
         if (this.shadowRoot.getElementById(targetId + "text")) {
@@ -1051,7 +1074,7 @@ class popUpClass extends HTMLElement {
     temperatureSlider.value = temperature;
     temperatureSlider.style.setProperty(
       "--thumb-color",
-      `hsl(${240 - temperature * 240}, 100%, 50%)`
+      `hsl(${240 - temperature * 120}, 100%, 50%)`
     );
     // update the temperatureSlider title
     temperatureSlider.title = "Temperature: " + temperature;
@@ -1068,7 +1091,7 @@ class popUpClass extends HTMLElement {
       //color the thumb
       this.style.setProperty(
         "--thumb-color",
-        `hsl(${240 - this.value * 240}, 100%, 50%)`
+        `hsl(${240 - this.value * 120}, 100%, 50%)`
       );
     });
   }
