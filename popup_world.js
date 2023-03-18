@@ -257,11 +257,11 @@ const styled = `
   position: relative;
 }
 .grabbable:hover {
-  background: radial-gradient(closest-side,#165c4b, rgba(54, 54, 54 , 0));
+  background: radial-gradient(closest-side,rgba(22, 92, 75, 0.8), rgba(54, 54, 54 , 0));
   z-index: 4;
 }
 .grabbable2:hover {
-  background: radial-gradient(closest-side,#71a799, rgba(54, 54, 54 , 0));
+  background: radial-gradient(closest-side,rgba(113, 167, 153, 0.8), rgba(54, 54, 54 , 0));
   z-index: 4;
 }
 
