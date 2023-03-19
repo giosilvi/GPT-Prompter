@@ -378,10 +378,13 @@ chrome.contextMenus.onClicked.addListener(async (info, tabs) => {
           // Get the prompt object
           const prompt = items.customprompt[promptNumber];
           // Update the prompt text with the selected text, if there is any
+          var parsedPrompt = "";
+          if (prompt.model == "gpt-3.5-turbo" || prompt.model === "gpt-4") {
+            parsedPrompt = JSON.parse(prompt.prompt);
+            prompt.prompt = parsedPrompt
+          }
           if (info.selectionText) {
             if (prompt.model == "gpt-3.5-turbo" || prompt.model === "gpt-4") {
-              // first parse the prompt
-              var parsedPrompt = JSON.parse(prompt.prompt)
               // loop over the prompt and replace the placeholder
               for (var i = 0; i < parsedPrompt.length; i++) {
                 if (parsedPrompt[i]["content"].includes("#TEXT#")) {

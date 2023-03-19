@@ -5,3 +5,4 @@ PrompterHistory*
 node_modules/
 zips/
 dist/
+.hintrc
