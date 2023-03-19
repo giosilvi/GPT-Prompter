@@ -1,6 +1,13 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const ZipWebpackPlugin = require('zip-webpack-plugin'); // to zip the dist folder
+
+const manifestJson = require('./src/manifest.json');
+const extensionName = 'GPT-Prompter';
+const extensionVersion = manifestJson.version;
+
+
 
 module.exports = {
   mode: 'production',
@@ -34,5 +41,9 @@ module.exports = {
         { from: 'src/icons', to: 'icons' }, 
       ],
     }),
+    new ZipWebpackPlugin({
+      path: path.resolve(__dirname, 'zips'),
+      filename: `${extensionName}-${extensionVersion}.zip`,
+    }),// Add the zip-webpack-plugin instance
   ],
 };
