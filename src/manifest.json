@@ -1,6 +1,6 @@
 {
   "name": "GPT-Prompter",
-  "version": "0.0.3.1",
+  "version": "0.0.3.2",
   "description": "Fast custom prompts to GPT-3 and ChatGPT API",
   "manifest_version": 3,
   "icons": {
@@ -13,9 +13,9 @@
     {
       "matches": ["<all_urls>"],
       "js": [
-        "node_modules/@webcomponents/custom-elements/custom-elements.min.js",
-        "content.js",
-        "popup_world.js"
+        "content.bundle.js",
+        "markdown.bundle.js",
+        "popup_world.bundle.js"
       ]
     }
   ],
@@ -23,8 +23,19 @@
     "default_popup": "popup.html",
     "default_title": "GPT-Prompter"
   },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "history.html"
+      ],
+      "matches": [
+        "https://*/*",
+        "http://*/*"
+      ]
+    }
+  ],
   "background": {
-    "service_worker": "background.js",
+    "service_worker": "background.bundle.js",
     "type": "module"
   },
   "commands": {

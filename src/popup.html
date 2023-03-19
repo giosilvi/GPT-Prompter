@@ -26,7 +26,7 @@
       >
         <div class="card-body">
           <h5>
-            <img src="icons/NewiconA48.png" alt="logo" class="logoimage" />
+            <img src="../icons/NewiconA48.png" alt="logo" class="logoimage" />
             GPT-Prompter<br />
           </h5>
           <!-- <p class="card-text">Here are the instructions to configure the plugin to work properly</p> -->
@@ -93,7 +93,7 @@
         style="border-radius: 0px"
       >
         <div class="card-header" style="border: 0" id="advancedSettingsHeader">
-          <img src="icons/NewiconA16.png" alt="logo" class="logo" />
+          <img src="../icons/NewiconA16.png" alt="logo" class="logo" />
           <b style="display: inline-block; line-height: 40px">
             Advanced Settings</b
           >
@@ -133,7 +133,7 @@
       >
         <div class="card-header" id="promptDesignHeader">
           <div style="display: inline-block; vertical-align: middle">
-            <img src="icons/NewiconA16.png" alt="logo" class="logo" />
+            <img src="../icons/NewiconA16.png" alt="logo" class="logo" />
             <b style="display: inline-block; line-height: 40px"
               >Prompt Design</b
             >
@@ -156,6 +156,12 @@
               >
             </div>
             <select class="custom-select" id="inputmodel">
+              <option 
+                value="gpt-4"
+                title="GPT-4 model, the most advanced model available ($0.06/ 1k tokens)"
+              >
+              ❹ gpt-4
+              </option>
               <option
                 selected
                 value="gpt-3.5-turbo"
@@ -238,14 +244,14 @@
             style="margin-left: 0px !important"
             title="The maximum number of tokens to generate in the completion."
           >
-            <label for="maxtoken" class="form-label col-sm-3">Max tokens</label>
+            <!-- <label for="maxtoken" class="form-label col-sm-3">Max tokens</label>
             <input
               id="maxtoken"
               type="range"
               class="form-range col-sm-6"
               style="margin-right: 30px; padding: 0"
               min="0"
-              max="4000"
+              max="4096"
               step="1"
               value="1024"
             />
@@ -257,7 +263,7 @@
               style="text-align: right; border: 0"
               id="token"
               value="1024"
-            />
+            /> -->
           </div>
           <div class="card-body">
             <div id="chatgptinput">
@@ -378,7 +384,7 @@ You are a helpful assistant.</textarea
       <div class="card text-bg-light" style="border-radius: 0px">
         <div class="card-header" id="yourPromptsHeader">
           <div style="display: inline-block; vertical-align: middle">
-            <img src="icons/NewiconA16.png" alt="logo" class="logo" />
+            <img src="../icons/NewiconA16.png" alt="logo" class="logo" />
             <b style="display: inline-block; line-height: 40px">Your Prompts</b>
           </div>
           <button
@@ -397,6 +403,6 @@ You are a helpful assistant.</textarea
       </div>
     </div>
 
-    <script src="popup.js"></script>
+    <!-- <script src="popup.js"></script> -->
   </body>
 </html>

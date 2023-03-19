@@ -46,9 +46,9 @@ function createListItem(item, index) {
   // add prompt key and value to prompt content string
   // if prompt can be parsed as JSON, add it as a string
   // otherwise, add it as a string
-  if (prompt["model"] == "gpt-3.5-turbo") {
+  if (prompt["model"] == "gpt-3.5-turbo" || prompt["model"] === "gpt-4") {
     console.log(prompt["messages"]);
-    promptContent += `<strong>messages:</strong> ${JSON.stringify(prompt["messages"])}<br>`;
+    promptContent += `<strong>prompt:</strong> ${JSON.stringify(prompt["messages"])}<br>`;
   } else {
     promptContent += `<strong>prompt:</strong> ${prompt["prompt"]}<br>`;
   }

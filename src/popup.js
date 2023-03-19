@@ -13,7 +13,7 @@ function makePromptList(items) {
     li.setAttribute("draggable", "true");
     li.setAttribute("id", i);
 
-    // Create text elements for title, prompt, model, temperature, and max tokens
+    // Create text elements for title, prompt, model, temperature
 
     // check if title exists
     if (items.customprompt[i]["title"] != undefined && items.customprompt[i]["title"] != "") {
@@ -34,7 +34,7 @@ function makePromptList(items) {
     var promptText = document.createElement("span");
     promptText.className = "prompt-text";
     var type = "GPT";
-    if (modelText.innerText == " gpt-3.5-turbo") {
+    if (modelText.innerText == " gpt-3.5-turbo" || modelText.innerText == " gpt-4") {
       type = "ChatGPT";
     }
     if (type == "ChatGPT") {
@@ -53,11 +53,6 @@ function makePromptList(items) {
     tempText.innerText = ` ${items.customprompt[i]["temperature"]}`;
     tempText.setAttribute("data-title", "Temp:");
 
-    var maxTokensText = document.createElement("span");
-    maxTokensText.className = "feature-text";
-    maxTokensText.style.marginLeft = "25px";
-    maxTokensText.innerText = ` ${items.customprompt[i]["max_tokens"]}`;
-    maxTokensText.setAttribute("data-title", "Max tokens:");
 
     // Create Add title , edit and delete buttons
     var titleButton = document.createElement("button");
@@ -121,7 +116,6 @@ function makePromptList(items) {
     li.appendChild(document.createElement("br"));
     li.appendChild(modelText);
     li.appendChild(tempText);
-    li.appendChild(maxTokensText);
     li.appendChild(document.createElement("br"));
     li.appendChild(titleButton);
     li.appendChild(editButton);
@@ -320,12 +314,10 @@ function savePrompt(type) {
   // get the text from the prompt
   var model = document.getElementById("inputmodel").value;
   var temp = parseFloat(document.getElementById("temp").value);
-  var token = parseInt(document.getElementById("token").value);
   var text = getTextforPrompt(type);
   var bodyData = {
     model: model,
     temperature: temp,
-    max_tokens: token,
     prompt: text,
     stream: true,
     twoStage: false,
@@ -342,8 +334,7 @@ function savePrompt(type) {
         if (
           items.customprompt[i]["prompt"] == text &&
           items.customprompt[i]["model"] == model &&
-          items.customprompt[i]["temperature"] == temp &&
-          items.customprompt[i]["max_tokens"] == token
+          items.customprompt[i]["temperature"] == temp 
         ) {
           prompt_already_present = true;
         }
@@ -495,9 +486,7 @@ function editPrompt(index) {
         document.getElementById("inputmodel").value = items.customprompt[index]["model"];
         document.getElementById("temp").value = items.customprompt[index]["temperature"];
         document.getElementById("temperature").value = items.customprompt[index]["temperature"];
-        document.getElementById("token").value = items.customprompt[index]["max_tokens"];
-        document.getElementById("maxtoken").value = items.customprompt[index]["max_tokens"];
-        if (items.customprompt[index]["model"] == "gpt-3.5-turbo") {
+        if (items.customprompt[index]["model"] == "gpt-3.5-turbo" || items.customprompt[index]["model"] == "gpt-4") {
           chatGPTDesignON();
           let listMessages = JSON.parse(items.customprompt[index]["prompt"]);
           document.getElementById("systeminput").value = listMessages[0]["content"];
@@ -524,7 +513,7 @@ function editPrompt(index) {
           // check if #TEXT# is present in any of the messages
           selfCheck();
         } else {
-          GPTDesignON(items.customprompt[index]["model"]);
+          GPTDesignON();
           // create an event input for the element promptinput
           var event = new Event("keyup", { bubbles: true });
           // remove collapse from promptDesignBody
@@ -641,6 +630,10 @@ function checkInputOfPromptDesigner() {
 
 function selfCheck() {
   let allInputs = document.getElementsByClassName("systeminput");
+  // add to allInputs the element with ID systeminput.
+  // make allInputs a list
+  allInputs = Array.from(allInputs);
+  allInputs.push(document.getElementById("systeminput"));
   console.log(allInputs);
   var placeholderPresent = false;
   for (let i = 0; i < allInputs.length; i++) {
@@ -658,6 +651,10 @@ function selfCheck() {
 function checkAllInputsPromptDesignerChatGPT() {
   // check among all element if class systeminput
   let allInputs = document.getElementsByClassName("systeminput");
+  // make a list
+  allInputs = Array.from(allInputs);
+  // add to allInputs the element with ID systeminput.
+  allInputs.push(document.getElementById("systeminput"));
   // for each element
   for (let i = 0; i < allInputs.length; i++) {
     // add a listener on key up, and check if in anyone of them, #TEXT# is contained
@@ -854,11 +851,10 @@ document.addEventListener(
       //if the user select the model text-davinci-003 or text-davinci-002
       console.log(document.getElementById("inputmodel").value);
       const model = document.getElementById("inputmodel").value;
-      if (model == "gpt-3.5-turbo") {
-        // set the max value of element input maxtokens to 4096
+      if (model == "gpt-3.5-turbo" || model == "gpt-4" ) {
         chatGPTDesignON();
       } else {
-        GPTDesignON(model);
+        GPTDesignON();
       }
 
       //end
@@ -889,24 +885,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });
 
-function GPTDesignON(model) {
+function GPTDesignON() {
   document.getElementById("chatgptinput").setAttribute("hidden", true);
   document.getElementById("completioninput").removeAttribute("hidden");
-
-  if (model == "text-davinci-003" || model == "text-davinci-002") {
-    // set the max value of element input maxtokens to 4096
-    document.getElementById("maxtoken").max = 4000;
-  } else if (model == "code-davinci-002") {
-    // set the max value of element input maxtokens to 8000
-    document.getElementById("maxtoken").max = 8000;
-  } else {
-    // set the max value of element input maxtokens to 2048
-    document.getElementById("maxtoken").max = 2048;
-  }
 }
 
 function chatGPTDesignON() {
-  document.getElementById("maxtoken").max = 2048;
   document.getElementById("chatgptinput").removeAttribute("hidden");
   document.getElementById("completioninput").setAttribute("hidden", true);
 }
@@ -926,7 +910,7 @@ function checkAPIKeyatBeginning() {
   });
 }
 
-// Update the values of temperature and max token
+// Update the values of temperature
 
 // To get the value of the temperature and pass it to element with id temp
 function Temp() {
@@ -942,18 +926,6 @@ document.addEventListener(
   false
 );
 
-function Token() {
-  document.getElementById("token").value = document.getElementById("maxtoken").value;
-}
-
-// add listener when the input is changed and activate the function Token()
-document.addEventListener(
-  "DOMContentLoaded",
-  function () {
-    document.getElementById("maxtoken").addEventListener("mousemove", Token, false);
-  },
-  false
-);
 
 // DRAGGABLE LIST OF PROMPTS in popup.html
 
@@ -1051,3 +1023,4 @@ function addEventsDragAndDrop(el) {
   el.addEventListener("drop", dragDrop, false);
   el.addEventListener("dragend", dragEnd, false);
 }
+

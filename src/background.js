@@ -19,12 +19,14 @@ async function checkGPT(apikey) {
     });
     // If the request was successful, parse the response as JSON
     if (response.ok) {
-      // const result = await response.json();
+      const result = await response.json();
       // Send a message to the runtime indicating that the API_key_valid
       chrome.runtime.sendMessage({ message: "API_key_valid" });
+      return result;
     } else {
       // If the request was not successful, send a message to the runtime indicating that the API_key_invalid
       chrome.runtime.sendMessage({ message: "API_key_invalid" });
+      return false;
     }
   });
 }
@@ -103,8 +105,7 @@ function passTitleOrPrompt(customprompt, symbol) {
     return `${symbol} ${customprompt.title.replaceAll("#TEXT#", "%s")}`;
   } else {
     // if customprompt does not contain a title return the prompt
-    // check if the model is "gpt-3.5-turbo"
-    if (customprompt.model === "gpt-3.5-turbo") {
+    if (customprompt.model === "gpt-3.5-turbo" || customprompt.model === "gpt-4") {
       // if it is, json parse the prompt
       const prompt = JSON.parse(customprompt.prompt);
       // get the last element of the prompt
@@ -196,7 +197,7 @@ chrome.runtime.onMessage.addListener((message, sender) => {
   // If the signal is to check the API key
   else if (message.text === "checkAPIKey") {
     (async () => {
-      await checkGPT(message.apiKey);
+      const result = await checkGPT(message.apiKey);
     })();
   }
   // If the signal is to launch GPT
@@ -377,8 +378,23 @@ chrome.contextMenus.onClicked.addListener(async (info, tabs) => {
           // Get the prompt object
           const prompt = items.customprompt[promptNumber];
           // Update the prompt text with the selected text, if there is any
+          var parsedPrompt = "";
+          if (prompt.model == "gpt-3.5-turbo" || prompt.model === "gpt-4") {
+            parsedPrompt = JSON.parse(prompt.prompt);
+            prompt.prompt = parsedPrompt
+          }
           if (info.selectionText) {
-            prompt.prompt = prompt.prompt.replace(/#TEXT#/g, info.selectionText);
+            if (prompt.model == "gpt-3.5-turbo" || prompt.model === "gpt-4") {
+              // loop over the prompt and replace the placeholder
+              for (var i = 0; i < parsedPrompt.length; i++) {
+                if (parsedPrompt[i]["content"].includes("#TEXT#")) {
+                  parsedPrompt[i]["content"] = parsedPrompt[i]["content"].replace(/#TEXT#/g, info.selectionText);
+                }
+              }
+              prompt.prompt = parsedPrompt;
+            } else {
+              prompt.prompt = prompt.prompt.replace(/#TEXT#/g, info.selectionText);
+            }
           }
           if (!prompt.twoStage && info.selectionText) {
             // Send a message to the content script to show the popup
@@ -393,8 +409,9 @@ chrome.contextMenus.onClicked.addListener(async (info, tabs) => {
               })();
             });
           } else {
-            if (prompt.model == "gpt-3.5-turbo") {
-              launchPopUpInPage(JSON.parse(prompt.prompt), prompt, "showPopUpChatGPT");
+            if (prompt.model == "gpt-3.5-turbo" || prompt.model === "gpt-4") {
+              console.log("Chat GPT",prompt);
+              launchPopUpInPage(prompt.prompt, prompt, "showPopUpChatGPT");
             } else {
               launchPopUpInPage(prompt.prompt, prompt, "showPopUpOnTheFly");
             }
@@ -464,3 +481,5 @@ function promptExists(prompt, promptList) {
   }
   return false;
 }
+
+

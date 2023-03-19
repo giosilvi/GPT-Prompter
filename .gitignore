@@ -2,3 +2,7 @@
 *.zip
 makezip.sh
 PrompterHistory*
+node_modules/
+zips/
+dist/
+.hintrc

@@ -1,5 +1,7 @@
-// import symbolFromModel from './sharedfunctions.js'; //TODO:fix this
+import '@webcomponents/custom-elements/custom-elements.min.js';
+
 const models = {
+  "gpt-4" : "❹",
   "gpt-3.5-turbo": "🅶",
   "text-davinci-003": "ↁ",
   "text-davinci-002": "🅳",
@@ -18,11 +20,13 @@ function symbolFromModel(model) {
 }
 
 // const highlightColor = "#d2f4d3";//"rgb(16, 163, 255)";
+const Gpt4Cost8kCompl = 0.06 / 1000;
 const ChatGPTCost = 0.002 / 1000;
 const DaVinciCost = 0.02 / 1000;
 const CurieCost = 0.002 / 1000;
 const BabbageCost = 0.0005 / 1000;
 const AdaCost = 0.0004 / 1000;
+
 
 function computeCost(tokens, model) {
   var cost = 0;
@@ -32,6 +36,7 @@ function computeCost(tokens, model) {
   else if (model == "text-babbage-001") cost = tokens * BabbageCost;
   else if (model == "text-ada-001") cost = tokens * AdaCost;
   else if (model == "gpt-3.5-turbo") cost = tokens * ChatGPTCost;
+  else if (model == "gpt-4") cost = tokens * Gpt4Cost8kCompl;
   return cost.toFixed(5);
 }
 
@@ -109,7 +114,7 @@ const chatpopup = (id, {text = "", left = 0, top = 0, symbol = "🅶" }) => `
       <div style='position:relative; z-index:3; float:right; height:30px'>
         <span class='minibuttons ' id="${id}temptext" style="cursor: default;" title="Temperature"></span>
         <input type="range" class="minibuttons tempslider" id="${id}temperature"  min="0" max="2" step="0.01"  title="Temperature">
-        <button class='minibuttons ' id="${id}symbol" title="gpt-3.5-turbo" disabled>${symbol}</button>
+        <button class='minibuttons symbolmodel' id="${id}symbol" >${symbol}</button>
         <button class='minibuttons pinbutton' id="pin${id}" title="Pin the popup" hidden></button>
         <button class='minibuttons minimize-button' id="minimize${id}" title="Minimize/maximize completion"></button>
         <button class='minibuttons close-button' id="mclose${id}"  title="Close popup (Esc)"></button>
@@ -420,6 +425,8 @@ input[type=range]::-webkit-slider-thumb {
   overflow: visible;
   cursor: pointer;
   border: 3px solid #333333;
+}
+pre code.hljs{display:block;overflow-x:auto;padding:1em}code.hljs{padding:3px 5px}.hljs{background:#1e1e1e;color:#dcdcdc}.hljs-keyword,.hljs-literal,.hljs-name,.hljs-symbol{color:#569cd6}.hljs-link{color:#569cd6;text-decoration:underline}.hljs-built_in,.hljs-type{color:#4ec9b0}.hljs-class,.hljs-number{color:#b8d7a3}.hljs-meta .hljs-string,.hljs-string{color:#d69d85}.hljs-regexp,.hljs-template-tag{color:#9a5334}.hljs-formula,.hljs-function,.hljs-params,.hljs-subst,.hljs-title{color:#dcdcdc}.hljs-comment,.hljs-quote{color:#57a64a;font-style:italic}.hljs-doctag{color:#608b4e}.hljs-meta,.hljs-meta .hljs-keyword,.hljs-tag{color:#9b9b9b}.hljs-template-variable,.hljs-variable{color:#bd63c5}.hljs-attr,.hljs-attribute{color:#9cdcfe}.hljs-section{color:gold}.hljs-emphasis{font-style:italic}.hljs-strong{font-weight:700}.hljs-bullet,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-selector-pseudo,.hljs-selector-tag{color:#d7ba7d}.hljs-addition{background-color:#144212;display:inline-block;width:100%}.hljs-deletion{background-color:#600;display:inline-block;width:100%}
 `;
 
 class popUpClass extends HTMLElement {
@@ -441,8 +448,13 @@ class popUpClass extends HTMLElement {
     const style = document.createElement("style");
     style.textContent = styled;
     this.shadowRoot.appendChild(style); // here append the style to the shadowRoot
+    // add script to the shadowRoot that points at local src="dist/markdown.bundle.js"
+    // const script = document.createElement("script");
+    // script.src = chrome.runtime.getURL("dist/markdown.bundle.js"); // Use getURL to resolve the correct path
+    // this.shadowRoot.appendChild(script);
     this.ids = 0;
     this.tokens = 0;
+    this.tokens_sent = 0;
     this.probabilities = [];
     this.showProbabilities = true;
     this.clearnewlines = true;
@@ -470,7 +482,7 @@ class popUpClass extends HTMLElement {
     // Create a new element to hold the pop-up
     const popUpElement = document.createElement("div");
     popUpElement.innerHTML = this.lastpop;
-
+    
     // Append the new element to the shadow root
     this.shadowRoot.appendChild(popUpElement);
 
@@ -480,6 +492,9 @@ class popUpClass extends HTMLElement {
     }, 10);
     // Set up event listeners for the buttons and other actions
     this.buttonForPopUp(this.ids);
+    const id_symbol = `${this.ids}symbol`;
+    this.togglerModel(this.ids, id_symbol);
+
   }
 
   ontheflypopup(selectionText, bodyData, cursorPosition) {
@@ -512,6 +527,10 @@ class popUpClass extends HTMLElement {
 
     // Set up event listeners for the buttons and other actions
     this.buttonForPopUp(this.ids);
+    const id_symbol = `${this.ids}symbol`;
+    const symbolElement = this.shadowRoot.getElementById(id_symbol);
+    symbolElement.title = bodyData.model;
+    this.togglerModel(this.ids, id_symbol);
 
     // Get the text area element
     const txtArea = this.shadowRoot.getElementById(this.ids + "textarea");
@@ -604,8 +623,11 @@ class popUpClass extends HTMLElement {
       }, 10);
 
       // Set up event listeners for the buttons and other actions
-      this.buttonForPopUp(this.ids, false);
-
+      this.buttonForPopUp(this.ids);
+      const id_symbol = `${this.ids}symbol`;
+      const symbolElement = this.shadowRoot.getElementById(id_symbol);
+      symbolElement.title = bodyData.model;
+      this.togglerModelChat(this.ids, id_symbol);
       // Get the text area element
       const txtArea = this.shadowRoot.getElementById(this.ids + "chatarea");
       
@@ -739,7 +761,7 @@ class popUpClass extends HTMLElement {
         this.removeHideFromCompletion(targetId);
         let modelToUse = this.getBodyData(targetId, "model");
         let textPrompt = this.getTextareaValue(targetId)
-        if (modelToUse === "gpt-3.5-turbo") {
+        if (modelToUse === "gpt-3.5-turbo" || modelToUse === "gpt-4") {
           textPrompt = JSON.stringify([{"role": "user", "content": textPrompt}])
         }
 
@@ -969,7 +991,27 @@ class popUpClass extends HTMLElement {
         }, 500);
       });
   }
+  togglerModelChat(id_target, id_symbol) {
+    //prevent double click to propagate to the parent
+    const symbolElement = this.shadowRoot.getElementById(id_symbol);
+    symbolElement.addEventListener("dblclick", (event) => {
+      event.stopPropagation();
+    });
 
+    symbolElement.addEventListener("click", (event) => {
+      // toggle across the models, updating  element.bodyData.model
+      const element = this.shadowRoot.getElementById(id_target);
+      const model = element.bodyData.model;
+      if (model === "gpt-4"){
+        element.bodyData.model = "gpt-3.5-turbo";
+        symbolElement.innerHTML = models["gpt-3.5-turbo"];
+      } else if (model === "gpt-3.5-turbo") {
+        element.bodyData.model = "gpt-4";
+        symbolElement.innerHTML = models["gpt-4"];
+      }
+      symbolElement.title = element.bodyData.model;
+    });
+  }
   togglerModel(id_target, id_symbol) {
     //prevent double click to propagate to the parent
     const symbolElement = this.shadowRoot.getElementById(id_symbol);
@@ -981,7 +1023,10 @@ class popUpClass extends HTMLElement {
       // toggle across the models, updating  element.bodyData.model
       const element = this.shadowRoot.getElementById(id_target);
       const model = element.bodyData.model;
-      if (model === "gpt-3.5-turbo") {
+      if (model === "gpt-4"){
+        element.bodyData.model = "gpt-3.5-turbo";
+        symbolElement.innerHTML = models["gpt-3.5-turbo"];
+      } else if (model === "gpt-3.5-turbo") {
         element.bodyData.model = "text-davinci-003";
         symbolElement.innerHTML = models["text-davinci-003"];
       } else if (model === "text-davinci-003") {
@@ -1000,8 +1045,8 @@ class popUpClass extends HTMLElement {
         element.bodyData.model = "code-davinci-002";
         symbolElement.innerHTML = models["code-davinci-002"];
       } else if (model === "code-davinci-002") {
-        element.bodyData.model = "gpt-3.5-turbo";
-        symbolElement.innerHTML = models["gpt-3.5-turbo"];
+        element.bodyData.model = "gpt-4";
+        symbolElement.innerHTML = models["gpt-4"];
       } else {
         // default
         element.bodyData.model = "text-davinci-003";
@@ -1096,14 +1141,10 @@ class popUpClass extends HTMLElement {
     });
   }
 
-  buttonForPopUp(id_target, set_toggler_model = true) {
+  buttonForPopUp(id_target) {
     const id_pin = `pin${id_target}`;
     const id_close = `mclose${id_target}`;
     const id_minimize = `minimize${id_target}`;
-    if (set_toggler_model) {
-    const id_symbol = `${id_target}symbol`;
-    this.togglerModel(id_target, id_symbol);
-    }
     this.pinButtons(id_target, id_pin);
     this.minimizeButtons(id_target, id_minimize);
     this.closeButtons(id_target, id_close);
@@ -1142,6 +1183,9 @@ class popUpClass extends HTMLElement {
     this.probabilities = [];
     this.clearnewlines = true;
     this.tokens = 0;
+    console.log("request.tokens_sent", request.tokens_sent);
+    // transfer the tokens_sent to integer
+    this.tokens_sent = parseInt(request.tokens_sent);
 
     chrome.storage.sync.get(["advancedSettings"], (result) => {
       this.showProbabilities = result.advancedSettings.showProb;
@@ -1160,7 +1204,7 @@ class popUpClass extends HTMLElement {
       request.bodyData.model;
     this.shadowRoot.getElementById(
       `${targetId}header`
-    ).innerHTML = `<i> ${request.text} </i>`;
+    ).innerHTML = `<i> ${JSON.stringify(request.text)} </i>`;
 
     if (this.shadowRoot.getElementById(`regenerate${targetId}`)) {
       if (!this.alreadyCalled[targetId]) {
@@ -1182,7 +1226,7 @@ class popUpClass extends HTMLElement {
 
         this.removeHideFromCompletion(targetId);
         this.clearProbability(targetId);
-
+        console.log("regenerate", element.text);
         var promptDict = {
           prompt: element.text,
           model: element.bodyData.model,
@@ -1289,6 +1333,8 @@ class popUpClass extends HTMLElement {
             //check the bodyData of the element
 
             promptarea.innerText += text;
+            // check for markdown
+            
             promptarea.scrollIntoView({ behavior: "auto", block: "end"});
           }
         }
@@ -1306,6 +1352,11 @@ class popUpClass extends HTMLElement {
       // each message should be 1 token
       this.tokens++;
     } else {
+      if (specialCase && textarea) {
+        // do nothing
+      } else {
+        updateMarkdownContent(promptarea, promptarea.innerText);
+      }
       // if stream is false, it means that the stream is over
       this.stream_on = false;
       // compute the probability, get average of element in this.probabilities
@@ -1320,7 +1371,7 @@ class popUpClass extends HTMLElement {
       //save prompt to local storage
       const bodyData = JSON.parse(message.bodyData);
       const model = bodyData.model;
-      const cost = computeCost(this.tokens, model);
+      const cost = computeCost(this.tokens+this.tokens_sent , model);
       // update in bodyData the final probability in logprobs
       bodyData.logprobs = final_prob + " %";
       // focus depending on the case
@@ -1362,5 +1413,33 @@ class popUpClass extends HTMLElement {
   }
 }
 
-window.customElements.define("mini-popup", popUpClass);
 
+
+function updateMarkdownContent(markdownContainer, markdownText) {
+  // Wait for the renderMarkdown function to be available
+  function waitForRenderMarkdown() {
+    console.log("waiting for renderMarkdown")
+    if (window.renderMarkdown) {
+      // Use the renderMarkdown function to convert the Markdown text to HTML
+      const renderedHtml = window.renderMarkdown(markdownText);
+
+      // Find the Markdown container in the chat popup element and update its content
+      if (markdownContainer) {
+        markdownContainer.innerHTML = renderedHtml;
+        console.log("updated markdown")
+      }
+    } else {
+      // If the renderMarkdown function is not yet available, try again after a short delay
+      setTimeout(waitForRenderMarkdown, 100);
+    }
+  }
+
+  // Start waiting for the renderMarkdown function
+  waitForRenderMarkdown();
+}
+
+
+
+
+
+window.customElements.define("mini-popup", popUpClass);
