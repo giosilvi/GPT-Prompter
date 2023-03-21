@@ -204,6 +204,7 @@ chrome.runtime.onMessage.addListener((message, sender) => {
   else if (message.text === "launchGPT") {
     // Get the tab from the sender
     const { tab } = sender; // this line is equivalent to const tab = sender.tab;
+    console.log(typeof message.prompt.prompt, message.prompt);
     // Launch GPT
     chrome.storage.sync.get("APIKEY", function (items) {
       (async () => {

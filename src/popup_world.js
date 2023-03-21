@@ -762,7 +762,7 @@ class popUpClass extends HTMLElement {
         let modelToUse = this.getBodyData(targetId, "model");
         let textPrompt = this.getTextareaValue(targetId)
         if (modelToUse === "gpt-3.5-turbo" || modelToUse === "gpt-4") {
-          textPrompt = JSON.stringify([{"role": "user", "content": textPrompt}])
+          textPrompt = [{"role": "user", "content": textPrompt}]
         }
 
         const promptObj = {
@@ -840,7 +840,7 @@ class popUpClass extends HTMLElement {
 
         // append the user text to the previous messages
         previousmessages.push({"role":"user", "content": userTextPrompt});
-        let textPrompt = JSON.stringify(previousmessages);
+        let textPrompt = previousmessages;
         const promptObj = {
           prompt: textPrompt,
           model: modelToUse,
