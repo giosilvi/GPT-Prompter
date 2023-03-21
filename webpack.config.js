@@ -7,6 +7,7 @@ const manifestJson = require('./src/manifest.json');
 const extensionName = 'GPT-Prompter';
 const extensionVersion = manifestJson.version;
 
+
 module.exports = (env, argv) => {
   const isDevelopment = argv.mode === 'development';
 
