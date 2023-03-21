@@ -77,6 +77,7 @@ async function promptGPT3Prompting(prompt, items, tabs) {
   var model = prompt["model"];
   // if the model is gpt-4 or gpt-3.5-turbo, we need to check that the text is a valid json
   if (model == "gpt-4" || model == "gpt-3.5-turbo") {
+    console.log('Check',typeof text)
     if (typeof text !== "object") 
      {text = [{"role": "user", "content": text}];}
   }

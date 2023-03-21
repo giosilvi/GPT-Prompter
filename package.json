@@ -1,8 +1,10 @@
-{ "name": "GPT-Prompter-project",
+{
+  "name": "GPT-Prompter project",
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "build": "webpack",
+    "build": "webpack --mode production",
+    "watch": "webpack --mode development --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
@@ -13,6 +15,7 @@
   },
   "devDependencies": {
     "copy-webpack-plugin": "^11.0.0",
+    "crx-hotreload": "^1.0.6",
     "css-loader": "^6.7.3",
     "html-webpack-plugin": "^5.5.0",
     "style-loader": "^3.3.2",
