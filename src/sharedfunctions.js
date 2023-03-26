@@ -6,8 +6,7 @@ var models = {
     "text-davinci-002": "🅳",
     "text-curie-001": "🅲",
     "text-babbage-001": "🅑",
-    "text-ada-001": "🅐",
-    "code-davinci-002": "🆇"
+    "text-ada-001": "🅐"
   }
   //the above function symbolFromModel can be rewritten as a dictionary
   function symbolFromModel(model) {

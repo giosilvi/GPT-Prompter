@@ -1,7 +1,6 @@
 import GPT3Tokenizer from "gpt3-tokenizer";
 
 const tokenizer = new GPT3Tokenizer({ type: "gpt3" });
-const codex_tokenizer = new GPT3Tokenizer({ type: "codex" });
 
 var MaxTokensPerModel = {
   "gpt-4": 8000,
@@ -10,8 +9,7 @@ var MaxTokensPerModel = {
   "text-davinci-002": 4000,
   "text-curie-001": 2000,
   "text-babbage-001": 2000,
-  "text-ada-001": 2000,
-  "code-davinci-002": 8000,
+  "text-ada-001": 2000
 };
 
 function checkMaxTokens(content, model) {
@@ -37,13 +35,8 @@ function countTokens(text, model) {
   if (!text) {
     return 0;
   }
-  if (model == "code-davinci-002") {
-    const encoded = codex_tokenizer.encode(text);
-    return encoded.bpe.length;
-  } else {
-    const encoded = tokenizer.encode(text);
-    return encoded.bpe.length;
-  }
+  const encoded = tokenizer.encode(text);
+  return encoded.bpe.length;
 }
 
 

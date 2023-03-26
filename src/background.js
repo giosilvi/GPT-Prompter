@@ -189,7 +189,7 @@ chrome.runtime.onInstalled.addListener(function (details) {
 });
 
 // Listen for a signal to refresh the context menu
-chrome.runtime.onMessage.addListener((message, sender) => {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // If the signal is to refresh the context menu
   if (message.text === "newPromptList") {
     createContextMenu();
@@ -211,6 +211,12 @@ chrome.runtime.onMessage.addListener((message, sender) => {
         await promptGPT3Prompting(message.prompt, items, tab);
       })();
     });
+  } else if (message.action === "transcribeAudio") {
+    console.log("Transcribing audio");
+    transcribeWithWhisper(message.audio)
+      .then((resp) => sendResponse({ data: resp.text }))
+      .catch((error) => sendResponse({ error: error.message }));
+    return true; // Required to use sendResponse asynchronously
   } else {
     console.log("Unknown message: ", message);
   }
@@ -272,7 +278,6 @@ function launchPopUpInPage(selectionText, prompt, command) {
   } else if (command == "showPopUpChatGPT") {
     // loop over the selectionText and replace the placeholder
     for (var i = 0; i < selectionText.length; i++) {
-
       var [contentText, cursorPosition] = replacePlaceHolder(selectionText[i]["content"]);
 
       selectionText[i]["content"] = contentText;
@@ -382,7 +387,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tabs) => {
           var parsedPrompt = "";
           if (prompt.model == "gpt-3.5-turbo" || prompt.model === "gpt-4") {
             parsedPrompt = JSON.parse(prompt.prompt);
-            prompt.prompt = parsedPrompt
+            prompt.prompt = parsedPrompt;
           }
           if (info.selectionText) {
             if (prompt.model == "gpt-3.5-turbo" || prompt.model === "gpt-4") {
@@ -411,7 +416,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tabs) => {
             });
           } else {
             if (prompt.model == "gpt-3.5-turbo" || prompt.model === "gpt-4") {
-              console.log("Chat GPT",prompt);
+              console.log("Chat GPT", prompt);
               launchPopUpInPage(prompt.prompt, prompt, "showPopUpChatGPT");
             } else {
               launchPopUpInPage(prompt.prompt, prompt, "showPopUpOnTheFly");
@@ -483,4 +488,46 @@ function promptExists(prompt, promptList) {
   return false;
 }
 
+// Whisper API functions
 
+async function transcribeWithWhisper(wavUrl) {
+  return new Promise(async (resolve, reject) => {
+    
+    // const audio = new Blob([wavBuffer], { type: "audio/wav" });
+    const wavBlob = await getBlobFromObjectUrl(wavUrl);
+    const formData = new FormData();
+    formData.append("file", wavBlob, "audio.wav");
+    formData.append("model", "whisper-1");
+  
+    chrome.storage.sync.get("APIKEY", async function (items) {
+      try {
+        const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${items.APIKEY}`,
+          },
+          body: formData,
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log("Success:", data);
+          resolve(data);
+        } else {
+          const error = await response.text();
+          console.error("Error:", error);
+          reject(new Error(error));
+        }
+      } catch (e) {
+        console.error("Error in fetch:", e);
+        reject(e);
+      }
+    });
+  });
+}
+
+async function getBlobFromObjectUrl(objectUrl) {
+  const response = await fetch(objectUrl);
+  const blob = await response.blob();
+  return blob;
+}

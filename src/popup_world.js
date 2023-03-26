@@ -1,14 +1,13 @@
-import '@webcomponents/custom-elements/custom-elements.min.js';
+import "@webcomponents/custom-elements/custom-elements.min.js";
 
 const models = {
-  "gpt-4" : "❹",
+  "gpt-4": "❹",
   "gpt-3.5-turbo": "🅶",
   "text-davinci-003": "ↁ",
   "text-davinci-002": "🅳",
   "text-curie-001": "🅲",
   "text-babbage-001": "🅑",
-  "text-ada-001": "🅐",
-  "code-davinci-002": "🆇",
+  "text-ada-001": "🅐"
 };
 
 function symbolFromModel(model) {
@@ -26,7 +25,6 @@ const DaVinciCost = 0.02 / 1000;
 const CurieCost = 0.002 / 1000;
 const BabbageCost = 0.0005 / 1000;
 const AdaCost = 0.0004 / 1000;
-
 
 function computeCost(tokens, model) {
   var cost = 0;
@@ -69,7 +67,7 @@ const minipopup = (id, { left = 0, top = 0 }) => `
 </div>
 `;
 
-const flypopup = (id, { text = "none", left = 0, top = 0, symbol = "🅶" }) => `
+const flypopup = (id, { text = "", left = 0, top = 0, symbol = "🅶" }) => `
 <div class="popuptext onylonthefly" id="${id}" style="left: ${left}px; top:${top}px; ">
   <div id="${id}prompt" class="popupprompt">
     <div id="${id}grabbable" class="grabbable">
@@ -87,8 +85,14 @@ const flypopup = (id, { text = "none", left = 0, top = 0, symbol = "🅶" }) => 
     </div>
   </div>
   <div id="${id}completion">
-  <div>
-  <textarea contentEditable="true" id="${id}textarea" class='textarea'>${text}</textarea>
+  <div class="textarea-container">
+    <textarea contentEditable="true" id="${id}textarea" class="textarea">${text}</textarea>
+    <div id="${id}mic-container">
+      <button id="${id}microphone" class="microphone-button" title="Transcribe with Whisper (Tab key to start/stop)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M12 2c1.103 0 2 .897 2 2v7c0 1.103-.897 2-2 2s-2-.897-2-2v-7c0-1.103.897-2 2-2zm0-2c-2.209 0-4 1.791-4 4v7c0 2.209 1.791 4 4 4s4-1.791 4-4v-7c0-2.209-1.791-4-4-4zm8 9v2c0 4.418-3.582 8-8 8s-8-3.582-8-8v-2h2v2c0 3.309 2.691 6 6 6s6-2.691 6-6v-2h2zm-7 13v-2h-2v2h-4v2h10v-2h-4z"/></svg>
+      </button>
+      <div id="${id}loading-spinner" class="loading-spinner microphone-button" style="display: none;"></div>
+    </div>
   </div>
     <button type="button" id="${id}submit" class="submitbutton" title="Alt+Enter">Submit</button>
     <button type="button" id="${id}stop" class="submitbutton hide" title="Alt+Enter" style='background-color: red;'>Stop</button>
@@ -102,12 +106,11 @@ const flypopup = (id, { text = "none", left = 0, top = 0, symbol = "🅶" }) => 
 </div>
 `;
 
-
 // const messagepopup = (id, { text = "none"}) => `
 // <p id="${id}text" class='popupcompletion'>${text}</p>
 // `;
 
-const chatpopup = (id, {text = "", left = 0, top = 0, symbol = "🅶" }) => `
+const chatpopup = (id, { text = "", left = 0, top = 0, symbol = "🅶" }) => `
 <div class="popuptext onlychat" id="${id}" style="left: ${left}px; top:${top}px; width:520px;">
   <div id="${id}prompt" class="popupprompt">
     <div id="${id}grabbable" class="grabbable2">
@@ -124,13 +127,21 @@ const chatpopup = (id, {text = "", left = 0, top = 0, symbol = "🅶" }) => `
       </div>
     </div>
   </div>
-  <div id="${id}completion" style="display:grid; overflow-y: auto; resize: vertical; padding: 5px; max-height: 700px">
+  <div id="${id}completion" style="display:grid; overflow-y: auto; resize: vertical; padding: 5px; max-height: 800px">
    <div id="${id}system" class="suggestion" style="margin-top: 10px;"></div>
   </div>
     <div id="${id}chat" style="display: flex;">
       <button type="button" id="${id}submit" class="submitbutton chatsubmit" title="Alt+Enter">Submit</button>
       <button type="button" id="${id}stop" class="submitbutton chatsubmit hide" title="Alt+Enter" style='background-color: red;'>Stop</button>
-      <textarea contentEditable="true" id="${id}chatarea" class='textarea'>${text}</textarea>
+      <div class="textarea-container">
+        <textarea contentEditable="true" id="${id}chatarea" class="textarea">${text}</textarea>
+        <div id="${id}mic-container" title="Transcribe with Whisper (Tab key to start/stop)" >
+          <button id="${id}microphone" class="microphone-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M12 2c1.103 0 2 .897 2 2v7c0 1.103-.897 2-2 2s-2-.897-2-2v-7c0-1.103.897-2 2-2zm0-2c-2.209 0-4 1.791-4 4v7c0 2.209 1.791 4 4 4s4-1.791 4-4v-7c0-2.209-1.791-4-4-4zm8 9v2c0 4.418-3.582 8-8 8s-8-3.582-8-8v-2h2v2c0 3.309 2.691 6 6 6s6-2.691 6-6v-2h2zm-7 13v-2h-2v2h-4v2h10v-2h-4z"/></svg>
+          </button>
+          <div id="${id}loading-spinner" class="loading-spinner microphone-button" style="display: none;"></div>
+        </div>
+      </div>
     </div>
     <div style="float:right">
         <span id="${id}probability" class="tkn_prb" ></span>
@@ -177,17 +188,6 @@ const styled = `
   font-family: 'Material Icons';
   content: "\u21BB";
 }
-
-// .promptheader:after {
-//   content: "";
-//   position: absolute;
-//   top: 0;
-//   left: 0;
-//   width: 100%;
-//   height: 100%;
-//   background: linear-gradient(to bottom, transparent 0.6em, rgb(54, 54, 54 ) 2.8em);
-//   z-index: 1;
-//   }
 .suggestion {
     color: #e1e1e1;
     font-style: italic;
@@ -221,24 +221,50 @@ const styled = `
     overflow: hidden;
     max-width:900px;
 }
-}
 .textarea:focus{
     border: 1px solid #ffffff;
 }
-  
 .textarea:hover {
     background-color: #333333; /* slightly lighter background color */
 }
 .textarea::placeholder {
   color: lightgray;
 }
+.textarea-container {
+  position: relative;
+  display: inline-block;
+  width: -webkit-fill-available;
+}
+.microphone-button {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 1;
+  fill: gray;
+}
+.loading-spinner {
+  margin-top: -0.8em;
+  border-top: 2px solid #3498db;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+}
 
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 .symbolmodel {
   color: #3ee2ba!important; 
 }
 
 .chatcolor {
-  color: #71a799!important;
+  color: rgba(113,167,153,1)!important;
 }
 
 .grabbable {
@@ -250,6 +276,7 @@ const styled = `
   display: block; 
   justify-content: space-between; 
   position: relative;
+  height: 30px;
 }
 .grabbable2 {
   cursor: move; /* fallback if grab cursor is unsupported */
@@ -260,6 +287,7 @@ const styled = `
   display: block;
   justify-content: space-between;
   position: relative;
+  height: 30px;
 }
 .grabbable:hover {
   background: radial-gradient(closest-side,rgba(22, 92, 75, 0.8), rgba(54, 54, 54 , 0));
@@ -370,8 +398,11 @@ const styled = `
   overflow:auto;
   transform: scale(0);
   transform-origin: top left;
-  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1), width 1.5s ease-out;
+}
 
+.enlarge{
+  width: 100vw !important; /* Use 100vw instead of -webkit-fill-available */
 }
 
 .show {
@@ -482,7 +513,7 @@ class popUpClass extends HTMLElement {
     // Create a new element to hold the pop-up
     const popUpElement = document.createElement("div");
     popUpElement.innerHTML = this.lastpop;
-    
+
     // Append the new element to the shadow root
     this.shadowRoot.appendChild(popUpElement);
 
@@ -494,7 +525,6 @@ class popUpClass extends HTMLElement {
     this.buttonForPopUp(this.ids);
     const id_symbol = `${this.ids}symbol`;
     this.togglerModel(this.ids, id_symbol);
-
   }
 
   ontheflypopup(selectionText, bodyData, cursorPosition) {
@@ -535,6 +565,7 @@ class popUpClass extends HTMLElement {
     // Get the text area element
     const txtArea = this.shadowRoot.getElementById(this.ids + "textarea");
     if (txtArea) {
+      this.activateMicrophone(this.ids, txtArea);
       // Stop the event from bubbling up to the document
       this.stopBubblingEvent(txtArea);
       txtArea.addEventListener("input", (e) => {
@@ -542,7 +573,7 @@ class popUpClass extends HTMLElement {
         txtArea.style.height = txtArea.scrollHeight + "px";
         if (txtArea.scrollWidth > txtArea.offsetWidth) {
           // element.style.width = txtArea.scrollWidth + 'px';
-          element.style.width = "-webkit-fill-available";
+          element.classList.toggle("enlarge")
           txtArea.style.whiteSpace = "pre-wrap";
         }
 
@@ -551,8 +582,6 @@ class popUpClass extends HTMLElement {
         //   txtArea.style.whiteSpace = 'pre-wrap';
         // }
       });
-      // trigger the input event to set the height of the text area
-      //wait 100ms to allow the popup to be rendered
 
       txtArea.focus();
       txtArea.selectionEnd = txtArea.selectionStart = cursorPosition;
@@ -560,84 +589,136 @@ class popUpClass extends HTMLElement {
       setTimeout(() => {
         txtArea.dispatchEvent(new Event("input"));
       }, 100);
-
     }
   }
 
   chatGPTpopup(messages, bodyData, cursorPosition) {
     // Create a new element to hold the pop-up
     const popUpElement = document.createElement("div");
-   
+
     // get the last message in the list
     var messageInTextArea = "";
-    if (messages[messages.length - 1]["role"] == "user"){
-      messageInTextArea = messages[messages.length - 1]["content"]
-      messages.pop() // remove the last message from the list
+    if (messages[messages.length - 1]["role"] == "user") {
+      messageInTextArea = messages[messages.length - 1]["content"];
+      messages.pop(); // remove the last message from the list
     } else {
-      messageInTextArea = ""
+      messageInTextArea = "";
     }
-    
 
     popUpElement.innerHTML = chatpopup(this.ids, {
-      text:  messageInTextArea,
+      text: messageInTextArea,
       left: this.mousePosition.left,
       top: this.mousePosition.top,
       symbol: symbolFromModel(bodyData.model),
     });
-      
-      
-      // Append the new element to the shadow root
-      this.shadowRoot.appendChild(popUpElement);
-      
-      const element = this.shadowRoot.getElementById(this.ids);
-      // attach the bodyData to the element
-      element.bodyData = bodyData;
-      // make a copy of the messages list and attach it to the element
-      element.previousMessages = messages;
-      // Set the system message in the popup
-      if (messages[0]["role"] == "system"){
-        this.shadowRoot.getElementById(this.ids + "system").innerText ="System: " + messages[0]["content"];
-      }
-     
-      // loop over the messages and add each message to one messagepopup, append the messagepopup to the div with id = this.ids + "completion"
-      var that = this; // create a reference to the current object
-      for (var i = 1; i < messages.length; i++) {
-        (function(index) {
-          setTimeout(function() {
-            var messagepopup = that.createChatElement(messages[index], that.ids + "message_" + index);
-            that.shadowRoot.getElementById(that.ids + "completion").appendChild(messagepopup);
-            setTimeout(() => {
+
+    // Append the new element to the shadow root
+    this.shadowRoot.appendChild(popUpElement);
+
+    const element = this.shadowRoot.getElementById(this.ids);
+    // attach the bodyData to the element
+    element.bodyData = bodyData;
+    // make a copy of the messages list and attach it to the element
+    element.previousMessages = messages;
+    // Set the system message in the popup
+    if (messages[0]["role"] == "system") {
+      this.shadowRoot.getElementById(this.ids + "system").innerText = "System: " + messages[0]["content"];
+    }
+
+    // loop over the messages and add each message to one messagepopup, append the messagepopup to the div with id = this.ids + "completion"
+    var that = this; // create a reference to the current object
+    for (var i = 1; i < messages.length; i++) {
+      (function (index) {
+        setTimeout(function () {
+          var messagepopup = that.createChatElement(messages[index], that.ids + "message_" + index);
+          that.shadowRoot.getElementById(that.ids + "completion").appendChild(messagepopup);
+          setTimeout(() => {
             messagepopup.classList.add("reveal");
-            }, 50);
-          }, index * 50 + 500);
-        })(i);
+          }, 50);
+        }, index * 50 + 500);
+      })(i);
+    }
+
+    // toggle the 'show' class on the element with the ID specified in this.ids
+    this.updateTemperature(this.ids);
+    this.runClickChat(this.ids);
+    this.stopButton(this.ids);
+
+    setTimeout(() => {
+      element.classList.toggle("show");
+    }, 10);
+
+    // Set up event listeners for the buttons and other actions
+    this.buttonForPopUp(this.ids);
+    const id_symbol = `${this.ids}symbol`;
+    const symbolElement = this.shadowRoot.getElementById(id_symbol);
+    symbolElement.title = bodyData.model;
+    this.togglerModelChat(this.ids, id_symbol);
+    // Get the text area element
+    const txtArea = this.shadowRoot.getElementById(this.ids + "chatarea");
+    this.activateMicrophone(this.ids, txtArea);
+    this.stopBubblingEvent(txtArea);
+    txtArea.addEventListener("input", (e) => {
+      txtArea.style.height = "auto";
+      txtArea.style.height = txtArea.scrollHeight + "px";
+      if (txtArea.scrollWidth > txtArea.offsetWidth) {
+        // element.style.width = txtArea.scrollWidth + 'px';
+        element.classList.toggle('enlarge');
+        txtArea.style.whiteSpace = "pre-wrap";
       }
+    });
+    txtArea.focus();
+  }
 
-      // toggle the 'show' class on the element with the ID specified in this.ids
-      this.updateTemperature(this.ids);
-      this.runClickChat(this.ids);
-      this.stopButton(this.ids);
+  activateMicrophone(id, textArea) {
+    const microphoneButton = this.shadowRoot.getElementById(id + "microphone");
+    const loadingSpinner = this.shadowRoot.getElementById(id + "loading-spinner");
+    let isRecording = false;
+    let mediaRecorder = null;
+    let mediaStream = null;
 
-      setTimeout(() => {
-        element.classList.toggle("show");
-      }, 10);
+    microphoneButton.addEventListener("click", async (e) => {
+      if (!isRecording) {
+        try {
+          mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorder = new MediaRecorder(mediaStream);
+          const audioChunks = [];
 
-      // Set up event listeners for the buttons and other actions
-      this.buttonForPopUp(this.ids);
-      const id_symbol = `${this.ids}symbol`;
-      const symbolElement = this.shadowRoot.getElementById(id_symbol);
-      symbolElement.title = bodyData.model;
-      this.togglerModelChat(this.ids, id_symbol);
-      // Get the text area element
-      const txtArea = this.shadowRoot.getElementById(this.ids + "chatarea");
-      
-      
-      this.stopBubblingEvent(txtArea);
-      txtArea.addEventListener("input", (e) => {
-        txtArea.style.height = "auto";
-        txtArea.style.height = txtArea.scrollHeight + "px";
-      });
-      txtArea.focus()
+          mediaRecorder.addEventListener("dataavailable", (event) => {
+            audioChunks.push(event.data);
+          });
+
+          mediaRecorder.addEventListener("stop", async () => {
+            microphoneButton.style.display = "none";
+            loadingSpinner.style.display = "block";
+
+            const audioBlob = new Blob(audioChunks);
+            // send a message with the audio blob to the backgrond script
+
+            const resp = await transcribeWithWhisper(audioBlob);
+            textArea.value += resp.data;
+            textArea.dispatchEvent(new Event("input"));
+            microphoneButton.style.fill = "gray";
+            microphoneButton.disabled = false;
+
+            microphoneButton.style.display = "block";
+            loadingSpinner.style.display = "none";
+          });
+
+          mediaRecorder.start();
+          isRecording = true;
+          microphoneButton.style.fill = "red";
+        } catch (error) {
+          console.error("Error occurred while recording audio:", error);
+        }
+      } else {
+        mediaRecorder.stop();
+        mediaStream.getTracks().forEach((track) => track.stop());
+        isRecording = false;
+        // disable the microphone button
+        microphoneButton.disabled = true;
+      }
+    });
   }
 
   createChatElement(messages, idmessage) {
@@ -654,8 +735,7 @@ class popUpClass extends HTMLElement {
       innermessage.style.textAlign = "right";
       // float the message to the right
       innermessage.style.float = "right";
-    }
-    else {
+    } else {
       innermessage.style.textAlign = "left";
       // float the message to the left
       innermessage.style.float = "left";
@@ -675,16 +755,12 @@ class popUpClass extends HTMLElement {
       e.stopPropagation();
     });
   }
-  
 
   pinButtons(id_target, id_button) {
     this.shadowRoot.getElementById(id_button).addEventListener("click", () => {
       // if the element is in listOfUnpinnedPopups, remove it from there. If not, add it to the list
       if (this.listOfUnpinnedPopups.includes(id_target)) {
-        this.listOfUnpinnedPopups.splice(
-          this.listOfUnpinnedPopups.indexOf(id_target),
-          1
-        );
+        this.listOfUnpinnedPopups.splice(this.listOfUnpinnedPopups.indexOf(id_target), 1);
       } else {
         this.listOfUnpinnedPopups.push(id_target);
       }
@@ -698,9 +774,7 @@ class popUpClass extends HTMLElement {
     button.addEventListener("click", () => {
       const element = this.shadowRoot.getElementById(id_target);
       // toggle class to minimize
-      this.shadowRoot
-        .getElementById(`${id_target}completion`)
-        .classList.toggle("hide");
+      this.shadowRoot.getElementById(`${id_target}completion`).classList.toggle("hide");
       // set the height and width to auto
       element.style.height = "auto";
       element.style.width = "auto";
@@ -712,6 +786,8 @@ class popUpClass extends HTMLElement {
   }
   closeButtons(id_target, id_button) {
     this.shadowRoot.getElementById(id_button).addEventListener("click", () => {
+      // prevent a second click on the button to close the popup
+      this.shadowRoot.getElementById(id_button).disabled = true;
       this.shadowRoot.getElementById(id_target).classList.toggle("show");
       setTimeout(() => {
         this.shadowRoot.getElementById(id_target).remove();
@@ -722,30 +798,19 @@ class popUpClass extends HTMLElement {
         this.stream_on = false;
       }
 
-      this.listOfActivePopups = this.listOfActivePopups.filter(
-        (item) => item !== id_target
-      );
+      this.listOfActivePopups = this.listOfActivePopups.filter((item) => item !== id_target);
       // remove from listOfUnpinnedPopups if it is there
       if (this.listOfUnpinnedPopups.includes(id_target)) {
-        this.listOfUnpinnedPopups.splice(
-          this.listOfUnpinnedPopups.indexOf(id_target),
-          1
-        );
+        this.listOfUnpinnedPopups.splice(this.listOfUnpinnedPopups.indexOf(id_target), 1);
       }
     });
   }
 
   doubleClick(id_target) {
-    this.shadowRoot
-      .getElementById(id_target)
-      .addEventListener("dblclick", () => {
-        this.shadowRoot.getElementById(id_target).classList.toggle("expand");
-        // from id_target replace prompt with header, and get the element with the id header, toggle class nobackground
-        let promptHeader = this.shadowRoot.getElementById(
-          id_target.replace("prompt", "header")
-        );
-        promptHeader.classList.toggle("promptheader");
-      });
+    this.shadowRoot.getElementById(id_target + "prompt").addEventListener("dblclick", () => {
+      this.shadowRoot.getElementById(id_target + "prompt").classList.toggle("expand");
+      this.shadowRoot.getElementById(id_target + "grabbable").classList.toggle("expand");
+    });
   }
 
   runClick(targetId) {
@@ -760,9 +825,9 @@ class popUpClass extends HTMLElement {
         // remove hide from the id text element
         this.removeHideFromCompletion(targetId);
         let modelToUse = this.getBodyData(targetId, "model");
-        let textPrompt = this.getTextareaValue(targetId)
+        let textPrompt = this.getTextareaValue(targetId);
         if (modelToUse === "gpt-3.5-turbo" || modelToUse === "gpt-4") {
-          textPrompt = [{"role": "user", "content": textPrompt}]
+          textPrompt = [{ role: "user", content: textPrompt }];
         }
 
         const promptObj = {
@@ -783,63 +848,54 @@ class popUpClass extends HTMLElement {
     // this.removeBRFromTextarea(targetId);
 
     // Add keydown event listener to textarea
-    this.getTextareaElement(targetId).addEventListener(
-      "keydown",
-      this.handleKeydown.bind(this, targetId)
-    );
+    this.getTextareaElement(targetId).addEventListener("keydown", this.handleKeydown.bind(this, targetId));
 
     // Add alt + a keydown event listener to target element
-    this.shadowRoot
-      .getElementById(targetId)
-      .addEventListener("keydown", (event) => {
-        if (event.altKey && event.key === "a") {
-          this.shadowRoot.getElementById(`${targetId}add2comp`).click();
-        }
-      });
+    this.shadowRoot.getElementById(targetId).addEventListener("keydown", (event) => {
+      if (event.altKey && event.key === "a") {
+        this.shadowRoot.getElementById(`${targetId}add2comp`).click();
+      }
+    });
   }
 
   runClickChat(targetId) {
     const submitButton = this.shadowRoot.getElementById(`${targetId}submit`);
     const txtArea = this.shadowRoot.getElementById(`${targetId}chatarea`);
-    txtArea.addEventListener(
-      "keydown",
-      this.handleKeydown.bind(this, targetId)
-    );
+    txtArea.addEventListener("keydown", this.handleKeydown.bind(this, targetId));
     // Add click event listener to submit button if it doesn't already have one
     if (!submitButton.listener) {
       submitButton.addEventListener("click", () => {
         this.toggleRunStop(targetId);
         let modelToUse = this.getBodyData(targetId, "model");
-        let userTextPrompt = txtArea.value
-        txtArea.value = ""
+        let userTextPrompt = txtArea.value;
+        txtArea.value = "";
         let chatElement = this.shadowRoot.getElementById(targetId);
         let previousmessages = chatElement.previousMessages;
         // add a Child to the chat element with id of id+"text", of type assistant
-        let completionElement = this.shadowRoot.getElementById(targetId + "completion")
+        let completionElement = this.shadowRoot.getElementById(targetId + "completion");
         // remove hide from the id text element
         this.removeHideFromCompletion(targetId);
-        let length_messages = completionElement.children.length
+        let length_messages = completionElement.children.length;
         // if there is an element with targetId + "text" , change the id to targetId + "message_" + length_messages
         if (this.shadowRoot.getElementById(targetId + "text")) {
-          this.shadowRoot.getElementById(targetId + "text").id = targetId + "message_" + length_messages
+          this.shadowRoot.getElementById(targetId + "text").id = targetId + "message_" + length_messages;
         }
-        let usermessage = this.createChatElement({"role":"user","content": userTextPrompt },targetId + "message_" + length_messages-1);
+        let usermessage = this.createChatElement({ role: "user", content: userTextPrompt }, targetId + "message_" + length_messages - 1);
         completionElement.appendChild(usermessage);
         setTimeout(() => {
-          usermessage.classList.add("reveal")
+          usermessage.classList.add("reveal");
         }, 10);
-        
-        let assistantmessage = this.createChatElement({"role":"assistant","content":"" },targetId + "text");
+
+        let assistantmessage = this.createChatElement({ role: "assistant", content: "" }, targetId + "text");
         completionElement.appendChild(assistantmessage);
         setTimeout(() => {
-          assistantmessage.classList.add("reveal")
-
+          assistantmessage.classList.add("reveal");
         }, 300);
         // scroll to the bottom of the chat element
-        assistantmessage.scrollIntoView({behavior: "smooth", block: "end", inline: "nearest"});
+        assistantmessage.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
 
         // append the user text to the previous messages
-        previousmessages.push({"role":"user", "content": userTextPrompt});
+        previousmessages.push({ role: "user", content: userTextPrompt });
         let textPrompt = previousmessages;
         const promptObj = {
           prompt: textPrompt,
@@ -852,10 +908,9 @@ class popUpClass extends HTMLElement {
         chrome.runtime.sendMessage({ text: "launchGPT", prompt: promptObj });
       });
     }
-    
+
     // this.stopBubblingEvent(txtArea);
   }
-
 
   resetAutoWidthTextArea(targetId) {
     const textarea = this.getTextareaElement(targetId);
@@ -864,9 +919,7 @@ class popUpClass extends HTMLElement {
   }
 
   removeHideFromCompletion(targetId) {
-    this.shadowRoot
-      .getElementById(`${targetId}completion`)
-      .classList.remove("hide");
+    this.shadowRoot.getElementById(`${targetId}completion`).classList.remove("hide");
   }
   clearProbability(targetId) {
     this.shadowRoot.getElementById(`${targetId}probability`).innerHTML = "";
@@ -901,11 +954,16 @@ class popUpClass extends HTMLElement {
   }
 
   handleKeydown(targetId, e) {
-   
     if (e.key === "Escape") {
       this.closePopup(targetId);
+    }
+    else if (e.key === "Tab") {
+      e.preventDefault();
+      if (this.shadowRoot.getElementById(`${targetId}microphone`)) {
+        this.shadowRoot.getElementById(`${targetId}microphone`).click();
+      }
     } else if (e.altKey) {
-      e.preventDefault(); 
+      e.preventDefault();
       if (e.key === "Enter") {
         this.submitOrStop(targetId);
       } else if (e.key === "c") {
@@ -933,18 +991,14 @@ class popUpClass extends HTMLElement {
   }
 
   clickCopyToClipboard(targetId) {
-    const copyButton = this.shadowRoot.getElementById(
-      `copy_to_clipboard${targetId}`
-    );
+    const copyButton = this.shadowRoot.getElementById(`copy_to_clipboard${targetId}`);
     if (copyButton) {
       copyButton.click();
     }
   }
 
   regenerateOrRun(id_target) {
-    const regenerateButton = this.shadowRoot.getElementById(
-      `regenerate${id_target}`
-    );
+    const regenerateButton = this.shadowRoot.getElementById(`regenerate${id_target}`);
     if (regenerateButton) {
       regenerateButton.click();
     } else {
@@ -956,40 +1010,26 @@ class popUpClass extends HTMLElement {
   }
 
   stopButton(id_target) {
-    this.shadowRoot
-      .getElementById(id_target + "stop")
-      .addEventListener("click", () => {
-        this.stop_stream = true;
-        this.toggleRunStop(id_target);
-      });
+    this.shadowRoot.getElementById(id_target + "stop").addEventListener("click", () => {
+      this.stop_stream = true;
+      this.toggleRunStop(id_target);
+    });
   }
 
   toggleRunStop(id_target) {
     if (this.shadowRoot.getElementById(id_target + "submit")) {
-      this.shadowRoot
-        .getElementById(id_target + "submit")
-        .classList.toggle("hide");
-      this.shadowRoot
-        .getElementById(id_target + "stop")
-        .classList.toggle("hide");
+      this.shadowRoot.getElementById(id_target + "submit").classList.toggle("hide");
+      this.shadowRoot.getElementById(id_target + "stop").classList.toggle("hide");
     }
   }
   copyButtonListener(id_target) {
-    this.shadowRoot
-      .getElementById("copy_to_clipboard" + id_target)
-      .addEventListener("click", () => {
-        this.copyToClipboard(
-          this.shadowRoot.getElementById(id_target + "text").innerText
-        );
-        this.shadowRoot
-          .getElementById("copy_to_clipboard" + id_target)
-          .classList.toggle("invertcolor");
-        setTimeout(() => {
-          this.shadowRoot
-            .getElementById("copy_to_clipboard" + id_target)
-            .classList.toggle("invertcolor");
-        }, 500);
-      });
+    this.shadowRoot.getElementById("copy_to_clipboard" + id_target).addEventListener("click", () => {
+      this.copyToClipboard(this.shadowRoot.getElementById(id_target + "text").innerText);
+      this.shadowRoot.getElementById("copy_to_clipboard" + id_target).classList.toggle("invertcolor");
+      setTimeout(() => {
+        this.shadowRoot.getElementById("copy_to_clipboard" + id_target).classList.toggle("invertcolor");
+      }, 500);
+    });
   }
   togglerModelChat(id_target, id_symbol) {
     //prevent double click to propagate to the parent
@@ -1002,7 +1042,7 @@ class popUpClass extends HTMLElement {
       // toggle across the models, updating  element.bodyData.model
       const element = this.shadowRoot.getElementById(id_target);
       const model = element.bodyData.model;
-      if (model === "gpt-4"){
+      if (model === "gpt-4") {
         element.bodyData.model = "gpt-3.5-turbo";
         symbolElement.innerHTML = models["gpt-3.5-turbo"];
       } else if (model === "gpt-3.5-turbo") {
@@ -1023,7 +1063,7 @@ class popUpClass extends HTMLElement {
       // toggle across the models, updating  element.bodyData.model
       const element = this.shadowRoot.getElementById(id_target);
       const model = element.bodyData.model;
-      if (model === "gpt-4"){
+      if (model === "gpt-4") {
         element.bodyData.model = "gpt-3.5-turbo";
         symbolElement.innerHTML = models["gpt-3.5-turbo"];
       } else if (model === "gpt-3.5-turbo") {
@@ -1042,9 +1082,6 @@ class popUpClass extends HTMLElement {
         element.bodyData.model = "text-ada-001";
         symbolElement.innerHTML = models["text-ada-001"];
       } else if (model === "text-ada-001") {
-        element.bodyData.model = "code-davinci-002";
-        symbolElement.innerHTML = models["code-davinci-002"];
-      } else if (model === "code-davinci-002") {
         element.bodyData.model = "gpt-4";
         symbolElement.innerHTML = models["gpt-4"];
       } else {
@@ -1063,9 +1100,7 @@ class popUpClass extends HTMLElement {
     const add2comp = this.shadowRoot.getElementById(id_target + "add2comp");
     const textarea = this.shadowRoot.getElementById(id_target + "textarea");
     // get copy to clipboard button
-    const copyButton = this.shadowRoot.getElementById(
-      `copy_to_clipboard${id_target}`
-    );
+    const copyButton = this.shadowRoot.getElementById(`copy_to_clipboard${id_target}`);
     // let highlightId = 0;
 
     add2comp.addEventListener("click", () => {
@@ -1087,10 +1122,7 @@ class popUpClass extends HTMLElement {
         if (mutation.type === "childList" && mutation.addedNodes.length) {
           // if text is added
           add2comp.classList.remove("hide");
-        } else if (
-          mutation.type === "childList" &&
-          mutation.removedNodes.length
-        ) {
+        } else if (mutation.type === "childList" && mutation.removedNodes.length) {
           // if text is removed
           add2comp.classList.add("hide");
         }
@@ -1113,14 +1145,9 @@ class popUpClass extends HTMLElement {
     const element = this.shadowRoot.getElementById(id_target);
     const temperature = element.bodyData.temperature;
     // update the temperature slider
-    const temperatureSlider = this.shadowRoot.getElementById(
-      id_target + "temperature"
-    );
+    const temperatureSlider = this.shadowRoot.getElementById(id_target + "temperature");
     temperatureSlider.value = temperature;
-    temperatureSlider.style.setProperty(
-      "--thumb-color",
-      `hsl(${240 - temperature * 120}, 100%, 50%)`
-    );
+    temperatureSlider.style.setProperty("--thumb-color", `hsl(${240 - temperature * 120}, 100%, 50%)`);
     // update the temperatureSlider title
     temperatureSlider.title = "Temperature: " + temperature;
     // update the temperature listner
@@ -1134,10 +1161,7 @@ class popUpClass extends HTMLElement {
       // update the temperature in the element.bodyData.temperature as float
       element.bodyData.temperature = parseFloat(value);
       //color the thumb
-      this.style.setProperty(
-        "--thumb-color",
-        `hsl(${240 - this.value * 120}, 100%, 50%)`
-      );
+      this.style.setProperty("--thumb-color", `hsl(${240 - this.value * 120}, 100%, 50%)`);
     });
   }
 
@@ -1148,7 +1172,7 @@ class popUpClass extends HTMLElement {
     this.pinButtons(id_target, id_pin);
     this.minimizeButtons(id_target, id_minimize);
     this.closeButtons(id_target, id_close);
-    this.doubleClick(id_target + "prompt");
+    this.doubleClick(id_target);
     this.copyButtonListener(id_target);
     this.keysShortcuts(id_target);
   }
@@ -1159,6 +1183,12 @@ class popUpClass extends HTMLElement {
     popupElement.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
         this.closePopup(id_target);
+      } else if (event.key === "Tab") {
+        // if the user press tab and the element microphone exists, click on it
+        event.preventDefault();
+        if (this.shadowRoot.getElementById(id_target + "microphone")) {
+          this.shadowRoot.getElementById(id_target + "microphone").click();
+        } 
       } else if (event.altKey) {
         event.preventDefault();
         if (event.key === "c") {
@@ -1173,9 +1203,7 @@ class popUpClass extends HTMLElement {
   }
 
   showCopyToClipboardBtn(target_id) {
-    this.shadowRoot
-      .getElementById("copy_to_clipboard" + target_id)
-      .classList.remove("hide");
+    this.shadowRoot.getElementById("copy_to_clipboard" + target_id).classList.remove("hide");
   }
 
   updatePopupHeader(request, targetId) {
@@ -1200,11 +1228,8 @@ class popUpClass extends HTMLElement {
 
     const symbol = symbolFromModel(request.bodyData.model);
     this.shadowRoot.getElementById(`${targetId}symbol`).innerHTML = symbol;
-    this.shadowRoot.getElementById(`${targetId}symbol`).title =
-      request.bodyData.model;
-    this.shadowRoot.getElementById(
-      `${targetId}header`
-    ).innerHTML = `<i> ${JSON.stringify(request.text)} </i>`;
+    this.shadowRoot.getElementById(`${targetId}symbol`).title = request.bodyData.model;
+    this.shadowRoot.getElementById(`${targetId}header`).innerHTML = `<i> ${JSON.stringify(request.text)} </i>`;
 
     if (this.shadowRoot.getElementById(`regenerate${targetId}`)) {
       if (!this.alreadyCalled[targetId]) {
@@ -1215,28 +1240,26 @@ class popUpClass extends HTMLElement {
   }
 
   regenerateButton(targetId, element) {
-    this.shadowRoot
-      .getElementById(`regenerate${targetId}`)
-      .addEventListener("click", () => {
-        if (this.stream_on == true) {
-          this.stop_stream = true;
-        } //stop the actual stream if it is on, and then restart it (remains on)
-        const textElement = this.shadowRoot.getElementById(`${targetId}text`);
-        textElement.innerHTML = "";
+    this.shadowRoot.getElementById(`regenerate${targetId}`).addEventListener("click", () => {
+      if (this.stream_on == true) {
+        this.stop_stream = true;
+      } //stop the actual stream if it is on, and then restart it (remains on)
+      const textElement = this.shadowRoot.getElementById(`${targetId}text`);
+      textElement.innerHTML = "";
 
-        this.removeHideFromCompletion(targetId);
-        this.clearProbability(targetId);
-        console.log("regenerate", element.text);
-        var promptDict = {
-          prompt: element.text,
-          model: element.bodyData.model,
-          temperature: element.bodyData.temperature,
-          max_tokens: element.bodyData.max_tokens,
-          popupID: targetId,
-        };
-        chrome.runtime.sendMessage({ text: "launchGPT", prompt: promptDict });
-        // remove hide from the id text element
-      });
+      this.removeHideFromCompletion(targetId);
+      this.clearProbability(targetId);
+      console.log("regenerate", element.text);
+      var promptDict = {
+        prompt: element.text,
+        model: element.bodyData.model,
+        temperature: element.bodyData.temperature,
+        max_tokens: element.bodyData.max_tokens,
+        popupID: targetId,
+      };
+      chrome.runtime.sendMessage({ text: "launchGPT", prompt: promptDict });
+      // remove hide from the id text element
+    });
   }
 
   copyToClipboard = async (text) => {
@@ -1264,12 +1287,9 @@ class popUpClass extends HTMLElement {
 
   updateProbability(id, return_prob = false) {
     if (this.probabilities.length > 0 && this.showProbabilities) {
-      const probability =
-        (100 * this.probabilities.reduce((a, b) => a + b, 0)) /
-        this.probabilities.length;
+      const probability = (100 * this.probabilities.reduce((a, b) => a + b, 0)) / this.probabilities.length;
       const tokens = this.tokens;
-      this.shadowRoot.getElementById(id).innerHTML =
-        tokens + " tokens - avg. prob.: " + probability.toFixed(2) + "%";
+      this.shadowRoot.getElementById(id).innerHTML = tokens + " tokens - avg. prob.: " + probability.toFixed(2) + "%";
       if (return_prob) {
         return probability.toFixed(2);
       }
@@ -1299,12 +1319,10 @@ class popUpClass extends HTMLElement {
         } else if (envelope.delta) {
           if (envelope.delta.content) {
             text = envelope.delta.content;
-
           } else if (envelope.delta.role) {
             text = "";
-            return
-          }
-          else {
+            return;
+          } else {
             text = "";
           }
         }
@@ -1327,15 +1345,14 @@ class popUpClass extends HTMLElement {
             textarea.value += text;
             const event = new Event("input");
             textarea.dispatchEvent(event);
-            
           } else {
             // add text to usual completion
             //check the bodyData of the element
 
             promptarea.innerText += text;
             // check for markdown
-            
-            promptarea.scrollIntoView({ behavior: "auto", block: "end"});
+
+            promptarea.scrollIntoView({ behavior: "auto", block: "end" });
           }
         }
       }
@@ -1356,14 +1373,13 @@ class popUpClass extends HTMLElement {
         // do nothing
       } else {
         updateMarkdownContent(promptarea, promptarea.innerText);
+        // scroll to the end of the promptarea
+        promptarea.scrollIntoView({ behavior: "auto", block: "end" });
       }
       // if stream is false, it means that the stream is over
       this.stream_on = false;
       // compute the probability, get average of element in this.probabilities
-      const final_prob = this.updateProbability(
-        target_id + "probability",
-        true
-      );
+      const final_prob = this.updateProbability(target_id + "probability", true);
       // show run button and hide stop button
       this.toggleRunStop(target_id);
       const complete_completion = promptarea.innerText;
@@ -1371,19 +1387,17 @@ class popUpClass extends HTMLElement {
       //save prompt to local storage
       const bodyData = JSON.parse(message.bodyData);
       const model = bodyData.model;
-      const cost = computeCost(this.tokens+this.tokens_sent , model);
+      const cost = computeCost(this.tokens + this.tokens_sent, model);
       // update in bodyData the final probability in logprobs
       bodyData.logprobs = final_prob + " %";
       // focus depending on the case
       if (textarea) {
         textarea.focus();
-      } 
-      else if (chatarea) {
+      } else if (chatarea) {
         chatarea.focus();
         this.showCopyToClipboardBtn(target_id);
-        element.previousMessages.push({"role":"assistant", "content": complete_completion});
-      }
-      else {
+        element.previousMessages.push({ role: "assistant", content: complete_completion });
+      } else {
         element.focus();
       }
 
@@ -1396,16 +1410,10 @@ class popUpClass extends HTMLElement {
       // save the completion in the history
       chrome.storage.local.get("history", function (items) {
         if (typeof items.history !== "undefined") {
-          items.history.push([
-            JSON.stringify(bodyData),
-            complete_completion,
-            cost,
-          ]); // add the result to the history
+          items.history.push([JSON.stringify(bodyData), complete_completion, cost]); // add the result to the history
           chrome.storage.local.set({ history: items.history });
         } else {
-          items.history = [
-            [JSON.stringify(bodyData), complete_completion, cost],
-          ]; // initialize the history array
+          items.history = [[JSON.stringify(bodyData), complete_completion, cost]]; // initialize the history array
           chrome.storage.local.set({ history: items.history });
         }
       });
@@ -1413,12 +1421,10 @@ class popUpClass extends HTMLElement {
   }
 }
 
-
-
 function updateMarkdownContent(markdownContainer, markdownText) {
   // Wait for the renderMarkdown function to be available
   function waitForRenderMarkdown() {
-    console.log("waiting for renderMarkdown")
+    console.log("waiting for renderMarkdown");
     if (window.renderMarkdown) {
       // Use the renderMarkdown function to convert the Markdown text to HTML
       const renderedHtml = window.renderMarkdown(markdownText);
@@ -1426,7 +1432,7 @@ function updateMarkdownContent(markdownContainer, markdownText) {
       // Find the Markdown container in the chat popup element and update its content
       if (markdownContainer) {
         markdownContainer.innerHTML = renderedHtml;
-        console.log("updated markdown")
+        console.log("updated markdown");
       }
     } else {
       // If the renderMarkdown function is not yet available, try again after a short delay
@@ -1438,8 +1444,36 @@ function updateMarkdownContent(markdownContainer, markdownText) {
   waitForRenderMarkdown();
 }
 
-
-
-
-
 window.customElements.define("mini-popup", popUpClass);
+
+async function transcribeWithWhisper(audio) {
+  return new Promise(async (resolve, reject) => {
+    const arrayBuffer = await audio.arrayBuffer();
+    const wavBuffer = await convertToWav(arrayBuffer);
+    const wavBlob = new Blob([wavBuffer], { type: "audio/wav" });
+    const wavUrl = URL.createObjectURL(wavBlob);
+    chrome.runtime.sendMessage({ action: "transcribeAudio", audio: wavUrl }, (response) => {
+      if (response.error) {
+        reject(new Error(response.error));
+      } else {
+        resolve(response);
+      }
+    });
+  });
+}
+
+import WavEncoder from "wav-encoder";
+
+async function convertToWav(arrayBuffer) {
+  // Use the 'audio/webm' format to create an audio buffer from the input arrayBuffer
+  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+  // Create a WAV file from the audio buffer
+  // const wavEncoder = new WavEncoder(audioBuffer.numberOfChannels, audioBuffer.sampleRate);
+  const wavBuffer = await WavEncoder.encode({
+    sampleRate: audioBuffer.sampleRate,
+    channelData: [audioBuffer.getChannelData(0)],
+  });
+  return wavBuffer;
+}
