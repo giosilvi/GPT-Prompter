@@ -68,7 +68,7 @@ const minipopup = (id, { left = 0, top = 0 }) => `
 `;
 
 const flypopup = (id, { text = "", left = 0, top = 0, symbol = "🅶" }) => `
-<div class="popuptext onylonthefly" id="${id}" style="left: ${left}px; top:${top}px; ">
+<div class="popuptext onylonthefly" id="${id}" style="left: ${left}px; top:${top}px;">
   <div id="${id}prompt" class="popupprompt">
     <div id="${id}grabbable" class="grabbable">
       <div style='position:relative; z-index:3; float:right; height:30px'>
@@ -398,7 +398,7 @@ const styled = `
   overflow:auto;
   transform: scale(0);
   transform-origin: top left;
-  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1), width 1.5s ease-out;
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1), width 0.5s ease-out;
 }
 
 .enlarge{
@@ -572,10 +572,21 @@ class popUpClass extends HTMLElement {
         txtArea.style.height = "auto";
         txtArea.style.height = txtArea.scrollHeight + "px";
         if (txtArea.scrollWidth > txtArea.offsetWidth) {
+          element.style.width = txtArea.scrollWidth + "px";
           // element.style.width = txtArea.scrollWidth + 'px';
-          element.classList.toggle("enlarge")
+          setTimeout(() => {
+          element.classList.toggle("enlarge");
+          }, 10);
+          // set the width of the popup to the width of the text area
           txtArea.style.whiteSpace = "pre-wrap";
+          
+          setTimeout(() => {
+          // set width = max width
+          element.style.width = "100%";
+          element.classList.toggle("enlarge");
+          }, 500);
         }
+        
 
         // if the wideth is greate than 900px, set the  white-space: to pre-wrap
         // if (txtArea.scrollWidth > 900) {
@@ -663,8 +674,12 @@ class popUpClass extends HTMLElement {
       txtArea.style.height = txtArea.scrollHeight + "px";
       if (txtArea.scrollWidth > txtArea.offsetWidth) {
         // element.style.width = txtArea.scrollWidth + 'px';
-        element.classList.toggle('enlarge');
+        element.classList.toggle("enlarge");
         txtArea.style.whiteSpace = "pre-wrap";
+        setTimeout(() => {
+          element.style.width = "100%";
+          element.classList.toggle("enlarge");
+          }, 500);
       }
     });
     txtArea.focus();
