@@ -42,6 +42,9 @@ function countTokens(text, model) {
 
 
 function checkTabsAndSendStream(message, tabs, string, bodyData, idpopup, uuid, tokens_sent) {
+   if (typeof text === "object") {
+      text = text[text.length - 1]["content"];
+    }
   if (tabs.id == -1) {
     //pdf case
     // console.log("pdf case");
@@ -137,7 +140,7 @@ function chooseCompletion(model, temperature, text) {
       temperature: temperature,
       max_tokens: maxTokens,
       messages: text,
-      stream: true,
+      stream: false,
     };
   } else {
     url = "https://api.openai.com/v1/completions";
@@ -146,8 +149,7 @@ function chooseCompletion(model, temperature, text) {
       temperature: temperature,
       max_tokens: maxTokens,
       prompt: text,
-      stream: true,
-      logprobs: 1,
+      stream: false,
     };
   }
   var str_bodyData = JSON.stringify(bodyData);

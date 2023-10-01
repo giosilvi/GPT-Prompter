@@ -171,17 +171,11 @@ chrome.runtime.onInstalled.addListener(function (details) {
     // create the context menu
     createContextMenu();
   });
-  // set advacned setting to true if not set { 'advancedSettings': { "showProb": true} }
   chrome.storage.sync.get("advancedSettings", function (items) {
     // Check that the advancedSettings exists
     if (typeof items.advancedSettings == "undefined") {
       // set advancedSettings as a dictionary
       items.advancedSettings = {};
-    }
-    // if showProb is not set, set it to true
-    if (typeof items.advancedSettings.showProb == "undefined") {
-      items.advancedSettings.showProb = true;
-      items.advancedSettings.autoAdd = false;
     }
     // save
     chrome.storage.sync.set({ advancedSettings: items.advancedSettings });

@@ -132,52 +132,34 @@ function checkIdPopup(id) {
   return id === undefined || id === -1 ? popUpShadow.ids : parseInt(id);
 }
 
-
-const buffers = {};
-
-function handleDataChunk(uuid, dataChunk, request) {
-  // Initialize buffer for this uuid if not already present
-  buffers[uuid] = buffers[uuid] || "";
-  
-  // Append the new chunk to the appropriate buffer
-  buffers[uuid] += dataChunk.replace(/^data: /, "");
-
-  // Attempt to find a complete JSON object in the buffer
-  const endOfObjectPos = buffers[uuid].indexOf('}\n{');
-  if (endOfObjectPos !== -1) {
-    // Extract the complete JSON object from the buffer
-    const completeJsonObjectStr = buffers[uuid].substring(0, endOfObjectPos + 1);
-    
-    // Process the complete JSON object
-    processJsonObject(completeJsonObjectStr, uuid, request);
-    
-    // Remove the processed data from the buffer
-    buffers[uuid] = buffers[uuid].substring(endOfObjectPos + 2);
-  }
+function sendStopSignal(request,uuid) {
+  console.log(`Sending stop signal for ${uuid}`);
+  popUpShadow.updatepopup(request, uuid, false);
 }
 
 function processJsonObject(jsonStr, uuid, request) {
   try {
-    // Check for the [DONE] marker
-    if (jsonStr === "[DONE]") {
-      popUpShadow.updatepopup(request, uuid, false);
-      return;
-    }
+      // Otherwise, parse and process the JSON object
+      const jsonObject = JSON.parse(jsonStr);
+      // console.log(`Processing JSON object for ${uuid}:`, jsonObject);
+      
+      // Check for an error property in the JSON object
+      if (jsonObject.error) {
+          console.log(`Error found for ${uuid}:`, jsonObject.error);
+          popUpShadow.updatepopup(jsonObject, uuid, true);
+          return;
+      }
 
-    // Otherwise, parse and process the JSON object
-    const jsonObject = JSON.parse(jsonStr);
-    
-    // Check for an error property in the JSON object
-    if (jsonObject.error) {
-      popUpShadow.updatepopup(jsonObject, uuid, true);
-      return;
-    }
+      popUpShadow.updatepopup(jsonObject, uuid, true);  // Assuming uuid maps to idPopup
 
-    popUpShadow.updatepopup(jsonObject, uuid, true);  // Assuming uuid maps to idPopup
+      // Once a valid JSON object has been processed, send a stop signal
+      sendStopSignal(request,uuid);
+
   } catch (e) {
-    console.error("Failed to parse JSON object:", e);
+      console.error("Failed to parse JSON object:", e);
   }
 }
+
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.greeting === "shouldReenableContextMenu") {
@@ -209,7 +191,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       popUpShadow.ontheflypopup(request.text, request.bodyData, request.cursorPosition);
       addListenersForDrag();
       break;
-    case"showPopUpChatGPT":
+    case "showPopUpChatGPT":
       handleShowPopUp();
       console.log("ChatGPT");
       popUpShadow.chatGPTpopup(request.text, request.bodyData, request.cursorPosition);
@@ -220,20 +202,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       break;
     case "GPTStream_completion":
       try {
-          if (popUpShadow.stop_stream && !popUpShadow.listOfUndesiredStreams.includes(request.uuid)) {
-            console.log("Stop stream with uuid", request.uuid);
-            popUpShadow.listOfUndesiredStreams.push(request.uuid);
-            delete buffers[request.uuid];  // Clear the buffer for this stream
-            popUpShadow.stop_stream = false;
-            popUpShadow.clearnewlines = true;
-          }
-          if (!popUpShadow.listOfUndesiredStreams.includes(request.uuid)) {
-            handleDataChunk(request.uuid, request.text, request);
-          }
-        } catch (e) {
-          console.error(e);
+        if (popUpShadow.stop_stream && !popUpShadow.listOfUndesiredStreams.includes(request.uuid)) {
+          console.log("Stop stream with uuid", request.uuid);
+          popUpShadow.listOfUndesiredStreams.push(request.uuid);
+          popUpShadow.stop_stream = false;
+          popUpShadow.clearnewlines = true;
         }
-        break;
+        if (!popUpShadow.listOfUndesiredStreams.includes(request.uuid)) {
+          processJsonObject(request.text,idPopup,  request);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+      break;
     default:
       alert(request);
       break;
