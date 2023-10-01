@@ -132,6 +132,53 @@ function checkIdPopup(id) {
   return id === undefined || id === -1 ? popUpShadow.ids : parseInt(id);
 }
 
+
+const buffers = {};
+
+function handleDataChunk(uuid, dataChunk, request) {
+  // Initialize buffer for this uuid if not already present
+  buffers[uuid] = buffers[uuid] || "";
+  
+  // Append the new chunk to the appropriate buffer
+  buffers[uuid] += dataChunk.replace(/^data: /, "");
+
+  // Attempt to find a complete JSON object in the buffer
+  const endOfObjectPos = buffers[uuid].indexOf('}\n{');
+  if (endOfObjectPos !== -1) {
+    // Extract the complete JSON object from the buffer
+    const completeJsonObjectStr = buffers[uuid].substring(0, endOfObjectPos + 1);
+    
+    // Process the complete JSON object
+    processJsonObject(completeJsonObjectStr, uuid, request);
+    
+    // Remove the processed data from the buffer
+    buffers[uuid] = buffers[uuid].substring(endOfObjectPos + 2);
+  }
+}
+
+function processJsonObject(jsonStr, uuid, request) {
+  try {
+    // Check for the [DONE] marker
+    if (jsonStr === "[DONE]") {
+      popUpShadow.updatepopup(request, uuid, false);
+      return;
+    }
+
+    // Otherwise, parse and process the JSON object
+    const jsonObject = JSON.parse(jsonStr);
+    
+    // Check for an error property in the JSON object
+    if (jsonObject.error) {
+      popUpShadow.updatepopup(jsonObject, uuid, true);
+      return;
+    }
+
+    popUpShadow.updatepopup(jsonObject, uuid, true);  // Assuming uuid maps to idPopup
+  } catch (e) {
+    console.error("Failed to parse JSON object:", e);
+  }
+}
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.greeting === "shouldReenableContextMenu") {
     sendResponse({ farewell: "yes" });
@@ -144,7 +191,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 
   const idPopup = checkIdPopup(request.id_popup);
-
   const handleShowPopUp = () => {
     popUpShadow.ids += 1;
     popUpShadow.listOfActivePopups.push(popUpShadow.ids);
@@ -174,36 +220,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       break;
     case "GPTStream_completion":
       try {
-        const lines = request.text
-          .toString()
-          .split("\n")
-          .filter((line) => line.trim() !== ""); // remove empty lines and split
-        if (popUpShadow.stop_stream && !popUpShadow.listOfUndesiredStreams.includes(request.uuid)) {
-          console.log("Stop stream with uuid", request.uuid);
-          popUpShadow.listOfUndesiredStreams.push(request.uuid);
-          popUpShadow.stop_stream = false;
-          popUpShadow.clearnewlines = true;
-        }
-        if (!popUpShadow.listOfUndesiredStreams.includes(request.uuid)) {
-          for (const line of lines) {
-            const message = line.replace(/^data: /, "");
-            if (message === "[DONE]") {
-              // console.log('json', json.choices[0].logprobs.token_logprobs[0])
-              popUpShadow.updatepopup(request, idPopup, false);
-            } else {
-              const parsed = JSON.parse(message);
-              popUpShadow.updatepopup(parsed, idPopup, true);
-            }
+          if (popUpShadow.stop_stream && !popUpShadow.listOfUndesiredStreams.includes(request.uuid)) {
+            console.log("Stop stream with uuid", request.uuid);
+            popUpShadow.listOfUndesiredStreams.push(request.uuid);
+            delete buffers[request.uuid];  // Clear the buffer for this stream
+            popUpShadow.stop_stream = false;
+            popUpShadow.clearnewlines = true;
           }
+          if (!popUpShadow.listOfUndesiredStreams.includes(request.uuid)) {
+            handleDataChunk(request.uuid, request.text, request);
+          }
+        } catch (e) {
+          console.error(e);
         }
-      } catch (e) {
-        console.error(e);
-        const json = JSON.parse(request.text);
-        if (json.error) {
-          popUpShadow.updatepopup(json, idPopup, true);
-        }
-      }
-      break;
+        break;
     default:
       alert(request);
       break;

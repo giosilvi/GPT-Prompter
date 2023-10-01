@@ -3,6 +3,7 @@ import "@webcomponents/custom-elements/custom-elements.min.js";
 const models = {
   "gpt-4": "❹",
   "gpt-3.5-turbo": "🅶",
+  "gpt-3.5-turbo-instruct" : "🅸",
   "text-davinci-003": "ↁ",
   "text-davinci-002": "🅳",
   "text-curie-001": "🅲",
@@ -25,11 +26,13 @@ const DaVinciCost = 0.02 / 1000;
 const CurieCost = 0.002 / 1000;
 const BabbageCost = 0.0005 / 1000;
 const AdaCost = 0.0004 / 1000;
+const InstructCost = ChatGPTCost;
 
 function computeCost(tokens, model) {
   var cost = 0;
   if (model == "text-davinci-003") cost = tokens * DaVinciCost;
   else if (model == "text-davinci-002") cost = tokens * DaVinciCost;
+  else if (model == "gpt-3.5-turbo-instruct" ) cost = tokends * InstructCost;
   else if (model == "text-curie-001") cost = tokens * CurieCost;
   else if (model == "text-babbage-001") cost = tokens * BabbageCost;
   else if (model == "text-ada-001") cost = tokens * AdaCost;
@@ -1082,9 +1085,12 @@ class popUpClass extends HTMLElement {
         element.bodyData.model = "gpt-3.5-turbo";
         symbolElement.innerHTML = models["gpt-3.5-turbo"];
       } else if (model === "gpt-3.5-turbo") {
+        element.bodyData.model = "gpt-3.5-turbo-instruct";
+        symbolElement.innerHTML = models["gpt-3.5-turbo-instruct"];
+      }  else if (model ==="gpt-3.5-turbo-instruct") {
         element.bodyData.model = "text-davinci-003";
         symbolElement.innerHTML = models["text-davinci-003"];
-      } else if (model === "text-davinci-003") {
+      }else if (model === "text-davinci-003") {
         element.bodyData.model = "text-davinci-002";
         symbolElement.innerHTML = models["text-davinci-002"];
       } else if (model === "text-davinci-002") {
@@ -1101,8 +1107,8 @@ class popUpClass extends HTMLElement {
         symbolElement.innerHTML = models["gpt-4"];
       } else {
         // default
-        element.bodyData.model = "text-davinci-003";
-        symbolElement.innerHTML = models["text-davinci-003"];
+        element.bodyData.model = "gpt-3.5-turbo-instruct";
+        symbolElement.innerHTML = models["gpt-3.5-turbo-instruct"];
       }
       symbolElement.title = element.bodyData.model;
     });

@@ -5,6 +5,7 @@ const tokenizer = new GPT3Tokenizer({ type: "gpt3" });
 var MaxTokensPerModel = {
   "gpt-4": 8000,
   "gpt-3.5-turbo": 4000,
+  "gpt-3.5-turbo-instruct": 4000,
   "text-davinci-003": 4000,
   "text-davinci-002": 4000,
   "text-curie-001": 2000,

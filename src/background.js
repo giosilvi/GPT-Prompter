@@ -137,7 +137,7 @@ chrome.runtime.onInstalled.addListener(function (details) {
         for (var i = 0; i < items.customprompt.length; i++) {
           // modify each one of them to become a dictionary
           items.customprompt[i] = {
-            model: "text-davinci-003",
+            model: "gpt-3.5-turbo-instruct",
             temperature: 0.1,
             max_tokens: 1024,
             prompt: items.customprompt[i],
@@ -149,14 +149,14 @@ chrome.runtime.onInstalled.addListener(function (details) {
       // if the prompt does not exist, create the default one
       items.customprompt = [
         {
-          model: "text-davinci-003",
+          model:  "gpt-3.5-turbo-instruct",
           temperature: 0.1,
           max_tokens: 1024,
           prompt: "Tell me more about #TEXT# :",
           twoStage: false,
         },
         {
-          model: "text-davinci-003",
+          model:  "gpt-3.5-turbo-instruct",
           temperature: 0.1,
           max_tokens: 1024,
           prompt:

@@ -3,6 +3,7 @@ var models = {
     "gpt-4" : "❹",
     "gpt-3.5-turbo" : "🅶",
     "text-davinci-003": "ↁ",
+    "gpt-3.5-turbo-instruct" : "🅸",
     "text-davinci-002": "🅳",
     "text-curie-001": "🅲",
     "text-babbage-001": "🅑",
