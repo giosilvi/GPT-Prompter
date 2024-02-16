@@ -1,14 +1,6 @@
 import "@webcomponents/custom-elements/custom-elements.min.js";
-
-const models = {
-  "gpt-4": "❹",
-  "gpt-3.5-turbo": "🅶",
-  "text-davinci-003": "ↁ",
-  "text-davinci-002": "🅳",
-  "text-curie-001": "🅲",
-  "text-babbage-001": "🅑",
-  "text-ada-001": "🅐"
-};
+import CHAT_API_MODELS from "./gpt3.js";
+import models from "./sharedfunctions.js"
 
 function symbolFromModel(model) {
   // check if the model is in the dictionary
@@ -19,6 +11,7 @@ function symbolFromModel(model) {
 }
 
 // const highlightColor = "#d2f4d3";//"rgb(16, 163, 255)";
+const Gpt4TurboCost = 0.03 / 1000;
 const Gpt4Cost8kCompl = 0.06 / 1000;
 const ChatGPTCost = 0.002 / 1000;
 const DaVinciCost = 0.02 / 1000;
@@ -35,6 +28,7 @@ function computeCost(tokens, model) {
   else if (model == "text-ada-001") cost = tokens * AdaCost;
   else if (model == "gpt-3.5-turbo") cost = tokens * ChatGPTCost;
   else if (model == "gpt-4") cost = tokens * Gpt4Cost8kCompl;
+  else if (model == "gpt-4-0125-preview") cost = tokens * Gpt4TurboCost;
   return cost.toFixed(5);
 }
 
@@ -841,7 +835,7 @@ class popUpClass extends HTMLElement {
         this.removeHideFromCompletion(targetId);
         let modelToUse = this.getBodyData(targetId, "model");
         let textPrompt = this.getTextareaValue(targetId);
-        if (modelToUse === "gpt-3.5-turbo" || modelToUse === "gpt-4") {
+        if (modelToUse in CHAT_API_MODELS) {
           textPrompt = [{ role: "user", content: textPrompt }];
         }
 
@@ -1058,11 +1052,15 @@ class popUpClass extends HTMLElement {
       const element = this.shadowRoot.getElementById(id_target);
       const model = element.bodyData.model;
       if (model === "gpt-4") {
-        element.bodyData.model = "gpt-3.5-turbo";
-        symbolElement.innerHTML = models["gpt-3.5-turbo"];
+        element.bodyData.model = "gpt-4-0125-preview";
+        symbolElement.innerHTML = models["gpt-4-0125-preview"];
       } else if (model === "gpt-3.5-turbo") {
         element.bodyData.model = "gpt-4";
         symbolElement.innerHTML = models["gpt-4"];
+      }
+      else if (model == "gpt-4-0125-preview") {
+        element.bodyData.model = "gpt-3.5-turbo";
+        symbolElement.innerHTML = models["gpt-3.5-turbo"];
       }
       symbolElement.title = element.bodyData.model;
     });
@@ -1097,6 +1095,9 @@ class popUpClass extends HTMLElement {
         element.bodyData.model = "text-ada-001";
         symbolElement.innerHTML = models["text-ada-001"];
       } else if (model === "text-ada-001") {
+        element.bodyData.model = "gpt-4-0125-preview";
+        symbolElement.innerHTML = models["gpt-4-0125-preview"];
+      } else if (model === "gpt-4-0125-preview") {
         element.bodyData.model = "gpt-4";
         symbolElement.innerHTML = models["gpt-4"];
       } else {

@@ -1,8 +1,14 @@
 import GPT3Tokenizer from "gpt3-tokenizer";
 
 const tokenizer = new GPT3Tokenizer({ type: "gpt3" });
+const CHAT_API_MODELS = {
+  "gpt-4": true,
+  "gpt-3.5-turbo": true,
+  "gpt-4-0125-preview": true
+};
 
 var MaxTokensPerModel = {
+  "gpt-4-0125-preview": 4096,
   "gpt-4": 8000,
   "gpt-3.5-turbo": 4000,
   "text-davinci-003": 4000,
@@ -14,7 +20,7 @@ var MaxTokensPerModel = {
 
 function checkMaxTokens(content, model) {
   var tokens = 0;
-  if (model == "gpt-4" || model == "gpt-3.5-turbo") {
+  if (model in CHAT_API_MODELS) {
     // check the tokens in the text, for each "content" key
     // var content = JSON.parse(text);
     for (var i = 0; i < content.length; i++) {
@@ -69,7 +75,7 @@ async function promptGPT3Prompting(prompt, items, tabs) {
   var text = prompt["prompt"];
   var model = prompt["model"];
   // if the model is gpt-4 or gpt-3.5-turbo, we need to check that the text is a valid json
-  if (model == "gpt-4" || model == "gpt-3.5-turbo") {
+  if (model in CHAT_API_MODELS) {
     console.log('Check',typeof text)
     if (typeof text !== "object") 
      {text = [{"role": "user", "content": text}];}
@@ -129,7 +135,7 @@ function chooseCompletion(model, temperature, text) {
   var { maxTokens, tokens } = checkMaxTokens(text, model);
   var url = "";
 
-  if (model == "gpt-3.5-turbo" || model === "gpt-4") {
+  if (model in CHAT_API_MODELS) {
     url = "https://api.openai.com/v1/chat/completions";
     var bodyData = {
       model: model,

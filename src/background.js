@@ -1,6 +1,9 @@
 import promptGPT3Prompting from "./gpt3.js";
 import symbolFromModel from "./sharedfunctions.js";
+import CHAT_API_MODELS from "./gpt3.js";
+
 const std_model = "gpt-3.5-turbo";
+
 
 // FUNCTIONS DECLARATION
 async function checkGPT(apikey) {
@@ -105,7 +108,7 @@ function passTitleOrPrompt(customprompt, symbol) {
     return `${symbol} ${customprompt.title.replaceAll("#TEXT#", "%s")}`;
   } else {
     // if customprompt does not contain a title return the prompt
-    if (customprompt.model === "gpt-3.5-turbo" || customprompt.model === "gpt-4") {
+    if (customprompt.model in CHAT_API_MODELS) {
       // if it is, json parse the prompt
       const prompt = JSON.parse(customprompt.prompt);
       // get the last element of the prompt
@@ -385,12 +388,12 @@ chrome.contextMenus.onClicked.addListener(async (info, tabs) => {
           const prompt = items.customprompt[promptNumber];
           // Update the prompt text with the selected text, if there is any
           var parsedPrompt = "";
-          if (prompt.model == "gpt-3.5-turbo" || prompt.model === "gpt-4") {
+          if (prompt.model in CHAT_API_MODELS) {
             parsedPrompt = JSON.parse(prompt.prompt);
             prompt.prompt = parsedPrompt;
           }
           if (info.selectionText) {
-            if (prompt.model == "gpt-3.5-turbo" || prompt.model === "gpt-4") {
+            if (prompt.model in CHAT_API_MODELS) {
               // loop over the prompt and replace the placeholder
               for (var i = 0; i < parsedPrompt.length; i++) {
                 if (parsedPrompt[i]["content"].includes("#TEXT#")) {
@@ -415,7 +418,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tabs) => {
               })();
             });
           } else {
-            if (prompt.model == "gpt-3.5-turbo" || prompt.model === "gpt-4") {
+            if (prompt.model in CHAT_API_MODELS) {
               console.log("Chat GPT", prompt);
               launchPopUpInPage(prompt.prompt, prompt, "showPopUpChatGPT");
             } else {

@@ -4,6 +4,9 @@
  * @param {object} items - The list of items to create the list from.
  * @return {string} - The HTML list.
  */
+
+import CHAT_API_MODELS from "./gpt3.js";
+
 function makeHistoryList(items) {
   // create empty list and total cost variables
   var list = "";
@@ -46,7 +49,7 @@ function createListItem(item, index) {
   // add prompt key and value to prompt content string
   // if prompt can be parsed as JSON, add it as a string
   // otherwise, add it as a string
-  if (prompt["model"] == "gpt-3.5-turbo" || prompt["model"] === "gpt-4") {
+  if (prompt["model"] in CHAT_API_MODELS) {
     console.log(prompt["messages"]);
     promptContent += `<strong>prompt:</strong> ${JSON.stringify(prompt["messages"])}<br>`;
   } else {
