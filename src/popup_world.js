@@ -5,8 +5,11 @@ import models from "./sharedfunctions.js"
 function symbolFromModel(model) {
   // check if the model is in the dictionary
   if (models.hasOwnProperty(model)) {
+    console.log("model found", model)
+    console.log("Model symbol:", models[model])
     return models[model];
   }
+  console.log("model not found", model)
   return null;
 }
 
