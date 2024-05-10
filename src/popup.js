@@ -1,4 +1,5 @@
 // GENERAL FUNCTIONS
+import CHAT_API_MODELS from "./gpt3.js";
 
 function makePromptList(items) {
   // Clear the node 'list-of-prompts'.
@@ -34,7 +35,7 @@ function makePromptList(items) {
     var promptText = document.createElement("span");
     promptText.className = "prompt-text";
     var type = "GPT";
-    if (modelText.innerText == " gpt-3.5-turbo" || modelText.innerText == " gpt-4") {
+    if (modelText.innerText in CHAT_API_MODELS) {
       type = "ChatGPT";
     }
     if (type == "ChatGPT") {
@@ -94,7 +95,7 @@ function makePromptList(items) {
     // add title that appears on hover
     twoStageToggleText.setAttribute(
       "title",
-      "Two-Stage mode: the prompt is loaded with the selected text but is not sent immediatly so the user can add to it."
+      "Two-Stage mode: the prompt is loaded with the selected text but is not sent immediately so the user can add to it."
     );
 
     // Add a textare for the title, make it hidden, make it one line, and 500px wide
@@ -486,7 +487,7 @@ function editPrompt(index) {
         document.getElementById("inputmodel").value = items.customprompt[index]["model"];
         document.getElementById("temp").value = items.customprompt[index]["temperature"];
         document.getElementById("temperature").value = items.customprompt[index]["temperature"];
-        if (items.customprompt[index]["model"] == "gpt-3.5-turbo" || items.customprompt[index]["model"] == "gpt-4") {
+        if (items.customprompt[index]["model"] in CHAT_API_MODELS) {
           chatGPTDesignON();
           let listMessages = JSON.parse(items.customprompt[index]["prompt"]);
           document.getElementById("systeminput").value = listMessages[0]["content"];
@@ -823,7 +824,7 @@ document.addEventListener(
       //if the user select the model text-davinci-003 or text-davinci-002
       console.log(document.getElementById("inputmodel").value);
       const model = document.getElementById("inputmodel").value;
-      if (model == "gpt-3.5-turbo" || model == "gpt-4" ) {
+      if (model in CHAT_API_MODELS) {
         chatGPTDesignON();
       } else {
         GPTDesignON();
