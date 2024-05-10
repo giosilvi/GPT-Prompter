@@ -1,4 +1,11 @@
 # GPT-Prompter
+
+### Update (05/10/2024) - Differences from [giosilvi's GPT-Prompter](https://github.com/giosilvi/GPT-Prompter):
+- Added support for GPT-4-Turbo.
+- Updated prompt list with Anki prompts.
+- No present support for Instruct models.
+- Live response streaming is back.
+
 Open source Browser extension to get fast customizable prompts (e.g. explanations) of the selected text or chat using OpenAI`s GPT-3 model. Available in the Chrome/Firefox web store.
 
 To use it follows these steps:
