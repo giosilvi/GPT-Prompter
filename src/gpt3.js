@@ -4,11 +4,11 @@ const tokenizer = new GPT3Tokenizer({ type: "gpt3" });
 const CHAT_API_MODELS = {
   "gpt-4": true,
   "gpt-3.5-turbo": true,
-  "gpt-4-0125-preview": true
+  "gpt-4-turbo": true
 };
 
 var MaxTokensPerModel = {
-  "gpt-4-0125-preview": 4096,
+  "gpt-4-turbo": 4096,
   "gpt-4": 8000,
   "gpt-3.5-turbo": 4000,
   "text-davinci-003": 4000,
@@ -16,6 +16,10 @@ var MaxTokensPerModel = {
   "text-curie-001": 2000,
   "text-babbage-001": 2000,
   "text-ada-001": 2000
+};
+
+const DECOUPLED_INPUT_OUTPUT_LENGTH_MODELS = {
+  "gpt-4-turbo": true
 };
 
 function checkMaxTokens(content, model) {
@@ -34,6 +38,10 @@ function checkMaxTokens(content, model) {
     tokens = countTokens(content, model);
   }
   var maxTokens = MaxTokensPerModel[model] - tokens;
+  if (model in DECOUPLED_INPUT_OUTPUT_LENGTH_MODELS) {
+    maxTokens = MaxTokensPerModel[model];
+  }
+  console.log("model", model, "maxTokens", maxTokens, "tokens", tokens);
   return { maxTokens, tokens };
 }
 

@@ -1,13 +1,8 @@
 
-const models = {
-  "gpt-4-0125-preview": "🚀",
+export const models = {
+  "gpt-4-turbo": "🚀",
   "gpt-4": "❹",
-  "gpt-3.5-turbo": "🅶",
-  "text-davinci-003": "ↁ",
-  "text-davinci-002": "🅳",
-  "text-curie-001": "🅲",
-  "text-babbage-001": "🅑",
-  "text-ada-001": "🅐"
+  "gpt-3.5-turbo": "🅶"
 };
   //the above function symbolFromModel can be rewritten as a dictionary
   function symbolFromModel(model) {

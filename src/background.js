@@ -2,7 +2,7 @@ import promptGPT3Prompting from "./gpt3.js";
 import symbolFromModel from "./sharedfunctions.js";
 import CHAT_API_MODELS from "./gpt3.js";
 
-const std_model = "gpt-3.5-turbo";
+const std_model = "gpt-4-turbo";
 
 
 // FUNCTIONS DECLARATION
@@ -140,7 +140,7 @@ chrome.runtime.onInstalled.addListener(function (details) {
         for (var i = 0; i < items.customprompt.length; i++) {
           // modify each one of them to become a dictionary
           items.customprompt[i] = {
-            model: "text-davinci-003",
+            model: "gpt-4-turbo",
             temperature: 0.1,
             max_tokens: 1024,
             prompt: items.customprompt[i],
@@ -152,21 +152,35 @@ chrome.runtime.onInstalled.addListener(function (details) {
       // if the prompt does not exist, create the default one
       items.customprompt = [
         {
-          model: "text-davinci-003",
+          model: "gpt-4-turbo",
           temperature: 0.1,
-          max_tokens: 1024,
-          prompt: "Tell me more about #TEXT# :",
+          max_tokens: 4096,
+          prompt: "Try not to use headings. Tell me more about #TEXT# :",
           twoStage: false,
         },
         {
-          model: "text-davinci-003",
+          model: "gpt-4-turbo",
+          temperature: 0.1,
+          max_tokens: 4096,
+          prompt: "Please create an Anki card for: #TEXT# :",
+          twoStage: false,
+        },
+        {
+          model: "gpt-4-turbo",
+          temperature: 0.1,
+          max_tokens: 4096,
+          prompt: "Please create an Anki card for the concept below. Explain any intuitions and be sure to include formulas if necessary: #TEXT#",
+          twoStage: false,
+        },
+        {
+          model: "gpt-4-turbo",
           temperature: 0.1,
           max_tokens: 1024,
           prompt:
             'Answer the question as truthfully as possible using the provided text, and if the answer is not contained within the text below, say "I don\'t know" \nContext:\n#TEXT# \n\nQ:',
           title: "Two-stage Q&&A",
           twoStage: true,
-        },
+        }
       ];
     }
     // save the newPromptList

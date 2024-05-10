@@ -1,8 +1,9 @@
 import "@webcomponents/custom-elements/custom-elements.min.js";
 import CHAT_API_MODELS from "./gpt3.js";
-import models from "./sharedfunctions.js"
+import { models } from "./sharedfunctions.js"
 
 function symbolFromModel(model) {
+  console.log(models)
   // check if the model is in the dictionary
   if (models.hasOwnProperty(model)) {
     console.log("model found", model)
@@ -17,21 +18,21 @@ function symbolFromModel(model) {
 const Gpt4TurboCost = 0.03 / 1000;
 const Gpt4Cost8kCompl = 0.06 / 1000;
 const ChatGPTCost = 0.002 / 1000;
-const DaVinciCost = 0.02 / 1000;
-const CurieCost = 0.002 / 1000;
-const BabbageCost = 0.0005 / 1000;
-const AdaCost = 0.0004 / 1000;
+// const DaVinciCost = 0.02 / 1000;
+// const CurieCost = 0.002 / 1000;
+// const BabbageCost = 0.0005 / 1000;
+// const AdaCost = 0.0004 / 1000;
 
 function computeCost(tokens, model) {
   var cost = 0;
-  if (model == "text-davinci-003") cost = tokens * DaVinciCost;
-  else if (model == "text-davinci-002") cost = tokens * DaVinciCost;
-  else if (model == "text-curie-001") cost = tokens * CurieCost;
-  else if (model == "text-babbage-001") cost = tokens * BabbageCost;
-  else if (model == "text-ada-001") cost = tokens * AdaCost;
-  else if (model == "gpt-3.5-turbo") cost = tokens * ChatGPTCost;
+  // if (model == "text-davinci-003") cost = tokens * DaVinciCost;
+  // else if (model == "text-davinci-002") cost = tokens * DaVinciCost;
+  // else if (model == "text-curie-001") cost = tokens * CurieCost;
+  // else if (model == "text-babbage-001") cost = tokens * BabbageCost;
+  // else if (model == "text-ada-001") cost = tokens * AdaCost;
+  if (model == "gpt-3.5-turbo") cost = tokens * ChatGPTCost;
   else if (model == "gpt-4") cost = tokens * Gpt4Cost8kCompl;
-  else if (model == "gpt-4-0125-preview") cost = tokens * Gpt4TurboCost;
+  else if (model == "gpt-4-turbo") cost = tokens * Gpt4TurboCost;
   return cost.toFixed(5);
 }
 
@@ -850,6 +851,7 @@ class popUpClass extends HTMLElement {
           popupID: targetId,
           type: "completion",
         };
+        console.log("promptObj", promptObj);
         chrome.runtime.sendMessage({ text: "launchGPT", prompt: promptObj });
         // get the textarea element
         this.resetAutoWidthTextArea(targetId);
@@ -1055,13 +1057,13 @@ class popUpClass extends HTMLElement {
       const element = this.shadowRoot.getElementById(id_target);
       const model = element.bodyData.model;
       if (model === "gpt-4") {
-        element.bodyData.model = "gpt-4-0125-preview";
-        symbolElement.innerHTML = models["gpt-4-0125-preview"];
+        element.bodyData.model = "gpt-4-turbo";
+        symbolElement.innerHTML = models["gpt-4-turbo"];
       } else if (model === "gpt-3.5-turbo") {
         element.bodyData.model = "gpt-4";
         symbolElement.innerHTML = models["gpt-4"];
       }
-      else if (model == "gpt-4-0125-preview") {
+      else if (model == "gpt-4-turbo") {
         element.bodyData.model = "gpt-3.5-turbo";
         symbolElement.innerHTML = models["gpt-3.5-turbo"];
       }
@@ -1083,30 +1085,15 @@ class popUpClass extends HTMLElement {
         element.bodyData.model = "gpt-3.5-turbo";
         symbolElement.innerHTML = models["gpt-3.5-turbo"];
       } else if (model === "gpt-3.5-turbo") {
-        element.bodyData.model = "text-davinci-003";
-        symbolElement.innerHTML = models["text-davinci-003"];
-      } else if (model === "text-davinci-003") {
-        element.bodyData.model = "text-davinci-002";
-        symbolElement.innerHTML = models["text-davinci-002"];
-      } else if (model === "text-davinci-002") {
-        element.bodyData.model = "text-curie-001";
-        symbolElement.innerHTML = models["text-curie-001"];
-      } else if (model === "text-curie-001") {
-        element.bodyData.model = "text-babbage-001";
-        symbolElement.innerHTML = models["text-babbage-001"];
-      } else if (model === "text-babbage-001") {
-        element.bodyData.model = "text-ada-001";
-        symbolElement.innerHTML = models["text-ada-001"];
-      } else if (model === "text-ada-001") {
-        element.bodyData.model = "gpt-4-0125-preview";
-        symbolElement.innerHTML = models["gpt-4-0125-preview"];
-      } else if (model === "gpt-4-0125-preview") {
+        element.bodyData.model = "gpt-4-turbo-";
+        symbolElement.innerHTML = models["gpt-4-turbo"];
+      } else if (model === "gpt-4-turbo") {
         element.bodyData.model = "gpt-4";
         symbolElement.innerHTML = models["gpt-4"];
       } else {
         // default
-        element.bodyData.model = "text-davinci-003";
-        symbolElement.innerHTML = models["text-davinci-003"];
+        element.bodyData.model = "gpt-4-turbo";
+        symbolElement.innerHTML = models["gpt-4-turbo"];
       }
       symbolElement.title = element.bodyData.model;
     });
