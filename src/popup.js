@@ -542,32 +542,6 @@ function saveKey() {
   setInStorage({ APIKEY: apiKey });
 }
 
-// add listener to the probabilityToggle
-function addListenerToProbabilityToggle() {
-  // set the value of the probabilityToggle retrieved from the storage
-  getFromStorage("advancedSettings").then((items) => {
-    // Check that the advanced setting  exists
-    if (typeof items.advancedSettings !== "undefined") {
-      // Check that the showProb exists
-      if (typeof items.advancedSettings.showProb !== "undefined") {
-        // set the value of the probabilityToggle
-        document.getElementById("probabilityToggle").checked = items.advancedSettings.showProb;
-      }
-    }
-  });
-  // add listener to the probabilityToggle
-  document.getElementById("probabilityToggle").addEventListener("click", function () {
-    // get the value of the probabilityToggle
-    var probabilityToggle = document.getElementById("probabilityToggle").checked;
-    // retrieve advancedSettings from the storage
-    getFromStorage("advancedSettings").then((items) => {
-      // add ProbabilityToggle to the advancedSettings
-      items.advancedSettings.showProb = probabilityToggle;
-      // save the value in the storage, use SetInStorage function
-      setInStorage({ advancedSettings: items.advancedSettings });
-    });
-  });
-}
 
 // redo the same for autoAddToggle
 function addListenerToAutoAddToggle() {
@@ -667,7 +641,6 @@ function checkAllInputsPromptDesignerChatGPT() {
 document.addEventListener("DOMContentLoaded", function () {
   checkInputOfPromptDesigner();
   checkAllInputsPromptDesignerChatGPT();
-  addListenerToProbabilityToggle();
   addListenerToAutoAddToggle();
 });
 
@@ -733,7 +706,6 @@ document.addEventListener(
     document.getElementById("linkToAPI").addEventListener("click", openLink);
     document.getElementById("linkToGuide").addEventListener("click", openLink);
     document.getElementById("linkToReddit").addEventListener("click", openLink);
-    document.getElementById("linktoLogprob").addEventListener("click", openLink);
     var advancedSettingsHeader = document.getElementById("advancedSettingsHeader");
     var advancedSettingsBody = document.getElementById("advancedSettingsBody");
 

@@ -132,6 +132,35 @@ function checkIdPopup(id) {
   return id === undefined || id === -1 ? popUpShadow.ids : parseInt(id);
 }
 
+function sendStopSignal(request,uuid) {
+  console.log(`Sending stop signal for ${uuid}`);
+  popUpShadow.updatepopup(request, uuid, false);
+}
+
+function processJsonObject(jsonStr, uuid, request) {
+  try {
+      // Otherwise, parse and process the JSON object
+      const jsonObject = JSON.parse(jsonStr);
+      // console.log(`Processing JSON object for ${uuid}:`, jsonObject);
+      
+      // Check for an error property in the JSON object
+      if (jsonObject.error) {
+          console.log(`Error found for ${uuid}:`, jsonObject.error);
+          popUpShadow.updatepopup(jsonObject, uuid, true);
+          return;
+      }
+
+      popUpShadow.updatepopup(jsonObject, uuid, true);  // Assuming uuid maps to idPopup
+
+      // Once a valid JSON object has been processed, send a stop signal
+      sendStopSignal(request,uuid);
+
+  } catch (e) {
+      console.error("Failed to parse JSON object:", e);
+  }
+}
+
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.greeting === "shouldReenableContextMenu") {
     sendResponse({ farewell: "yes" });
@@ -144,7 +173,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 
   const idPopup = checkIdPopup(request.id_popup);
-
   const handleShowPopUp = () => {
     popUpShadow.ids += 1;
     popUpShadow.listOfActivePopups.push(popUpShadow.ids);
@@ -163,7 +191,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       popUpShadow.ontheflypopup(request.text, request.bodyData, request.cursorPosition);
       addListenersForDrag();
       break;
-    case"showPopUpChatGPT":
+    case "showPopUpChatGPT":
       handleShowPopUp();
       console.log("ChatGPT");
       popUpShadow.chatGPTpopup(request.text, request.bodyData, request.cursorPosition);
@@ -174,10 +202,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       break;
     case "GPTStream_completion":
       try {
-        const lines = request.text
-          .toString()
-          .split("\n")
-          .filter((line) => line.trim() !== ""); // remove empty lines and split
         if (popUpShadow.stop_stream && !popUpShadow.listOfUndesiredStreams.includes(request.uuid)) {
           console.log("Stop stream with uuid", request.uuid);
           popUpShadow.listOfUndesiredStreams.push(request.uuid);
@@ -185,23 +209,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           popUpShadow.clearnewlines = true;
         }
         if (!popUpShadow.listOfUndesiredStreams.includes(request.uuid)) {
-          for (const line of lines) {
-            const message = line.replace(/^data: /, "");
-            if (message === "[DONE]") {
-              // console.log('json', json.choices[0].logprobs.token_logprobs[0])
-              popUpShadow.updatepopup(request, idPopup, false);
-            } else {
-              const parsed = JSON.parse(message);
-              popUpShadow.updatepopup(parsed, idPopup, true);
-            }
-          }
+          processJsonObject(request.text,idPopup,  request);
         }
       } catch (e) {
         console.error(e);
-        const json = JSON.parse(request.text);
-        if (json.error) {
-          popUpShadow.updatepopup(json, idPopup, true);
-        }
       }
       break;
     default:
