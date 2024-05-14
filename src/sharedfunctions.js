@@ -1,7 +1,8 @@
 export const models = {
   "gpt-4-turbo": "🚀",
   "gpt-4": "❹",
-  "gpt-3.5-turbo": "🅶"
+  "gpt-3.5-turbo": "🅶",
+  "gpt-4o": "🅾"
 };
 
   //the above function symbolFromModel can be rewritten as a dictionary

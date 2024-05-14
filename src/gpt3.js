@@ -4,10 +4,12 @@ const tokenizer = new GPT3Tokenizer({ type: "gpt3" });
 const CHAT_API_MODELS = {
   "gpt-4": true,
   "gpt-3.5-turbo": true,
-  "gpt-4-turbo": true
+  "gpt-4-turbo": true,
+  "gpt-4o": true
 };
 
 var MaxTokensPerModel = {
+  "gpt-4o": 4096,
   "gpt-4-turbo": 4096,
   "gpt-4": 8000,
   "gpt-3.5-turbo": 4000,
@@ -20,7 +22,8 @@ var MaxTokensPerModel = {
 };
 
 const DECOUPLED_INPUT_OUTPUT_LENGTH_MODELS = {
-  "gpt-4-turbo": true
+  "gpt-4-turbo": true,
+  "gpt-4o": true
 };
 
 function checkMaxTokens(content, model) {
