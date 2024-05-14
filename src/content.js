@@ -138,6 +138,7 @@ function sendStopSignal(request,uuid) {
 }
 
 function processJsonObject(jsonStr, uuid, request) {
+  console.log("jsonStr:", jsonStr, uuid, request);
   try {
       // Otherwise, parse and process the JSON object
       const jsonObject = JSON.parse(jsonStr);
@@ -162,6 +163,7 @@ function processJsonObject(jsonStr, uuid, request) {
 
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  console.log("Full request:", request);
   if (request.greeting === "shouldReenableContextMenu") {
     sendResponse({ farewell: "yes" });
     return;
@@ -202,6 +204,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       break;
     case "GPTStream_completion":
       try {
+        console.log("Request:", request);
         if (popUpShadow.stop_stream && !popUpShadow.listOfUndesiredStreams.includes(request.uuid)) {
           console.log("Stop stream with uuid", request.uuid);
           popUpShadow.listOfUndesiredStreams.push(request.uuid);

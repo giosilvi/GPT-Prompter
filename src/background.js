@@ -152,28 +152,28 @@ chrome.runtime.onInstalled.addListener(function (details) {
       // if the prompt does not exist, create the default one
       items.customprompt = [
         {
-          model: "gpt-4-o",
+          model: "gpt-4o",
           temperature: 0.1,
           max_tokens: 4096,
           prompt: "Try not to use headings. Tell me more about #TEXT#:",
           twoStage: false,
         },
         {
-          model: "gpt-4-o",
+          model: "gpt-4o",
           temperature: 0.1,
           max_tokens: 4096,
-          prompt: "Please create an Anki card for: #TEXT# :",
+          prompt: "Please create an Anki card for: #TEXT#:",
           twoStage: false,
         },
         {
-          model: "gpt-4-o",
+          model: "gpt-4o",
           temperature: 0.1,
           max_tokens: 4096,
           prompt: "Please create an Anki card for the concept below. Explain any intuitions and be sure to include formulas if necessary: #TEXT#",
           twoStage: false,
         },
         {
-          model: "gpt-4-o",
+          model: "gpt-4o",
           temperature: 0.1,
           max_tokens: 1024,
           prompt:
@@ -215,6 +215,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   else if (message.text === "launchGPT") {
     // Get the tab from the sender
     const { tab } = sender; // this line is equivalent to const tab = sender.tab;
+    console.log("Received prompt object.");
     console.log(typeof message.prompt.prompt, message.prompt);
     // Launch GPT
     chrome.storage.sync.get("APIKEY", function (items) {
@@ -422,6 +423,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tabs) => {
             chrome.storage.sync.get("APIKEY", function (items) {
               // Launch the prompt
               (async () => {
+                console.log("PROMPT:",prompt, items, tabs);
                 await promptGPT3Prompting(prompt, items, tabs);
               })();
             });

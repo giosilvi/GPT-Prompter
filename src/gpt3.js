@@ -9,7 +9,7 @@ const CHAT_API_MODELS = {
 };
 
 var MaxTokensPerModel = {
-  "gpt-4o": 4096,
+  "gpt-4o": 4000,
   "gpt-4-turbo": 4096,
   "gpt-4": 8000,
   "gpt-3.5-turbo": 4000,
@@ -106,7 +106,7 @@ async function promptGPT3Prompting(prompt, items, tabs) {
   var uuid = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
   //send immediately text to the content script
   var { url, str_bodyData, bodyData, tokens } = chooseCompletion(model, temperature, text);
-  console.log(url, str_bodyData, tokens);
+  console.log("Debug1", url, str_bodyData, tokens);
   fetch(url, {
     method: "POST",
     headers: {
@@ -129,7 +129,7 @@ async function promptGPT3Prompting(prompt, items, tabs) {
             return;
           }
           // Enqueue the next data chunk into our target stream
-          // console.log(value);
+          console.log(value);
           var stream = new TextDecoder().decode(value); //.substring(6);
           // console.log(string, typeof string);
           // if tabs.id == -1 then use querySelector to get the tab
@@ -157,7 +157,7 @@ function chooseCompletion(model, temperature, text) {
       temperature: temperature,
       max_tokens: maxTokens,
       messages: text,
-      stream: false,
+      stream: true,
     };
   } else {
     url = "https://api.openai.com/v1/completions";
@@ -166,7 +166,7 @@ function chooseCompletion(model, temperature, text) {
       temperature: temperature,
       max_tokens: maxTokens,
       prompt: text,
-      stream: false,
+      stream: true,
     };
   }
   var str_bodyData = JSON.stringify(bodyData);

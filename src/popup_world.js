@@ -15,7 +15,7 @@ function symbolFromModel(model) {
 }
 
 // const highlightColor = "#d2f4d3";//"rgb(16, 163, 255)";
-const Gpt4oCost = 0.005/1000;
+const Gpt4oCost = 0.015 / 1000;
 const Gpt4TurboCost = 0.03 / 1000;
 const Gpt4Cost8kCompl = 0.06 / 1000;
 const ChatGPTCost = 0.002 / 1000;
@@ -1061,17 +1061,15 @@ class popUpClass extends HTMLElement {
       if (model === "gpt-4") {
         element.bodyData.model = "gpt-4-turbo";
         symbolElement.innerHTML = models["gpt-4-turbo"];
+      } else if (model == "gpt-4-turbo") {
+        element.bodyData.model = "gpt-4o";
+        symbolElement.innerHTML = models["gpt-4o"];
+      } else if (model == "gpt-4o") {
+        element.bodyData.model = "gpt-3.5-turbo";
+        symbolElement.innerHTML = models["gpt-3.5-turbo"];
       } else if (model === "gpt-3.5-turbo") {
         element.bodyData.model = "gpt-4";
         symbolElement.innerHTML = models["gpt-4"];
-      }
-      else if (model == "gpt-4-turbo") {
-        element.bodyData.model = "gpt-4o";
-        symbolElement.innerHTML = models["gpt-4o"];
-      }
-      else if (model == "gpt-4-turbo") {
-        element.bodyData.model = "gpt-3.5-turbo";
-        symbolElement.innerHTML = models["gpt-3.5-turbo"];
       }
       symbolElement.title = element.bodyData.model;
     });
@@ -1442,12 +1440,14 @@ function updateMarkdownContent(markdownContainer, markdownText) {
     console.log("waiting for renderMarkdown");
     if (window.renderMarkdown) {
       // Use the renderMarkdown function to convert the Markdown text to HTML
+      console.log(markdownText);
       const renderedHtml = window.renderMarkdown(markdownText);
 
       // Find the Markdown container in the chat popup element and update its content
       if (markdownContainer) {
         markdownContainer.innerHTML = renderedHtml;
         console.log("updated markdown");
+        console.log(renderedHtml);
       }
     } else {
       // If the renderMarkdown function is not yet available, try again after a short delay
