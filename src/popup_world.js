@@ -1231,6 +1231,7 @@ class popUpClass extends HTMLElement {
     chrome.storage.sync.get(["advancedSettings"], (result) => {
       this.showProbabilities = result.advancedSettings.showProb;
       this.autoAdd = result.advancedSettings.autoAdd;
+      // this.autoAdd = true;
     });
 
     const element = this.shadowRoot.getElementById(targetId);
@@ -1318,18 +1319,19 @@ class popUpClass extends HTMLElement {
     if (textarea && this.autoAdd) {
       specialCase = true;
     }
-
+    console.log(message);
+    console.log(this.shadowRoot);
+    console.log(element);
     //if stream is true
     if (stream) {
+      console.log("streaming");
       this.stream_on = true;
       var text = "";
       // if choices is a key in message, it means usual stream
       if (message.choices) {
         // check if choices[0] has text or message
         const envelope = message.choices[0];
-        if (envelope.text) {
-          text = envelope.text;
-        } else if (envelope.delta) {
+        if (envelope.delta) {
           if (envelope.delta.content) {
             text = envelope.delta.content;
           } else if (envelope.delta.role) {
@@ -1338,6 +1340,11 @@ class popUpClass extends HTMLElement {
           } else {
             text = "";
           }
+        }
+        else if (envelope.text) {
+          text = envelope.text;
+        } else if (envelope.message){
+          text = envelope.message.content;
         }
         // if the first charcters are newlines character, we don't add it to the popup, but save it in a string
         if (this.clearnewlines && (text == "\n" || text == "\n\n")) {
@@ -1348,7 +1355,9 @@ class popUpClass extends HTMLElement {
             element.preText = "";
           }
           return;
-        } else {
+        } 
+        
+        else {
           this.computeProbability(message);
           this.updateProbability(target_id + "probability");
           this.clearnewlines = false;
@@ -1361,7 +1370,8 @@ class popUpClass extends HTMLElement {
           } else {
             // add text to usual completion
             //check the bodyData of the element
-
+            console.log(textarea);
+            console.log(promptarea);
             promptarea.innerText += text;
             // check for markdown
 
