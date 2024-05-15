@@ -853,7 +853,7 @@ class popUpClass extends HTMLElement {
           popupID: targetId,
           type: "completion",
         };
-        console.log("promptObj", promptObj);
+        // console.log("promptObj", promptObj);
         chrome.runtime.sendMessage({ text: "launchGPT", prompt: promptObj });
         // get the textarea element
         this.resetAutoWidthTextArea(targetId);
@@ -1311,20 +1311,20 @@ class popUpClass extends HTMLElement {
   }
 
   updatepopup(message, target_id, stream) {
-    const textarea = this.shadowRoot.getElementById(target_id + "textarea");
-    const chatarea = this.shadowRoot.getElementById(target_id + "chat");
-    const element = this.shadowRoot.getElementById(target_id);
-    const promptarea = this.shadowRoot.getElementById(target_id + "text");
+    const textarea = this.shadowRoot.getElementById(this.ids + "textarea");
+    const chatarea = this.shadowRoot.getElementById(this.ids + "chat");
+    const element = this.shadowRoot.getElementById(this.ids);
+    const promptarea = this.shadowRoot.getElementById(this.ids + "text");
     var specialCase = false;
     if (textarea && this.autoAdd) {
       specialCase = true;
     }
-    console.log(message);
-    console.log(this.shadowRoot);
-    console.log(element);
+    // console.log(message);
+    // console.log(this.shadowRoot);
+    // console.log(element);
     //if stream is true
     if (stream) {
-      console.log("streaming");
+      // console.log("streaming");
       this.stream_on = true;
       var text = "";
       // if choices is a key in message, it means usual stream
@@ -1359,7 +1359,7 @@ class popUpClass extends HTMLElement {
         
         else {
           this.computeProbability(message);
-          this.updateProbability(target_id + "probability");
+          this.updateProbability(this.ids + "probability");
           this.clearnewlines = false;
           // check if element {target_id}textarea exists
           if (specialCase && textarea) {
@@ -1370,8 +1370,8 @@ class popUpClass extends HTMLElement {
           } else {
             // add text to usual completion
             //check the bodyData of the element
-            console.log(textarea);
-            console.log(promptarea);
+            // console.log(textarea);
+            // console.log(promptarea);
             promptarea.innerText += text;
             // check for markdown
 
@@ -1387,14 +1387,18 @@ class popUpClass extends HTMLElement {
         this.tokens = 0;
         this.stream_on = false;
         //show run button and hide stop button
-        this.toggleRunStop(target_id);
+        this.toggleRunStop(this.ids);
       }
       // each message should be 1 token
       this.tokens++;
-    } else {
+    } 
+    else {    // Not streaming!
+      // console.log("Streaming stopped.");
       if (specialCase && textarea) {
         // do nothing
-      } else {
+      } 
+      else {
+        // console.log("About to update markdown.");
         updateMarkdownContent(promptarea, promptarea.innerText);
         // scroll to the end of the promptarea
         promptarea.scrollIntoView({ behavior: "auto", block: "end" });
@@ -1402,23 +1406,24 @@ class popUpClass extends HTMLElement {
       // if stream is false, it means that the stream is over
       this.stream_on = false;
       // compute the probability, get average of element in this.probabilities
-      const final_prob = this.updateProbability(target_id + "probability", true);
+      const final_prob = this.updateProbability(this.ids + "probability", true);
       // show run button and hide stop button
-      this.toggleRunStop(target_id);
+      this.toggleRunStop(this.ids);
       const complete_completion = promptarea.innerText;
-
+      
       //save prompt to local storage
       const bodyData = JSON.parse(message.bodyData);
       const model = bodyData.model;
       const cost = computeCost(this.tokens + this.tokens_sent, model);
       // update in bodyData the final probability in logprobs
       bodyData.logprobs = final_prob + " %";
+
       // focus depending on the case
       if (textarea) {
         textarea.focus();
       } else if (chatarea) {
         chatarea.focus();
-        this.showCopyToClipboardBtn(target_id);
+        this.showCopyToClipboardBtn(this.ids);
         element.previousMessages.push({ role: "assistant", content: complete_completion });
       } else {
         element.focus();
@@ -1427,7 +1432,7 @@ class popUpClass extends HTMLElement {
       if (specialCase) {
         this.putCursorAtTheEnd(textarea);
       } else {
-        this.showCopyToClipboardBtn(target_id);
+        this.showCopyToClipboardBtn(this.ids);
       }
 
       // save the completion in the history
@@ -1450,14 +1455,14 @@ function updateMarkdownContent(markdownContainer, markdownText) {
     console.log("waiting for renderMarkdown");
     if (window.renderMarkdown) {
       // Use the renderMarkdown function to convert the Markdown text to HTML
-      console.log(markdownText);
+      // console.log(markdownText);
       const renderedHtml = window.renderMarkdown(markdownText);
 
       // Find the Markdown container in the chat popup element and update its content
       if (markdownContainer) {
         markdownContainer.innerHTML = renderedHtml;
         console.log("updated markdown");
-        console.log(renderedHtml);
+        // console.log(renderedHtml);
       }
     } else {
       // If the renderMarkdown function is not yet available, try again after a short delay

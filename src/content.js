@@ -139,27 +139,34 @@ function handleDataChunk(uuid, dataChunk, request) {
   buffers[uuid] = buffers[uuid] || "";
 
   // Datachunk is a sequence of newline-separated JSON objects, but may be split across multiple chunks
+  var new_objects_added = 0;
   for (const line of dataChunk.split("\n")) {
     // Append the new chunk to the appropriate buffer
     parsed_line = line.replace(/^data: /, "");
     if (parsed_line.length != 0) {
       buffers[uuid] += parsed_line + "\n";
-      console.log("Newly added:", line.replace(/^data: /, ""));
+      new_objects_added += 1;
+      // console.log("Newly added:", line.replace(/^data: /, ""));
     }
   }
-  console.log("Current buffer:", buffers[uuid]);
+  // console.log("Current buffer:", buffers[uuid]);
 
-  // Attempt to find a complete JSON object in the buffer
-  const endOfObjectPos = buffers[uuid].indexOf('}\n{');
-  if (endOfObjectPos !== -1) {
-    // Extract the complete JSON object from the buffer
-    const completeJsonObjectStr = buffers[uuid].substring(0, endOfObjectPos + 1);
+  for (let i = 0; i < new_objects_added; i++) {
+    // Attempt to find a complete JSON object in the buffer
+    const endOfObjectPos = buffers[uuid].indexOf('}\n{');
+    if (endOfObjectPos !== -1) {
+      // Extract the complete JSON object from the buffer
+      const completeJsonObjectStr = buffers[uuid].substring(0, endOfObjectPos + 1);
 
-    // Process the complete JSON object
-    processJsonObject(completeJsonObjectStr, uuid, request);
+      // Process the complete JSON object
+      processJsonObject(completeJsonObjectStr, uuid, request);
 
-    // Remove the processed data from the buffer
-    buffers[uuid] = buffers[uuid].substring(endOfObjectPos + 2);
+      // Remove the processed data from the buffer
+      buffers[uuid] = buffers[uuid].substring(endOfObjectPos + 2);
+    }
+  }
+  if (buffers[uuid].includes("[DONE]")) {
+    processJsonObject("[DONE]", uuid, request);
   }
 }
 function sendStopSignal(request,uuid) {
@@ -168,30 +175,31 @@ function sendStopSignal(request,uuid) {
 }
 
 function processJsonObject(jsonStr, uuid, request) {
-  console.log("jsonStr:", jsonStr, uuid, request);
+  // console.log("jsonStr:", jsonStr, uuid, request);
   try {
       // Check for the [DONE] marker
       if (jsonStr === "[DONE]") {
+        console.log("Received [DONE] marker for", uuid);
         popUpShadow.updatepopup(request, uuid, false);
         return;
       }
-      
+
       // Otherwise, parse and process the JSON object
-      console.log("About to process JSON.");
+      // console.log("About to process JSON.");
       const jsonObject = JSON.parse(jsonStr);
-      console.log(`Processing JSON object for ${uuid}:`, jsonObject);
+      // console.log(`Processing JSON object for ${uuid}:`, jsonObject);
       
       // Check for an error property in the JSON object
-      if (jsonObject.error) {
-          console.log(`Error found for ${uuid}:`, jsonObject.error);
-          popUpShadow.updatepopup(jsonObject, uuid, true);
-          return;
-      }
+      // if (jsonObject.error) {
+      //     console.log(`Error found for ${uuid}:`, jsonObject.error);
+      //     popUpShadow.updatepopup(jsonObject, uuid, true);
+      //     return;
+      // }
 
       popUpShadow.updatepopup(jsonObject, uuid, true);  // Assuming uuid maps to idPopup
 
       // Once a valid JSON object has been processed, send a stop signal
-      sendStopSignal(request,uuid);
+      // sendStopSignal(request,uuid);
 
   } catch (e) {
       console.error("Failed to parse JSON object:", e);
@@ -200,7 +208,7 @@ function processJsonObject(jsonStr, uuid, request) {
 
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log("Full request:", request);
+  // console.log("Full request:", request);
   if (request.greeting === "shouldReenableContextMenu") {
     sendResponse({ farewell: "yes" });
     return;
@@ -241,7 +249,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       break;
     case "GPTStream_completion":
       try {
-        console.log("Request:", request);
+        // console.log("Request:", request);
+        // console.log(popUpShadow.stop_stream, popUpShadow.listOfUndesiredStreams);
         if (popUpShadow.stop_stream && !popUpShadow.listOfUndesiredStreams.includes(request.uuid)) {
           console.log("Stop stream with uuid", request.uuid);
           popUpShadow.listOfUndesiredStreams.push(request.uuid);
@@ -251,7 +260,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
         if (!popUpShadow.listOfUndesiredStreams.includes(request.uuid)) {
           handleDataChunk(request.uuid, request.text, request);
-        //   processJsonObject(request.text,idPopup,  request);
+          // processJsonObject(request.text,idPopup,  request);
         }
       } catch (e) {
         console.error(e);
