@@ -2,7 +2,7 @@ import promptGPT3Prompting from "./gpt3.js";
 import symbolFromModel from "./sharedfunctions.js";
 import CHAT_API_MODELS from "./gpt3.js";
 
-const std_model = "gpt-4o";
+const std_model = "gpt-4-turbo";
 
 
 // FUNCTIONS DECLARATION
@@ -152,28 +152,28 @@ chrome.runtime.onInstalled.addListener(function (details) {
       // if the prompt does not exist, create the default one
       items.customprompt = [
         {
-          model: "gpt-4o",
+          model: "gpt-4-turbo",
           temperature: 0.1,
           max_tokens: 4096,
           prompt: "Try not to use headings. Tell me more about #TEXT#:",
           twoStage: false,
         },
         {
-          model: "gpt-4o",
+          model: "gpt-4-turbo",
           temperature: 0.1,
           max_tokens: 4096,
           prompt: "Please create an Anki card for: #TEXT#:",
           twoStage: false,
         },
         {
-          model: "gpt-4o",
+          model: "gpt-4-turbo",
           temperature: 0.1,
           max_tokens: 4096,
           prompt: "Please create an Anki card for the concept below. Explain any intuitions and be sure to include formulas if necessary: #TEXT#",
           twoStage: false,
         },
         {
-          model: "gpt-4o",
+          model: "gpt-4-turbo",
           temperature: 0.1,
           max_tokens: 1024,
           prompt:

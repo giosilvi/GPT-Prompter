@@ -1099,8 +1099,8 @@ class popUpClass extends HTMLElement {
         symbolElement.innerHTML = models["gpt-4"];
       } else {
         // default
-        element.bodyData.model = "gpt-4o";
-        symbolElement.innerHTML = models["gpt-4o"];
+        element.bodyData.model = "gpt-4-turbo";
+        symbolElement.innerHTML = models["gpt-4-turbo"];
       }
       symbolElement.title = element.bodyData.model;
     });
@@ -1452,7 +1452,7 @@ class popUpClass extends HTMLElement {
 function updateMarkdownContent(markdownContainer, markdownText) {
   // Wait for the renderMarkdown function to be available
   function waitForRenderMarkdown() {
-    console.log("waiting for renderMarkdown");
+    // console.log("waiting for renderMarkdown");
     if (window.renderMarkdown) {
       // Use the renderMarkdown function to convert the Markdown text to HTML
       // console.log(markdownText);
@@ -1461,7 +1461,7 @@ function updateMarkdownContent(markdownContainer, markdownText) {
       // Find the Markdown container in the chat popup element and update its content
       if (markdownContainer) {
         markdownContainer.innerHTML = renderedHtml;
-        console.log("updated markdown");
+        // console.log("updated markdown");
         // console.log(renderedHtml);
       }
     } else {
