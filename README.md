@@ -1,19 +1,18 @@
 # GPT-Prompter
 
-### Update (05/10/2024) - Differences from [giosilvi's GPT-Prompter](https://github.com/giosilvi/GPT-Prompter):
+### Update (05/10/2024) 
 - Added support for GPT-4-Turbo.
 - Updated prompt list with Anki prompts.
 - No present support for Instruct models.
 - Live response streaming is back.
 
 ### Installation Instructions:
-1. `git clone https://github.com/wz-ml/GPT-Prompter.git`
+1. `git clone https://github.com/giosilvi/GPT-Prompter.git`
 2. `cd` into the repository and type `npm run build`.
 3. A new .zip file should appear in /zips. Unzip it!
 4. Go to `chrome://extensions`. If you use Brave or another Chromium-based browser, replace the prefix with the name of your browser (e.g `brave://extensions`).
 5. Click "Load unpacked" and select your newly unzipped folder:
 
-![image](https://github.com/wz-ml/GPT-Prompter/assets/38673735/2e780b92-c77a-45bd-b508-6342de52850a)
 
 ### Usage:
 1. Make a profile at [OpenAI](https://beta.openai.com/), if you haven't already

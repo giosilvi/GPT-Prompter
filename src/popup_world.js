@@ -1,5 +1,5 @@
 import "@webcomponents/custom-elements/custom-elements.min.js";
-import CHAT_API_MODELS from "./gpt3.js";
+import {CHAT_API_MODELS} from "./gpt3.js";
 import { models } from "./sharedfunctions.js"
 
 function symbolFromModel(model) {

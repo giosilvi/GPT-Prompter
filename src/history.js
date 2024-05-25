@@ -5,7 +5,7 @@
  * @return {string} - The HTML list.
  */
 
-import CHAT_API_MODELS from "./gpt3.js";
+import {CHAT_API_MODELS} from "./gpt3.js";
 
 function makeHistoryList(items) {
   // create empty list and total cost variables
