@@ -1,6 +1,6 @@
 import promptGPT3Prompting from "./gpt3.js";
 import symbolFromModel from "./sharedfunctions.js";
-import CHAT_API_MODELS from "./gpt3.js";
+import {CHAT_API_MODELS} from "./gpt3.js";
 
 const std_model = "gpt-4-turbo";
 

@@ -1,5 +1,5 @@
 // GENERAL FUNCTIONS
-import CHAT_API_MODELS from "./gpt3.js";
+import {CHAT_API_MODELS} from "./gpt3.js";
 
 function makePromptList(items) {
   // Clear the node 'list-of-prompts'.

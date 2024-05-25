@@ -1,7 +1,7 @@
 import GPT3Tokenizer from "gpt3-tokenizer";
 
 const tokenizer = new GPT3Tokenizer({ type: "gpt3" });
-const CHAT_API_MODELS = {
+export const CHAT_API_MODELS = {
   "gpt-4": true,
   "gpt-3.5-turbo": true,
   "gpt-4-turbo": true,
