@@ -1,8 +1,16 @@
 import GPT3Tokenizer from "gpt3-tokenizer";
 
 const tokenizer = new GPT3Tokenizer({ type: "gpt3" });
+export const CHAT_API_MODELS = {
+  "gpt-4": true,
+  "gpt-3.5-turbo": true,
+  "gpt-4-turbo": true,
+  "gpt-4o": true
+};
 
 var MaxTokensPerModel = {
+  "gpt-4o": 4000,
+  "gpt-4-turbo": 4096,
   "gpt-4": 8000,
   "gpt-3.5-turbo": 4000,
   "gpt-3.5-turbo-instruct": 4000,
@@ -13,9 +21,14 @@ var MaxTokensPerModel = {
   "text-ada-001": 2000
 };
 
+const DECOUPLED_INPUT_OUTPUT_LENGTH_MODELS = {
+  "gpt-4-turbo": true,
+  "gpt-4o": true
+};
+
 function checkMaxTokens(content, model) {
   var tokens = 0;
-  if (model == "gpt-4" || model == "gpt-3.5-turbo") {
+  if (model in CHAT_API_MODELS) {
     // check the tokens in the text, for each "content" key
     // var content = JSON.parse(text);
     for (var i = 0; i < content.length; i++) {
@@ -29,6 +42,10 @@ function checkMaxTokens(content, model) {
     tokens = countTokens(content, model);
   }
   var maxTokens = MaxTokensPerModel[model] - tokens;
+  if (model in DECOUPLED_INPUT_OUTPUT_LENGTH_MODELS) {
+    maxTokens = MaxTokensPerModel[model];
+  }
+  console.log("model", model, "maxTokens", maxTokens, "tokens", tokens);
   return { maxTokens, tokens };
 }
 
@@ -73,7 +90,7 @@ async function promptGPT3Prompting(prompt, items, tabs) {
   var text = prompt["prompt"];
   var model = prompt["model"];
   // if the model is gpt-4 or gpt-3.5-turbo, we need to check that the text is a valid json
-  if (model == "gpt-4" || model == "gpt-3.5-turbo") {
+  if (model in CHAT_API_MODELS) {
     console.log('Check',typeof text)
     if (typeof text !== "object") 
      {text = [{"role": "user", "content": text}];}
@@ -89,7 +106,7 @@ async function promptGPT3Prompting(prompt, items, tabs) {
   var uuid = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
   //send immediately text to the content script
   var { url, str_bodyData, bodyData, tokens } = chooseCompletion(model, temperature, text);
-  console.log(url, str_bodyData, tokens);
+  console.log("Debug1", url, str_bodyData, tokens);
   fetch(url, {
     method: "POST",
     headers: {
@@ -112,7 +129,7 @@ async function promptGPT3Prompting(prompt, items, tabs) {
             return;
           }
           // Enqueue the next data chunk into our target stream
-          // console.log(value);
+          console.log(value);
           var stream = new TextDecoder().decode(value); //.substring(6);
           // console.log(string, typeof string);
           // if tabs.id == -1 then use querySelector to get the tab
@@ -133,14 +150,14 @@ function chooseCompletion(model, temperature, text) {
   var { maxTokens, tokens } = checkMaxTokens(text, model);
   var url = "";
 
-  if (model == "gpt-3.5-turbo" || model === "gpt-4") {
+  if (model in CHAT_API_MODELS) {
     url = "https://api.openai.com/v1/chat/completions";
     var bodyData = {
       model: model,
       temperature: temperature,
       max_tokens: maxTokens,
       messages: text,
-      stream: false,
+      stream: true,
     };
   } else {
     url = "https://api.openai.com/v1/completions";
@@ -149,7 +166,7 @@ function chooseCompletion(model, temperature, text) {
       temperature: temperature,
       max_tokens: maxTokens,
       prompt: text,
-      stream: false,
+      stream: true,
     };
   }
   var str_bodyData = JSON.stringify(bodyData);

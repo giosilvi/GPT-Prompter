@@ -1,43 +1,40 @@
 import "@webcomponents/custom-elements/custom-elements.min.js";
-
-const models = {
-  "gpt-4": "❹",
-  "gpt-3.5-turbo": "🅶",
-  "gpt-3.5-turbo-instruct" : "🅸",
-  "text-davinci-003": "ↁ",
-  "text-davinci-002": "🅳",
-  "text-curie-001": "🅲",
-  "text-babbage-001": "🅑",
-  "text-ada-001": "🅐"
-};
+import {CHAT_API_MODELS} from "./gpt3.js";
+import { models } from "./sharedfunctions.js"
 
 function symbolFromModel(model) {
+  console.log(models)
   // check if the model is in the dictionary
   if (models.hasOwnProperty(model)) {
+    console.log("model found", model)
+    console.log("Model symbol:", models[model])
     return models[model];
   }
+  console.log("model not found", model)
   return null;
 }
 
 // const highlightColor = "#d2f4d3";//"rgb(16, 163, 255)";
+const Gpt4oCost = 0.015 / 1000;
+const Gpt4TurboCost = 0.03 / 1000;
 const Gpt4Cost8kCompl = 0.06 / 1000;
 const ChatGPTCost = 0.002 / 1000;
-const DaVinciCost = 0.02 / 1000;
-const CurieCost = 0.002 / 1000;
-const BabbageCost = 0.0005 / 1000;
-const AdaCost = 0.0004 / 1000;
-const InstructCost = ChatGPTCost;
+// const DaVinciCost = 0.02 / 1000;
+// const CurieCost = 0.002 / 1000;
+// const BabbageCost = 0.0005 / 1000;
+// const AdaCost = 0.0004 / 1000;
 
 function computeCost(tokens, model) {
   var cost = 0;
-  if (model == "text-davinci-003") cost = tokens * DaVinciCost;
-  else if (model == "text-davinci-002") cost = tokens * DaVinciCost;
-  else if (model == "gpt-3.5-turbo-instruct" ) cost = tokens * InstructCost;
-  else if (model == "text-curie-001") cost = tokens * CurieCost;
-  else if (model == "text-babbage-001") cost = tokens * BabbageCost;
-  else if (model == "text-ada-001") cost = tokens * AdaCost;
-  else if (model == "gpt-3.5-turbo") cost = tokens * ChatGPTCost;
+  // if (model == "text-davinci-003") cost = tokens * DaVinciCost;
+  // else if (model == "text-davinci-002") cost = tokens * DaVinciCost;
+  // else if (model == "text-curie-001") cost = tokens * CurieCost;
+  // else if (model == "text-babbage-001") cost = tokens * BabbageCost;
+  // else if (model == "text-ada-001") cost = tokens * AdaCost;
+  if (model == "gpt-3.5-turbo") cost = tokens * ChatGPTCost;
   else if (model == "gpt-4") cost = tokens * Gpt4Cost8kCompl;
+  else if (model == "gpt-4-turbo") cost = tokens * Gpt4TurboCost;
+  else if (model == "gpt-4o") cost = tokens * Gpt4oCost;
   return cost.toFixed(5);
 }
 
@@ -63,6 +60,7 @@ const minipopup = (id, { left = 0, top = 0 }) => `
   <div id="${id}completion">
     <p id="${id}text" class='popupcompletion'></p>
     <div style="float:right">
+      <span id="${id}probability" class="tkn_prb"></span>
       <button class='minibuttons copybutton hide' id='copy_to_clipboard${id}' style="cursor: copy;" title='Copy completion to clipboard (Alt+C)'></button>
     </div>
   </div>
@@ -101,6 +99,7 @@ const flypopup = (id, { text = "", left = 0, top = 0, symbol = "🅶" }) => `
     <button type="button" id="${id}add2comp" class="submitbutton hide" style=" width: 65px;" title="Alt+A">Add &#8682;</button>
     <p id="${id}text" class='popupcompletion'></p>
     <div style="float:right">
+      <span id="${id}probability" class="tkn_prb" ></span>
       <button class='minibuttons copybutton hide' id='copy_to_clipboard${id}' style="cursor: copy;" title='Copy completion to clipboard (Alt+C)'></button>
     </div>
     </div>
@@ -145,6 +144,7 @@ const chatpopup = (id, { text = "", left = 0, top = 0, symbol = "🅶" }) => `
       </div>
     </div>
     <div style="float:right">
+        <span id="${id}probability" class="tkn_prb" ></span>
         <button class='minibuttons copybutton hide' id='copy_to_clipboard${id}' style="cursor: copy;" title='Copy completion to clipboard (Alt+C)'></button>
     </div>
 </div>
@@ -486,6 +486,8 @@ class popUpClass extends HTMLElement {
     this.ids = 0;
     this.tokens = 0;
     this.tokens_sent = 0;
+    this.probabilities = [];
+    this.showProbabilities = true;
     this.clearnewlines = true;
     this.listOfActivePopups = [];
     this.listOfUnpinnedPopups = [];
@@ -833,12 +835,13 @@ class popUpClass extends HTMLElement {
     if (!submitButton.listener) {
       submitButton.addEventListener("click", () => {
         this.toggleRunStop(targetId);
+        this.clearProbability(targetId);
         this.resetTextElement(targetId);
         // remove hide from the id text element
         this.removeHideFromCompletion(targetId);
         let modelToUse = this.getBodyData(targetId, "model");
         let textPrompt = this.getTextareaValue(targetId);
-        if (modelToUse === "gpt-3.5-turbo" || modelToUse === "gpt-4") {
+        if (modelToUse in CHAT_API_MODELS) {
           textPrompt = [{ role: "user", content: textPrompt }];
         }
 
@@ -850,6 +853,7 @@ class popUpClass extends HTMLElement {
           popupID: targetId,
           type: "completion",
         };
+        // console.log("promptObj", promptObj);
         chrome.runtime.sendMessage({ text: "launchGPT", prompt: promptObj });
         // get the textarea element
         this.resetAutoWidthTextArea(targetId);
@@ -932,6 +936,9 @@ class popUpClass extends HTMLElement {
 
   removeHideFromCompletion(targetId) {
     this.shadowRoot.getElementById(`${targetId}completion`).classList.remove("hide");
+  }
+  clearProbability(targetId) {
+    this.shadowRoot.getElementById(`${targetId}probability`).innerHTML = "";
   }
 
   resetTextElement(targetId) {
@@ -1052,6 +1059,12 @@ class popUpClass extends HTMLElement {
       const element = this.shadowRoot.getElementById(id_target);
       const model = element.bodyData.model;
       if (model === "gpt-4") {
+        element.bodyData.model = "gpt-4-turbo";
+        symbolElement.innerHTML = models["gpt-4-turbo"];
+      } else if (model == "gpt-4-turbo") {
+        element.bodyData.model = "gpt-4o";
+        symbolElement.innerHTML = models["gpt-4o"];
+      } else if (model == "gpt-4o") {
         element.bodyData.model = "gpt-3.5-turbo";
         symbolElement.innerHTML = models["gpt-3.5-turbo"];
       } else if (model === "gpt-3.5-turbo") {
@@ -1076,30 +1089,18 @@ class popUpClass extends HTMLElement {
         element.bodyData.model = "gpt-3.5-turbo";
         symbolElement.innerHTML = models["gpt-3.5-turbo"];
       } else if (model === "gpt-3.5-turbo") {
-        element.bodyData.model = "gpt-3.5-turbo-instruct";
-        symbolElement.innerHTML = models["gpt-3.5-turbo-instruct"];
-      }  else if (model ==="gpt-3.5-turbo-instruct") {
-        element.bodyData.model = "text-davinci-003";
-        symbolElement.innerHTML = models["text-davinci-003"];
-      }else if (model === "text-davinci-003") {
-        element.bodyData.model = "text-davinci-002";
-        symbolElement.innerHTML = models["text-davinci-002"];
-      } else if (model === "text-davinci-002") {
-        element.bodyData.model = "text-curie-001";
-        symbolElement.innerHTML = models["text-curie-001"];
-      } else if (model === "text-curie-001") {
-        element.bodyData.model = "text-babbage-001";
-        symbolElement.innerHTML = models["text-babbage-001"];
-      } else if (model === "text-babbage-001") {
-        element.bodyData.model = "text-ada-001";
-        symbolElement.innerHTML = models["text-ada-001"];
-      } else if (model === "text-ada-001") {
+        element.bodyData.model = "gpt-4-turbo";
+        symbolElement.innerHTML = models["gpt-4-turbo"];
+      } else if (model === "gpt-4-turbo") {
+        element.bodyData.model = "gpt-4o";
+        symbolElement.innerHTML = models["gpt-4o"];
+      } else if (model === "gpt-4o") {
         element.bodyData.model = "gpt-4";
         symbolElement.innerHTML = models["gpt-4"];
       } else {
         // default
-        element.bodyData.model = "gpt-3.5-turbo-instruct";
-        symbolElement.innerHTML = models["gpt-3.5-turbo-instruct"];
+        element.bodyData.model = "gpt-4-turbo";
+        symbolElement.innerHTML = models["gpt-4-turbo"];
       }
       symbolElement.title = element.bodyData.model;
     });
@@ -1220,13 +1221,17 @@ class popUpClass extends HTMLElement {
 
   updatePopupHeader(request, targetId) {
     // reset
+    this.probabilities = [];
+    this.clearnewlines = true;
     this.tokens = 0;
     console.log("request.tokens_sent", request.tokens_sent);
     // transfer the tokens_sent to integer
     this.tokens_sent = parseInt(request.tokens_sent);
 
     chrome.storage.sync.get(["advancedSettings"], (result) => {
+      this.showProbabilities = result.advancedSettings.showProb;
       this.autoAdd = result.advancedSettings.autoAdd;
+      // this.autoAdd = true;
     });
 
     const element = this.shadowRoot.getElementById(targetId);
@@ -1257,6 +1262,7 @@ class popUpClass extends HTMLElement {
       textElement.innerHTML = "";
 
       this.removeHideFromCompletion(targetId);
+      this.clearProbability(targetId);
       console.log("regenerate", element.text);
       var promptDict = {
         prompt: element.text,
@@ -1279,33 +1285,82 @@ class popUpClass extends HTMLElement {
     }
   };
 
+  computeProbability(message) {
+    if (this.showProbabilities && message.choices[0].logprobs) {
+      // get logprobs
+      var logprobs = message.choices[0].logprobs.token_logprobs[0];
+      // convert logprobs to probabilities
+      var probs = Math.exp(logprobs);
+      // add to list this.probabilities
+      // check that probs is not NaN
+      if (!isNaN(probs)) {
+        this.probabilities.push(probs);
+      }
+    }
+  }
 
+  updateProbability(id, return_prob = false) {
+    if (this.probabilities.length > 0 && this.showProbabilities) {
+      const probability = (100 * this.probabilities.reduce((a, b) => a + b, 0)) / this.probabilities.length;
+      const tokens = this.tokens;
+      this.shadowRoot.getElementById(id).innerHTML = tokens + " tokens - avg. prob.: " + probability.toFixed(2) + "%";
+      if (return_prob) {
+        return probability.toFixed(2);
+      }
+    }
+  }
 
   updatepopup(message, target_id, stream) {
-    const textarea = this.shadowRoot.getElementById(target_id + "textarea");
-    const chatarea = this.shadowRoot.getElementById(target_id + "chat");
-    const element = this.shadowRoot.getElementById(target_id);
-    const promptarea = this.shadowRoot.getElementById(target_id + "text");
+    const textarea = this.shadowRoot.getElementById(this.ids + "textarea");
+    const chatarea = this.shadowRoot.getElementById(this.ids + "chat");
+    const element = this.shadowRoot.getElementById(this.ids);
+    const promptarea = this.shadowRoot.getElementById(this.ids + "text");
     var specialCase = false;
     if (textarea && this.autoAdd) {
       specialCase = true;
     }
-
+    // console.log(message);
+    // console.log(this.shadowRoot);
+    // console.log(element);
     //if stream is true
     if (stream) {
+      // console.log("streaming");
       this.stream_on = true;
       var text = "";
       // if choices is a key in message, it means usual stream
       if (message.choices) {
         // check if choices[0] has text or message
         const envelope = message.choices[0];
-        if (envelope.text) {
-          text = envelope.text;
-        } else if (envelope.message) {
-          text = envelope.message.content;
-          
+        if (envelope.delta) {
+          if (envelope.delta.content) {
+            text = envelope.delta.content;
+          } else if (envelope.delta.role) {
+            text = "";
+            return;
+          } else {
+            text = "";
+          }
         }
-
+        else if (envelope.text) {
+          text = envelope.text;
+        } else if (envelope.message){
+          text = envelope.message.content;
+        }
+        // if the first charcters are newlines character, we don't add it to the popup, but save it in a string
+        if (this.clearnewlines && (text == "\n" || text == "\n\n")) {
+          element.preText += text;
+          if (specialCase) {
+            // add text to textarea
+            textarea.value += text;
+            element.preText = "";
+          }
+          return;
+        } 
+        
+        else {
+          this.computeProbability(message);
+          this.updateProbability(this.ids + "probability");
+          this.clearnewlines = false;
           // check if element {target_id}textarea exists
           if (specialCase && textarea) {
             // add text to textarea
@@ -1315,13 +1370,14 @@ class popUpClass extends HTMLElement {
           } else {
             // add text to usual completion
             //check the bodyData of the element
-
+            // console.log(textarea);
+            // console.log(promptarea);
             promptarea.innerText += text;
             // check for markdown
 
             promptarea.scrollIntoView({ behavior: "auto", block: "end" });
           }
-        
+        }
       }
       // if message has a key "error"
       else if (message.error) {
@@ -1331,34 +1387,43 @@ class popUpClass extends HTMLElement {
         this.tokens = 0;
         this.stream_on = false;
         //show run button and hide stop button
-        this.toggleRunStop(target_id);
+        this.toggleRunStop(this.ids);
       }
       // each message should be 1 token
       this.tokens++;
-    } else {
+    } 
+    else {    // Not streaming!
+      // console.log("Streaming stopped.");
       if (specialCase && textarea) {
         // do nothing
-      } else {
+      } 
+      else {
+        // console.log("About to update markdown.");
         updateMarkdownContent(promptarea, promptarea.innerText);
         // scroll to the end of the promptarea
         promptarea.scrollIntoView({ behavior: "auto", block: "end" });
       }
       // if stream is false, it means that the stream is over
       this.stream_on = false;
+      // compute the probability, get average of element in this.probabilities
+      const final_prob = this.updateProbability(this.ids + "probability", true);
       // show run button and hide stop button
-      this.toggleRunStop(target_id);
+      this.toggleRunStop(this.ids);
       const complete_completion = promptarea.innerText;
-
+      
       //save prompt to local storage
       const bodyData = JSON.parse(message.bodyData);
       const model = bodyData.model;
       const cost = computeCost(this.tokens + this.tokens_sent, model);
+      // update in bodyData the final probability in logprobs
+      bodyData.logprobs = final_prob + " %";
+
       // focus depending on the case
       if (textarea) {
         textarea.focus();
       } else if (chatarea) {
         chatarea.focus();
-        this.showCopyToClipboardBtn(target_id);
+        this.showCopyToClipboardBtn(this.ids);
         element.previousMessages.push({ role: "assistant", content: complete_completion });
       } else {
         element.focus();
@@ -1367,7 +1432,7 @@ class popUpClass extends HTMLElement {
       if (specialCase) {
         this.putCursorAtTheEnd(textarea);
       } else {
-        this.showCopyToClipboardBtn(target_id);
+        this.showCopyToClipboardBtn(this.ids);
       }
 
       // save the completion in the history
@@ -1387,15 +1452,17 @@ class popUpClass extends HTMLElement {
 function updateMarkdownContent(markdownContainer, markdownText) {
   // Wait for the renderMarkdown function to be available
   function waitForRenderMarkdown() {
-    console.log("waiting for renderMarkdown");
+    // console.log("waiting for renderMarkdown");
     if (window.renderMarkdown) {
       // Use the renderMarkdown function to convert the Markdown text to HTML
+      // console.log(markdownText);
       const renderedHtml = window.renderMarkdown(markdownText);
 
       // Find the Markdown container in the chat popup element and update its content
       if (markdownContainer) {
         markdownContainer.innerHTML = renderedHtml;
-        console.log("updated markdown");
+        // console.log("updated markdown");
+        // console.log(renderedHtml);
       }
     } else {
       // If the renderMarkdown function is not yet available, try again after a short delay
