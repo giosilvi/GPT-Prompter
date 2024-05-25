@@ -155,21 +155,21 @@ chrome.runtime.onInstalled.addListener(function (details) {
           model: "gpt-4-turbo",
           temperature: 0.1,
           max_tokens: 4096,
-          prompt: "Try not to use headings. Tell me more about #TEXT#:",
+          prompt:  JSON.stringify([{"role":"user", "content":"Try not to use headings.. Tell me more about #TEXT#:"}]),
           twoStage: false,
         },
         {
           model: "gpt-4-turbo",
           temperature: 0.1,
           max_tokens: 4096,
-          prompt: "Please create an Anki card for: #TEXT#:",
+          prompt:  JSON.stringify([{"role":"user", "content":"Please create an Anki card for: #TEXT#:"}]),
           twoStage: false,
         },
         {
           model: "gpt-4-turbo",
           temperature: 0.1,
           max_tokens: 4096,
-          prompt: "Please create an Anki card for the concept below. Explain any intuitions and be sure to include formulas if necessary: #TEXT#",
+          prompt:  JSON.stringify([{"role":"user", "content":"Please create an Anki card for the concept below. Explain any intuitions and be sure to include formulas if necessary: #TEXT#"}]),
           twoStage: false,
         },
         {
@@ -177,8 +177,8 @@ chrome.runtime.onInstalled.addListener(function (details) {
           temperature: 0.1,
           max_tokens: 1024,
           prompt:
-            'Answer the question as truthfully as possible using the provided text, and if the answer is not contained within the text below, say "I don\'t know" \nContext:\n#TEXT# \n\nQ:',
-          title: "Two-stage Q&&A",
+          JSON.stringify([{"role":"user", "content":"Answer the question as truthfully as possible using the provided text, and if the answer is not contained within the text below, say 'I don\'t know' \nContext:\n#TEXT# \n\nQ:"}]),
+          title: "Two-stage Q&A",
           twoStage: true,
         }
       ];

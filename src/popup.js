@@ -29,7 +29,7 @@ function makePromptList(items) {
 
     var modelText = document.createElement("span");
     modelText.className = "feature-text";
-    modelText.innerText = ` ${items.customprompt[i]["model"]}`;
+    modelText.innerText = items.customprompt[i]["model"];
     modelText.setAttribute("data-title", "Model:");
 
     var promptText = document.createElement("span");
