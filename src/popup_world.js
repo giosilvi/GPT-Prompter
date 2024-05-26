@@ -475,13 +475,15 @@ class popUpClass extends HTMLElement {
   }
 
   render() {
-    this.attachShadow({ mode: "open" }); // here we create the shadow DOM
+    if (!this.shadowRoot) {
+        this.attachShadow({ mode: "open" });
+    }
     const style = document.createElement("style");
     style.textContent = styled;
     this.shadowRoot.appendChild(style); // here append the style to the shadowRoot
-    // add script to the shadowRoot that points at local src="dist/markdown.bundle.js"
+    // add script to the shadowRoot that points at local src="dist/markdown.bundle.js" 
     // const script = document.createElement("script");
-    // script.src = chrome.runtime.getURL("dist/markdown.bundle.js"); // Use getURL to resolve the correct path
+    // script.src = chrome.runtime.getURL("dist/markdown.bundle.js"); // Use getURL to resolve the correct path 
     // this.shadowRoot.appendChild(script);
     this.ids = 0;
     this.tokens = 0;
@@ -1243,7 +1245,7 @@ class popUpClass extends HTMLElement {
     const symbol = symbolFromModel(request.bodyData.model);
     this.shadowRoot.getElementById(`${targetId}symbol`).innerHTML = symbol;
     this.shadowRoot.getElementById(`${targetId}symbol`).title = request.bodyData.model;
-    this.shadowRoot.getElementById(`${targetId}header`).innerHTML = `<i> ${JSON.stringify(request.text)} </i>`;
+    this.shadowRoot.getElementById(`${targetId}header`).innerHTML = `<i> ${JSON.stringify(request.text[0]["content"])} </i>`;
 
     if (this.shadowRoot.getElementById(`regenerate${targetId}`)) {
       if (!this.alreadyCalled[targetId]) {
@@ -1293,7 +1295,7 @@ class popUpClass extends HTMLElement {
       var probs = Math.exp(logprobs);
       // add to list this.probabilities
       // check that probs is not NaN
-      if (!isNaN(probs)) {
+      if (probs !== undefined) {
         this.probabilities.push(probs);
       }
     }
@@ -1416,7 +1418,9 @@ class popUpClass extends HTMLElement {
       const model = bodyData.model;
       const cost = computeCost(this.tokens + this.tokens_sent, model);
       // update in bodyData the final probability in logprobs
-      bodyData.logprobs = final_prob + " %";
+      if (final_prob !== undefined){
+          bodyData.logprobs = final_prob + " %";
+      }
 
       // focus depending on the case
       if (textarea) {
