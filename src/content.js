@@ -203,12 +203,13 @@ function processJsonObject(jsonStr, uuid, request) {
 
   } catch (e) {
       console.error("Failed to parse JSON object:", e);
+      console.log(jsonStr);
   }
 }
 
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  // console.log("Full request:", request);
+  console.log("Full request:", request);
   if (request.greeting === "shouldReenableContextMenu") {
     sendResponse({ farewell: "yes" });
     return;

@@ -8,9 +8,8 @@ export const CHAT_API_MODELS = {
   "gpt-4o": true
 };
 
+// For models that have a maximum token limit (input + output tokens per request).
 var MaxTokensPerModel = {
-  "gpt-4o": 4000,
-  "gpt-4-turbo": 4096,
   "gpt-4": 8000,
   "gpt-3.5-turbo": 4000,
   "gpt-3.5-turbo-instruct": 4000,
@@ -20,6 +19,18 @@ var MaxTokensPerModel = {
   "text-babbage-001": 2000,
   "text-ada-001": 2000
 };
+
+// Note: This is the number of maximum output tokens (not the context window size).
+const MaxOutputTokensPerModel = {
+  "gpt-4o": 4000,
+  "gpt-4-turbo": 4096
+}
+
+const MaxInputTokensPerModel = {
+  "gpt-4o": 4000,
+  "gpt-4-turbo": 4096
+
+}
 
 const DECOUPLED_INPUT_OUTPUT_LENGTH_MODELS = {
   "gpt-4-turbo": true,
@@ -59,9 +70,9 @@ function countTokens(text, model) {
 
 
 function checkTabsAndSendStream(message, tabs, string, bodyData, idpopup, uuid, tokens_sent) {
-   if (typeof text === "object") {
-      text = text[text.length - 1]["content"];
-    }
+  if (typeof text === "object") {
+    text = text[text.length - 1]["content"];
+  }
   if (tabs.id == -1) {
     //pdf case
     // console.log("pdf case");
@@ -91,9 +102,8 @@ async function promptGPT3Prompting(prompt, items, tabs) {
   var model = prompt["model"];
   // if the model is gpt-4 or gpt-3.5-turbo, we need to check that the text is a valid json
   if (model in CHAT_API_MODELS) {
-    console.log('Check',typeof text)
-    if (typeof text !== "object") 
-     {text = [{"role": "user", "content": text}];}
+    console.log('Check', typeof text)
+    if (typeof text !== "object") { text = [{ "role": "user", "content": text }]; }
   }
   else {
     //we check that text is a string, if is JSON just take the last elemet value corresponding to the key "content"
@@ -107,6 +117,7 @@ async function promptGPT3Prompting(prompt, items, tabs) {
   //send immediately text to the content script
   var { url, str_bodyData, bodyData, tokens } = chooseCompletion(model, temperature, text);
   console.log("Debug1", url, str_bodyData, tokens);
+
   fetch(url, {
     method: "POST",
     headers: {

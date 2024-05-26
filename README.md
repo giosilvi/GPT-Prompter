@@ -13,7 +13,6 @@
 4. Go to `chrome://extensions`. If you use Brave or another Chromium-based browser, replace the prefix with the name of your browser (e.g `brave://extensions`).
 5. Click "Load unpacked" and select your newly unzipped folder:
 
-
 ### Usage:
 1. Make a profile at [OpenAI](https://beta.openai.com/), if you haven't already
 2. From https://beta.openai.com/account/api-keys you can copy your API Key and paste into the chrome extension (we never have access to your API Key, it is stored on your Chrome profile).

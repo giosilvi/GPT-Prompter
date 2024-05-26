@@ -95,9 +95,14 @@ const flypopup = (id, { text = "", left = 0, top = 0, symbol = "🅶" }) => `
     </div>
   </div>
     <button type="button" id="${id}submit" class="submitbutton" title="Alt+Enter">Submit</button>
+    <button type="button" id="${id}upload" for="${id}file" class="submitbutton" title="Alt+U">Upload</button>
+    <input type="file" id="${id}file" style="display:none" accept="image/*">
+    <img id="${id}image" style="display:none; max-width: 300px; max-height: 40px; margin-top: 5px; align-self: right;">
+
     <button type="button" id="${id}stop" class="submitbutton hide" title="Alt+Enter" style='background-color: red;'>Stop</button>
     <button type="button" id="${id}add2comp" class="submitbutton hide" style=" width: 65px;" title="Alt+A">Add &#8682;</button>
     <p id="${id}text" class='popupcompletion'></p>
+
     <div style="float:right">
       <span id="${id}probability" class="tkn_prb" ></span>
       <button class='minibuttons copybutton hide' id='copy_to_clipboard${id}' style="cursor: copy;" title='Copy completion to clipboard (Alt+C)'></button>
@@ -132,6 +137,9 @@ const chatpopup = (id, { text = "", left = 0, top = 0, symbol = "🅶" }) => `
   </div>
     <div id="${id}chat" style="display: flex;">
       <button type="button" id="${id}submit" class="submitbutton chatsubmit" title="Alt+Enter">Submit</button>
+      <button type="button" id="${id}upload" for="${id}file" class="submitbutton chatsubmit" title="Alt+U">Upload</button>
+      <img id="${id}image" style="display:none; max-width: 300px; max-height: 40px; margin-top: 5px; align-self: right;">
+      <input type="file" id="${id}file" style="display:none" accept="image/*">
       <button type="button" id="${id}stop" class="submitbutton chatsubmit hide" title="Alt+Enter" style='background-color: red;'>Stop</button>
       <div class="textarea-container">
         <textarea contentEditable="true" id="${id}chatarea" class="textarea">${text}</textarea>
@@ -548,6 +556,7 @@ class popUpClass extends HTMLElement {
     this.updateTemperature(this.ids);
     this.runClick(this.ids);
     this.stopButton(this.ids);
+    this.uploadImage(this.ids);
     this.showAdd2CompletionButton(this.ids);
 
     // pause for 1 second to allow the popup to be rendered
@@ -842,7 +851,27 @@ class popUpClass extends HTMLElement {
         let modelToUse = this.getBodyData(targetId, "model");
         let textPrompt = this.getTextareaValue(targetId);
         if (modelToUse in CHAT_API_MODELS) {
-          textPrompt = [{ role: "user", content: textPrompt }];
+          if (window.imbase64){
+            console.log("Attaching image with text.");
+            textPrompt = [{ role: "user", content: [
+              {
+                type: "text",
+                text: textPrompt
+              },
+              {
+                type: "image_url",
+                image_url: {
+                  url: window.imbase64
+                }
+              }
+            ]
+             }
+            ];
+            console.log(textPrompt);
+          }
+          else {
+            textPrompt = [{ role: "user", content: textPrompt }];
+          }
         }
 
         const promptObj = {
@@ -853,10 +882,17 @@ class popUpClass extends HTMLElement {
           popupID: targetId,
           type: "completion",
         };
-        // console.log("promptObj", promptObj);
+        console.log("promptObj", promptObj);
         chrome.runtime.sendMessage({ text: "launchGPT", prompt: promptObj });
         // get the textarea element
+        console.log("After1");
         this.resetAutoWidthTextArea(targetId);
+
+        // Reset image preview and value
+        console.log("After2");
+        window.base64 = null;
+        this.updateImagePreview(targetId);
+        console.log("After3");
       });
     }
 
@@ -921,6 +957,7 @@ class popUpClass extends HTMLElement {
           popupID: targetId,
           type: "chat",
         };
+        console.log("Launching chat GPT with prompt: ", promptObj);
         chrome.runtime.sendMessage({ text: "launchGPT", prompt: promptObj });
       });
     }
@@ -1022,6 +1059,60 @@ class popUpClass extends HTMLElement {
       if (runButton) {
         runButton.click();
       }
+    }
+  }
+
+  toDataUrl(url, callback){
+    var xhr = new XMLHttpRequest();
+    xhr.onload = function() {
+        var reader = new FileReader();
+        reader.onloadend = function() {
+            callback(reader.result);
+        }
+        reader.readAsDataURL(xhr.response);
+    };
+    xhr.open('GET', url);
+    xhr.responseType = 'blob';
+    xhr.send();
+  }
+
+  updateImagePreview(id_target) {
+    const image = this.shadowRoot.getElementById(id_target + "image");
+    if (window.imbase64){
+      image.src = window.imbase64;
+      image.style.display = "block";
+      console.log("Updated image preview.");
+      // console.log("Source: ", image.src);
+    }
+    else {
+      image.style.display = "none";
+      console.log("Reset image preview.");
+    }
+  }
+
+  uploadImage(id_target) {
+    const uploadButton = this.shadowRoot.getElementById(id_target + "upload");
+    if (!uploadButton.listener) {
+      const reader = new FileReader();
+      reader.onloadend = function (e) {
+        const base64 = e.target.result //.split(",")[1];
+        // save the base64 to the global variable
+        window.imbase64 = base64;
+        // console.log(base64);
+        this.caller.updateImagePreview(id_target);
+      };
+
+      uploadButton.addEventListener("click", () => {
+        // Trigger file upload behavior
+        this.shadowRoot.getElementById(id_target + "file").click();
+        // Listen for file upload
+        this.shadowRoot.getElementById(id_target + "file").addEventListener("change", (e) => {
+          const file = e.target.files[0];
+          reader.caller = this;
+          reader.readAsDataURL(file);
+        });
+        this.shadowRoot.getElementById(id_target + "file").value = "";        
+      });
     }
   }
 
