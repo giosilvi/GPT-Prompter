@@ -1,5 +1,5 @@
 import "@webcomponents/custom-elements/custom-elements.min.js";
-import {CHAT_API_MODELS} from "./gpt3.js";
+import {CHAT_API_MODELS, VISION_SUPPORTED_MODELS} from "./gpt3.js";
 import { models } from "./sharedfunctions.js"
 
 function symbolFromModel(model) {
@@ -95,9 +95,10 @@ const flypopup = (id, { text = "", left = 0, top = 0, symbol = "🅶" }) => `
     </div>
   </div>
     <button type="button" id="${id}submit" class="submitbutton" title="Alt+Enter">Submit</button>
-    <button type="button" id="${id}upload" for="${id}file" class="submitbutton" title="Alt+U">Upload</button>
+    <button type="button" id="${id}upload" for="${id}file" class="submitbutton" title="Alt+U">Add Image</button>
     <input type="file" id="${id}file" style="display:none" accept="image/*">
-    <img id="${id}image" style="display:none; max-width: 300px; max-height: 40px; margin-top: 5px; align-self: right;">
+    <p id="${id}galleryLabel" class='popupcompletion' style="white-space: pre-line display:none">Images:</p>
+    <div id="${id}imageGallery" style="display: flex; flex-wrap: wrap;"></div>
 
     <button type="button" id="${id}stop" class="submitbutton hide" title="Alt+Enter" style='background-color: red;'>Stop</button>
     <button type="button" id="${id}add2comp" class="submitbutton hide" style=" width: 65px;" title="Alt+A">Add &#8682;</button>
@@ -137,8 +138,9 @@ const chatpopup = (id, { text = "", left = 0, top = 0, symbol = "🅶" }) => `
   </div>
     <div id="${id}chat" style="display: flex;">
       <button type="button" id="${id}submit" class="submitbutton chatsubmit" title="Alt+Enter">Submit</button>
-      <button type="button" id="${id}upload" for="${id}file" class="submitbutton chatsubmit" title="Alt+U">Upload</button>
-      <img id="${id}image" style="display:none; max-width: 300px; max-height: 40px; margin-top: 5px; align-self: right;">
+      <button type="button" id="${id}upload" for="${id}file" class="submitbutton chatsubmit" style=" width: 120px;" title="Alt+U">Add Image</button>
+      <p id="${id}galleryLabel" class='popupcompletion' style="white-space: pre-line display:none">Images:</p>
+      <div id="${id}imageGallery" style="display: flex; flex-wrap: wrap;"></div>
       <input type="file" id="${id}file" style="display:none" accept="image/*">
       <button type="button" id="${id}stop" class="submitbutton chatsubmit hide" title="Alt+Enter" style='background-color: red;'>Stop</button>
       <div class="textarea-container">
@@ -190,6 +192,21 @@ const styled = `
 .pinbutton:before {
   font-family: 'Material Icons';
   content: '\uD83D\uDCCC';
+}
+
+.imclosebutton{
+  background-color: #eb3b43;
+  color: #E8EAED;
+  border: none;
+  border-radius: 50%;
+  padding: 2px;
+  margin-left: -5px;
+  cursor: pointer;
+  font-size: 10px;
+  height: 15px;
+  width: 15px;
+  display: inline;
+  vertical-align: middle;
 }
 
 .regeneratebutton:before {
@@ -851,22 +868,28 @@ class popUpClass extends HTMLElement {
         let modelToUse = this.getBodyData(targetId, "model");
         let textPrompt = this.getTextareaValue(targetId);
         if (modelToUse in CHAT_API_MODELS) {
-          if (window.imbase64){
+          if (window.imbase64arr){
+            if (!(modelToUse in VISION_SUPPORTED_MODELS)){
+              console.log("Model not supported for image input.");
+              return;
+            }
             console.log("Attaching image with text.");
-            textPrompt = [{ role: "user", content: [
+            let contentarr = [
               {
                 type: "text",
                 text: textPrompt
-              },
-              {
-                type: "image_url",
-                image_url: {
-                  url: window.imbase64
-                }
               }
             ]
-             }
-            ];
+            for (let i = 0; i < window.imbase64arr.length; i++){
+              contentarr.push({
+                type: "image_url",
+                image_url: {
+                  url: window.imbase64arr[i]
+                }
+              });
+            }
+
+            textPrompt = [{ role: "user", content: contentarr}];
             console.log(textPrompt);
           }
           else {
@@ -888,11 +911,9 @@ class popUpClass extends HTMLElement {
         console.log("After1");
         this.resetAutoWidthTextArea(targetId);
 
-        // Reset image preview and value
-        console.log("After2");
-        window.base64 = null;
-        this.updateImagePreview(targetId);
-        console.log("After3");
+        // Reset image gallery preview and value
+        window.imbase64arr = null;
+        this.clearGallery(targetId);
       });
     }
 
@@ -1062,55 +1083,67 @@ class popUpClass extends HTMLElement {
     }
   }
 
-  toDataUrl(url, callback){
-    var xhr = new XMLHttpRequest();
-    xhr.onload = function() {
-        var reader = new FileReader();
-        reader.onloadend = function() {
-            callback(reader.result);
-        }
-        reader.readAsDataURL(xhr.response);
-    };
-    xhr.open('GET', url);
-    xhr.responseType = 'blob';
-    xhr.send();
+  addImageToGallery(id_target, dataUrl) {
+    const gallery = this.shadowRoot.getElementById(id_target + "imageGallery");
+    if (!gallery.num_images) {
+      gallery.num_images = 1;
+    }
+    const galleryLabel = this.shadowRoot.getElementById(id_target + "galleryLabel");
+    galleryLabel.display = "block";
+    
+    const image = document.createElement("img");
+    image.src = dataUrl;
+    image.style.cssText = "max-width: 300px; max-height: 50px; margin-top: 5px;";
+    image.id = `${id_target}_${gallery.num_images}image`;
+    gallery.appendChild(image);
+
+    const xbutton = document.createElement("button");
+    xbutton.innerHTML = "x";
+    xbutton.className = "imclosebutton";
+    xbutton.id = `${id_target}_${gallery.num_images}xbutton`;
+    xbutton.addEventListener("click", () => {
+      this.shadowRoot.getElementById(image.id).remove();
+      this.shadowRoot.getElementById(xbutton.id).remove();
+    });
+    gallery.appendChild(xbutton);
+
+    gallery.num_images += 1;
+
   }
 
-  updateImagePreview(id_target) {
-    const image = this.shadowRoot.getElementById(id_target + "image");
-    if (window.imbase64){
-      image.src = window.imbase64;
-      image.style.display = "block";
-      console.log("Updated image preview.");
-      // console.log("Source: ", image.src);
-    }
-    else {
-      image.style.display = "none";
-      console.log("Reset image preview.");
-    }
+  clearGallery(id_target){
+    const gallery = this.shadowRoot.getElementById(id_target + "imageGallery");
+    gallery.innerHTML = "";
+    gallery.num_images = 0;
+    const galleryLabel = this.shadowRoot.getElementById(id_target + "galleryLabel");
+    galleryLabel.display = "none";
   }
 
   uploadImage(id_target) {
     const uploadButton = this.shadowRoot.getElementById(id_target + "upload");
-    if (!uploadButton.listener) {
+    if (!uploadButton.listener) {  
       const reader = new FileReader();
       reader.onloadend = function (e) {
         const base64 = e.target.result //.split(",")[1];
         // save the base64 to the global variable
-        window.imbase64 = base64;
+        if (!window.imbase64arr) window.imbase64arr = [base64];
+        else {
+          window.imbase64arr.push(base64);
+        }
         // console.log(base64);
-        this.caller.updateImagePreview(id_target);
+        this.caller.addImageToGallery(id_target, base64);
       };
+
+      // Listen for file upload
+      this.shadowRoot.getElementById(id_target + "file").addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        reader.caller = this;
+        reader.readAsDataURL(file);
+      });
 
       uploadButton.addEventListener("click", () => {
         // Trigger file upload behavior
         this.shadowRoot.getElementById(id_target + "file").click();
-        // Listen for file upload
-        this.shadowRoot.getElementById(id_target + "file").addEventListener("change", (e) => {
-          const file = e.target.files[0];
-          reader.caller = this;
-          reader.readAsDataURL(file);
-        });
         this.shadowRoot.getElementById(id_target + "file").value = "";        
       });
     }
@@ -1162,6 +1195,15 @@ class popUpClass extends HTMLElement {
         element.bodyData.model = "gpt-4";
         symbolElement.innerHTML = models["gpt-4"];
       }
+
+      let uploadButton = this.shadowRoot.getElementById(id_target + "upload");
+      if (model in VISION_SUPPORTED_MODELS) {
+        uploadButton.style.display = "block";
+      }
+      else {
+        uploadButton.style.display = "none";
+      }
+
       symbolElement.title = element.bodyData.model;
     });
   }
@@ -1193,6 +1235,14 @@ class popUpClass extends HTMLElement {
         element.bodyData.model = "gpt-4-turbo";
         symbolElement.innerHTML = models["gpt-4-turbo"];
       }
+
+      if (model in VISION_SUPPORTED_MODELS) {
+        uploadButton.style.display = "block";
+      }
+      else {
+        uploadButton.style.display = "none";
+      }
+
       symbolElement.title = element.bodyData.model;
     });
   }
@@ -1334,7 +1384,9 @@ class popUpClass extends HTMLElement {
     const symbol = symbolFromModel(request.bodyData.model);
     this.shadowRoot.getElementById(`${targetId}symbol`).innerHTML = symbol;
     this.shadowRoot.getElementById(`${targetId}symbol`).title = request.bodyData.model;
-    this.shadowRoot.getElementById(`${targetId}header`).innerHTML = `<i> ${JSON.stringify(request.text)} </i>`;
+    this.shadowRoot.getElementById(`${targetId}header`).innerHTML = `<i> ${
+      JSON.stringify(request.text)
+    } </i>`;
 
     if (this.shadowRoot.getElementById(`regenerate${targetId}`)) {
       if (!this.alreadyCalled[targetId]) {

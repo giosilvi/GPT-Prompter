@@ -201,6 +201,7 @@ chrome.runtime.onInstalled.addListener(function (details) {
 
 // Listen for a signal to refresh the context menu
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  console.log("Received message:", message);
   // If the signal is to refresh the context menu
   if (message.text === "newPromptList") {
     createContextMenu();
