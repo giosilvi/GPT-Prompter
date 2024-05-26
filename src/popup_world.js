@@ -1245,7 +1245,10 @@ class popUpClass extends HTMLElement {
     const symbol = symbolFromModel(request.bodyData.model);
     this.shadowRoot.getElementById(`${targetId}symbol`).innerHTML = symbol;
     this.shadowRoot.getElementById(`${targetId}symbol`).title = request.bodyData.model;
-    this.shadowRoot.getElementById(`${targetId}header`).innerHTML = `<i> ${JSON.stringify(request.text[0]["content"])} </i>`;
+    const firstMessage = request.text[1]["content"];
+    if (firstMessage){
+        this.shadowRoot.getElementById(`${targetId}header`).innerHTML = `<i> ${JSON.stringify(firstMessage)} </i>`;
+    }
 
     if (this.shadowRoot.getElementById(`regenerate${targetId}`)) {
       if (!this.alreadyCalled[targetId]) {
