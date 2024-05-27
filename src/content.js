@@ -186,7 +186,11 @@ function processJsonObject(jsonStr, uuid, request) {
 
       // Otherwise, parse and process the JSON object
       // console.log("About to process JSON.");
+
+      // Remove newlines
+      jsonStr = jsonStr.replace(/\n/g, "");
       const jsonObject = JSON.parse(jsonStr);
+      
       // console.log(`Processing JSON object for ${uuid}:`, jsonObject);
       
       // Check for an error property in the JSON object
@@ -209,7 +213,7 @@ function processJsonObject(jsonStr, uuid, request) {
 
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log("Full request:", request);
+  // console.log("Full request:", request);
   if (request.greeting === "shouldReenableContextMenu") {
     sendResponse({ farewell: "yes" });
     return;

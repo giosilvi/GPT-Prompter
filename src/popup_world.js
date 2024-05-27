@@ -94,14 +94,19 @@ const flypopup = (id, { text = "", left = 0, top = 0, symbol = "🅶" }) => `
       <div id="${id}loading-spinner" class="loading-spinner microphone-button" style="display: none;"></div>
     </div>
   </div>
-    <button type="button" id="${id}submit" class="submitbutton" title="Alt+Enter">Submit</button>
-    <button type="button" id="${id}upload" for="${id}file" class="submitbutton" title="Alt+U">Add Image</button>
-    <input type="file" id="${id}file" style="display:none" accept="image/*">
-    <p id="${id}galleryLabel" class='popupcompletion' style="white-space: pre-line display:none">Images:</p>
-    <div id="${id}imageGallery" style="display: flex; flex-wrap: wrap;"></div>
-
+    <button type="button" id="${id}submit" class="submitbutton" style="display:inline-block" title="Alt+Enter">Submit</button>
     <button type="button" id="${id}stop" class="submitbutton hide" title="Alt+Enter" style='background-color: red;'>Stop</button>
     <button type="button" id="${id}add2comp" class="submitbutton hide" style=" width: 65px;" title="Alt+A">Add &#8682;</button>
+
+    <button type="button" id="${id}upload" for="${id}file" class="submitbutton" style="display:inline-block" title="Alt+U">Add Image</button>
+    <input type="file" id="${id}file" style="display:none" accept="image/*">
+
+    <div id="${id}galleryLabel" style="display:none; padding-top: 10px;">
+      <span class="popupcompletion symbolmodel">▷ Images:</span>
+      <button type="button" id="${id}clearButton" class="submitbutton" title="Alt+Shift+D" style="width: 120px;">Clear Images</button>      
+    </div> 
+
+    <div id="${id}imageGallery" style="display: flex; flex-wrap: wrap;"></div>
     <p id="${id}text" class='popupcompletion'></p>
 
     <div style="float:right">
@@ -137,12 +142,12 @@ const chatpopup = (id, { text = "", left = 0, top = 0, symbol = "🅶" }) => `
    <div id="${id}system" class="suggestion" style="margin-top: 10px;"></div>
   </div>
     <div id="${id}chat" style="display: flex;">
-      <button type="button" id="${id}submit" class="submitbutton chatsubmit" title="Alt+Enter">Submit</button>
-      <button type="button" id="${id}upload" for="${id}file" class="submitbutton chatsubmit" style=" width: 120px;" title="Alt+U">Add Image</button>
-      <p id="${id}galleryLabel" class='popupcompletion' style="white-space: pre-line display:none">Images:</p>
-      <div id="${id}imageGallery" style="display: flex; flex-wrap: wrap;"></div>
-      <input type="file" id="${id}file" style="display:none" accept="image/*">
+      <button type="button" id="${id}submit" class="submitbutton chatsubmit" style="display:inline-block" title="Alt+Enter">Submit</button>
       <button type="button" id="${id}stop" class="submitbutton chatsubmit hide" title="Alt+Enter" style='background-color: red;'>Stop</button>
+
+      <button type="button" id="${id}upload" for="${id}file" class="submitbutton chatsubmit" style=" width: 150px; display:inline-block" title="Alt+U">Add Image</button>
+      <input type="file" id="${id}file" style="display:none" accept="image/*">
+
       <div class="textarea-container">
         <textarea contentEditable="true" id="${id}chatarea" class="textarea">${text}</textarea>
         <div id="${id}mic-container" title="Transcribe with Whisper (Tab key to start/stop)" >
@@ -153,6 +158,13 @@ const chatpopup = (id, { text = "", left = 0, top = 0, symbol = "🅶" }) => `
         </div>
       </div>
     </div>
+
+    <div id="${id}galleryLabel" style="display:none; padding-top: 10px;">
+      <span class="popupcompletion symbolmodel">▷ Images:</span>
+      <button type="button" id="${id}clearButton" class="submitbutton" title="Alt+Shift+D" style="width: 120px;">Clear Images</button>      
+    </div> 
+    <div id="${id}imageGallery" style="display: flex; flex-wrap: wrap;"></div>
+
     <div style="float:right">
         <span id="${id}probability" class="tkn_prb" ></span>
         <button class='minibuttons copybutton hide' id='copy_to_clipboard${id}' style="cursor: copy;" title='Copy completion to clipboard (Alt+C)'></button>
@@ -573,7 +585,8 @@ class popUpClass extends HTMLElement {
     this.updateTemperature(this.ids);
     this.runClick(this.ids);
     this.stopButton(this.ids);
-    this.uploadImage(this.ids);
+    this.imageUpload(this.ids);
+    this.clearButton(this.ids);
     this.showAdd2CompletionButton(this.ids);
 
     // pause for 1 second to allow the popup to be rendered
@@ -680,6 +693,8 @@ class popUpClass extends HTMLElement {
     this.updateTemperature(this.ids);
     this.runClickChat(this.ids);
     this.stopButton(this.ids);
+    this.imageUpload(this.ids);
+    this.clearButton(this.ids);
 
     setTimeout(() => {
       element.classList.toggle("show");
@@ -854,6 +869,37 @@ class popUpClass extends HTMLElement {
     });
   }
 
+  getPromptUserContent(textPrompt, modelToUse) {
+    if (modelToUse in CHAT_API_MODELS) {
+      if (this.imbase64arr && (modelToUse in VISION_SUPPORTED_MODELS)){
+        console.log("Attaching image with text.");
+        let contentarr = [
+          {
+            type: "text",
+            text: textPrompt
+          }
+        ]
+        for (let i = 0; i < this.imbase64arr.length; i++){
+          if (this.imvalids[i]){
+            contentarr.push({
+              type: "image_url",
+              image_url: {
+                url: this.imbase64arr[i]
+              }
+            });
+          }
+        }
+
+        textPrompt = [{ role: "user", content: contentarr}];
+        console.log(textPrompt);
+      }
+      else {
+        textPrompt = [{ role: "user", content: textPrompt }];
+      }
+    }
+    return textPrompt;
+  }
+
   runClick(targetId) {
     const submitButton = this.shadowRoot.getElementById(`${targetId}submit`);
 
@@ -867,35 +913,7 @@ class popUpClass extends HTMLElement {
         this.removeHideFromCompletion(targetId);
         let modelToUse = this.getBodyData(targetId, "model");
         let textPrompt = this.getTextareaValue(targetId);
-        if (modelToUse in CHAT_API_MODELS) {
-          if (window.imbase64arr){
-            if (!(modelToUse in VISION_SUPPORTED_MODELS)){
-              console.log("Model not supported for image input.");
-              return;
-            }
-            console.log("Attaching image with text.");
-            let contentarr = [
-              {
-                type: "text",
-                text: textPrompt
-              }
-            ]
-            for (let i = 0; i < window.imbase64arr.length; i++){
-              contentarr.push({
-                type: "image_url",
-                image_url: {
-                  url: window.imbase64arr[i]
-                }
-              });
-            }
-
-            textPrompt = [{ role: "user", content: contentarr}];
-            console.log(textPrompt);
-          }
-          else {
-            textPrompt = [{ role: "user", content: textPrompt }];
-          }
-        }
+        textPrompt = this.getPromptUserContent(textPrompt, modelToUse);
 
         const promptObj = {
           prompt: textPrompt,
@@ -910,10 +928,6 @@ class popUpClass extends HTMLElement {
         // get the textarea element
         console.log("After1");
         this.resetAutoWidthTextArea(targetId);
-
-        // Reset image gallery preview and value
-        window.imbase64arr = null;
-        this.clearGallery(targetId);
       });
     }
 
@@ -942,6 +956,8 @@ class popUpClass extends HTMLElement {
         let modelToUse = this.getBodyData(targetId, "model");
         let userTextPrompt = txtArea.value;
         txtArea.value = "";
+        userTextPrompt = this.getPromptUserContent(userTextPrompt, modelToUse);
+
         let chatElement = this.shadowRoot.getElementById(targetId);
         let previousmessages = chatElement.previousMessages;
         // add a Child to the chat element with id of id+"text", of type assistant
@@ -1084,52 +1100,92 @@ class popUpClass extends HTMLElement {
   }
 
   addImageToGallery(id_target, dataUrl) {
+    /* 
+    1. Adds image to gallery object
+    2. Handles the close button for the image
+    3. Adds image (in base64 dataURL form) to the global variable
+    */
     const gallery = this.shadowRoot.getElementById(id_target + "imageGallery");
-    if (!gallery.num_images) {
-      gallery.num_images = 1;
+    if (!this.imbase64arr || this.imbase64arr.length === 0) {
+      let galleryLabel = this.shadowRoot.getElementById(id_target + "galleryLabel");
+      galleryLabel.style.display = "block";
+      // this.shadowRoot.getElementById(id_target + "clearButton").style.display = "inline-block";
+
+      this.imbase64arr = [dataUrl];
+      this.imvalids = [true];
     }
-    const galleryLabel = this.shadowRoot.getElementById(id_target + "galleryLabel");
-    galleryLabel.display = "block";
-    
+    else {
+      this.imbase64arr.push(dataUrl);
+      this.imvalids.push(true);
+    }
+
     const image = document.createElement("img");
     image.src = dataUrl;
     image.style.cssText = "max-width: 300px; max-height: 50px; margin-top: 5px;";
-    image.id = `${id_target}_${gallery.num_images}image`;
+    image.id = `${id_target}_${this.imbase64arr.length}image`;
     gallery.appendChild(image);
 
     const xbutton = document.createElement("button");
     xbutton.innerHTML = "x";
     xbutton.className = "imclosebutton";
-    xbutton.id = `${id_target}_${gallery.num_images}xbutton`;
+    xbutton.id = `${id_target}_${this.imbase64arr.length}xbutton`;
+
+    console.log("Adding image.");
+    console.log(this.imvalids);
     xbutton.addEventListener("click", () => {
       this.shadowRoot.getElementById(image.id).remove();
       this.shadowRoot.getElementById(xbutton.id).remove();
+
+      let image_idx = parseInt(image.id.split("_")[1].split("image")[0]) - 1;
+      this.imvalids[image_idx] = false; // mark the image as invalid -> don't send it to the model
+      console.log("Closing image");
+      console.log(this.imvalids);
+      if (this.imvalids.every((val) => val === false)){
+        console.log("Clearing gallery.");
+        this.clearGallery(id_target);
+      }
     });
     gallery.appendChild(xbutton);
-
-    gallery.num_images += 1;
-
   }
 
   clearGallery(id_target){
     const gallery = this.shadowRoot.getElementById(id_target + "imageGallery");
     gallery.innerHTML = "";
-    gallery.num_images = 0;
-    const galleryLabel = this.shadowRoot.getElementById(id_target + "galleryLabel");
-    galleryLabel.display = "none";
+
+    // Reset the global image array
+    this.imbase64arr = [];
+    this.imvalids = [];
+
+    this.shadowRoot.getElementById(id_target + "galleryLabel").style.display = "none";
   }
 
-  uploadImage(id_target) {
+  clearButton(id_target) {
+    this.shadowRoot.getElementById(id_target + "clearButton").addEventListener("click", () => {
+      this.clearGallery(id_target);
+    });
+  }
+
+  enableImageSupport(id_target){
+    this.shadowRoot.getElementById(id_target + "upload").style.display = "inline-block";
+    this.shadowRoot.getElementById(id_target + "imageGallery").style.display = "block";
+  }
+
+  disableImageSupport(id_target){
+    let uploadButton = this.shadowRoot.getElementById(id_target + "upload");
+    let galleryLabel = this.shadowRoot.getElementById(id_target + "galleryLabel");
+    let imageGallery = this.shadowRoot.getElementById(id_target + "imageGallery");
+    uploadButton.style.display = "none";
+    galleryLabel.style.display = "none";
+    imageGallery.style.display = "none";
+    // galleryLabel.whiteSpace = "nowrap";
+  }
+
+  imageUpload(id_target) {
     const uploadButton = this.shadowRoot.getElementById(id_target + "upload");
     if (!uploadButton.listener) {  
       const reader = new FileReader();
       reader.onloadend = function (e) {
         const base64 = e.target.result //.split(",")[1];
-        // save the base64 to the global variable
-        if (!window.imbase64arr) window.imbase64arr = [base64];
-        else {
-          window.imbase64arr.push(base64);
-        }
         // console.log(base64);
         this.caller.addImageToGallery(id_target, base64);
       };
@@ -1196,12 +1252,11 @@ class popUpClass extends HTMLElement {
         symbolElement.innerHTML = models["gpt-4"];
       }
 
-      let uploadButton = this.shadowRoot.getElementById(id_target + "upload");
-      if (model in VISION_SUPPORTED_MODELS) {
-        uploadButton.style.display = "block";
+      if (element.bodyData.model in VISION_SUPPORTED_MODELS) {
+        this.enableImageSupport(id_target);
       }
       else {
-        uploadButton.style.display = "none";
+        this.disableImageSupport(id_target);
       }
 
       symbolElement.title = element.bodyData.model;
@@ -1236,11 +1291,11 @@ class popUpClass extends HTMLElement {
         symbolElement.innerHTML = models["gpt-4-turbo"];
       }
 
-      if (model in VISION_SUPPORTED_MODELS) {
-        uploadButton.style.display = "block";
+      if (element.bodyData.model in VISION_SUPPORTED_MODELS) {
+        this.enableImageSupport(id_target);
       }
       else {
-        uploadButton.style.display = "none";
+        this.disableImageSupport(id_target);
       }
 
       symbolElement.title = element.bodyData.model;
@@ -1384,8 +1439,16 @@ class popUpClass extends HTMLElement {
     const symbol = symbolFromModel(request.bodyData.model);
     this.shadowRoot.getElementById(`${targetId}symbol`).innerHTML = symbol;
     this.shadowRoot.getElementById(`${targetId}symbol`).title = request.bodyData.model;
-    this.shadowRoot.getElementById(`${targetId}header`).innerHTML = `<i> ${
-      JSON.stringify(request.text)
+    let header_content = JSON.stringify(request.text);
+    if (header_content.length > 50) {
+      header_content = header_content.substring(0, 50) + "...";
+      // truncate at "image_url"
+      if (header_content.includes("image_url")) {
+        header_content = header_content.substring(0, header_content.indexOf("image_url")) + "...";
+      }
+    }
+    this.shadowRoot.getElementById(`${targetId}header`).innerHTML = `<i> ${ 
+      header_content
     } </i>`;
 
     if (this.shadowRoot.getElementById(`regenerate${targetId}`)) {
