@@ -648,6 +648,7 @@ class popUpClass extends HTMLElement {
 
     // get the last message in the list
     var messageInTextArea = "";
+    console.log("point1");
     if (messages[messages.length - 1]["role"] == "user") {
       messageInTextArea = messages[messages.length - 1]["content"];
       messages.pop(); // remove the last message from the list
@@ -671,7 +672,9 @@ class popUpClass extends HTMLElement {
     // make a copy of the messages list and attach it to the element
     element.previousMessages = messages;
     // Set the system message in the popup
-    if (messages[0]["role"] == "system") {
+    console.log("point2");
+    console.log(messages);
+    if (messages.length > 0 && messages[0]["role"] == "system") {
       this.shadowRoot.getElementById(this.ids + "system").innerText = "System: " + messages[0]["content"];
     }
 
@@ -784,6 +787,7 @@ class popUpClass extends HTMLElement {
 
     innermessage.className = "singlemessage";
     // add to messagepoup an equivalent of the role
+    console.log("point3");
     messagepopup.classList.add(messages["role"]);
     console.log("Messagecontent:", messages["content"]);
     // if the role is user, shift the message to the right
@@ -998,7 +1002,7 @@ class popUpClass extends HTMLElement {
         if (this.shadowRoot.getElementById(targetId + "text")) {
           this.shadowRoot.getElementById(targetId + "text").id = targetId + "message_" + length_messages;
         }
-
+        console.log("point4");
         let usermessage = this.createChatElement({ role: "user", content: userTextPrompt }, targetId + "message_" + (length_messages - 1));
         completionElement.appendChild(usermessage);
         setTimeout(() => {
@@ -1030,6 +1034,14 @@ class popUpClass extends HTMLElement {
     }
 
     // this.stopBubblingEvent(txtArea);
+  }
+
+  takeScreenshot(targetId) {
+    const screenshotButton = this.shadowRoot.getElementById(`${targetId}screenshot`);
+    screenshotButton.addEventListener("click", async () => {
+      const screenshot = await chrome.tabs.captureVisibleTab();
+      this.addImageToGallery(targetId, screenshot);
+    });
   }
 
   resetAutoWidthTextArea(targetId) {
@@ -1662,6 +1674,7 @@ class popUpClass extends HTMLElement {
       } else if (chatarea) {
         chatarea.focus();
         this.showCopyToClipboardBtn(this.ids);
+        console.log("point5");
         element.previousMessages.push({ role: "assistant", content: complete_completion });
       } else {
         element.focus();
