@@ -179,7 +179,6 @@ function processJsonObject(jsonStr, uuid, request) {
   try {
       // Check for the [DONE] marker
       if (jsonStr === "[DONE]") {
-        console.log("Received [DONE] marker for", uuid);
         popUpShadow.updatepopup(request, uuid, false);
         return;
       }
@@ -245,7 +244,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       break;
     case "showPopUpChatGPT":
       handleShowPopUp();
-      console.log("ChatGPT");
       popUpShadow.chatGPTpopup(request.text, request.bodyData, request.cursorPosition);
       addListenersForDrag();
       break;

@@ -155,21 +155,14 @@ chrome.runtime.onInstalled.addListener(function (details) {
           model: "gpt-4-turbo",
           temperature: 0.1,
           max_tokens: 4096,
-          prompt:  JSON.stringify([{"role":"user", "content":"Try not to use headings.. Tell me more about #TEXT#:"}]),
+          prompt:  JSON.stringify([{"role":"system", "content":"You are a helpful assistant"},{"role":"user", "content":"Tell me more about #TEXT#:"}]),
           twoStage: false,
         },
         {
           model: "gpt-4-turbo",
           temperature: 0.1,
           max_tokens: 4096,
-          prompt:  JSON.stringify([{"role":"user", "content":"Please create an Anki card for: #TEXT#:"}]),
-          twoStage: false,
-        },
-        {
-          model: "gpt-4-turbo",
-          temperature: 0.1,
-          max_tokens: 4096,
-          prompt:  JSON.stringify([{"role":"user", "content":"Please create an Anki card for the concept below. Explain any intuitions and be sure to include formulas if necessary: #TEXT#"}]),
+          prompt:  JSON.stringify([{"role":"system", "content":"You are a helpful assistant"},{"role":"user", "content":"Please create an Anki card for: #TEXT#:"}]),
           twoStage: false,
         },
         {
@@ -216,8 +209,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   else if (message.text === "launchGPT") {
     // Get the tab from the sender
     const { tab } = sender; // this line is equivalent to const tab = sender.tab;
-    console.log("Received prompt object.");
-    console.log(typeof message.prompt.prompt, message.prompt);
+
     // Launch GPT
     chrome.storage.sync.get("APIKEY", function (items) {
       (async () => {
