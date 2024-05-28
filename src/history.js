@@ -5,7 +5,7 @@
  * @return {string} - The HTML list.
  */
 
-import {CHAT_API_MODELS} from "./gpt3.js";
+import { CHAT_API_MODELS } from "./gpt3.js";
 
 function makeHistoryList(items) {
   // create empty list and total cost variables
@@ -43,7 +43,9 @@ function createListItem(item, index) {
     if (key !== "stream" && key !== "prompt" && key !== "messages") {
       var value = prompt[key];
       // wrap key in 'strong' element
-      promptContent += `<strong>${key}:</strong> ${value}<br>`;
+      if (value !== undefined){
+          promptContent += `<strong>${key}:</strong> ${value}<br>`;
+      }
     }
   }
   // add prompt key and value to prompt content string
@@ -106,8 +108,7 @@ function erasePrompt(index) {
       if (index <= items.history.length) {
         // remove the prompt from the array
         items.history.splice(index, 1);
-        freshList = makeHistoryList(items);
-        document.getElementById("history-of-prompts").innerHTML = freshList;
+        document.getElementById("history-of-prompts").innerHTML = makeHistoryList(items);
         update_lower_buttons(items);
         chrome.storage.local.set({ history: items.history }, function () {
           // Notify that is erased
@@ -126,8 +127,7 @@ function load_history() {
     if (typeof items.history !== "undefined") {
       // check if it is not empty
       if (items.history.length > 0) {
-        freshList = makeHistoryList(items);
-        document.getElementById("history-of-prompts").innerHTML = freshList;
+        document.getElementById("history-of-prompts").innerHTML = makeHistoryList(items);
         update_lower_buttons(items);
       }
     }
