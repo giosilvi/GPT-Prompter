@@ -46,16 +46,34 @@ function checkMaxTokens(content, model) {
   var tokens = 0;
   if (model in CHAT_API_MODELS) {
     // check the tokens in the text, for each "content" key
-    // var content = JSON.parse(text);
-    if (content[0].content[0].type) {
-      content = content[0].content[0].text;
-      // console.log("Cropping content", content);
+    console.log("Original content:", content);
+    if (content[0].role === "user"){
+      // Request came from prompt-on-the-fly
+      if (content[0].content[0].type) {
+        content = [content[0].content[0].text];
+        console.log("Cropping content", content);
+      }
+      else{
+        content = [content[0].content];
+      }
     }
+    else{
+      // Request came from ChatGPT interface
+      let tmp = [];
+      for (var i = 0; i < content.length; i++) {
+        if (content[i].content[0].type) tmp.push(content[i].content[0].text);
+        else tmp.push(content[i].content);
+      }
+      content = tmp;
+      console.log("Cropping content", content);
+    }
+
+    // Content should be a list of strings
     for (var i = 0; i < content.length; i++) {
       tokens += 4; // every message follows <im_start>{role/name}\n{content}<im_end>\n
-      var singleMsgToken = countTokens(content[i]["content"]);
+      var singleMsgToken = countTokens(content[i]);
       tokens += singleMsgToken;
-      console.log(singleMsgToken, content[i]["content"]);
+      console.log(singleMsgToken, content[i]);
       tokens += 2; // every reply is primed with <im_start>assistant
     }
   } else {

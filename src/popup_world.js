@@ -160,8 +160,8 @@ const chatpopup = (id, { text = "", left = 0, top = 0, symbol = "🅶" }) => `
     </div>
 
     <div id="${id}galleryLabel" style="display:none; padding-top: 10px;">
-      <span class="popupcompletion symbolmodel">▷ Images:</span>
-      <button type="button" id="${id}clearButton" class="submitbutton" title="Alt+Shift+D" style="width: 120px;">Clear Images</button>      
+      <span class="popupcompletion" style="color: #71a799">▷ Images:</span>
+      <button type="button" id="${id}clearButton" class="submitbutton chatsubmit" title="Alt+Shift+D" style="width: 120px;">Clear Images</button>      
     </div> 
     <div id="${id}imageGallery" style="display: flex; flex-wrap: wrap;"></div>
 
@@ -785,13 +785,37 @@ class popUpClass extends HTMLElement {
     innermessage.className = "singlemessage";
     // add to messagepoup an equivalent of the role
     messagepopup.classList.add(messages["role"]);
-    innermessage.innerText = messages["content"];
+    console.log("Messagecontent:", messages["content"]);
     // if the role is user, shift the message to the right
     if (messages["role"] == "user") {
+      innermessage.innerText = messages["content"].content;
+
+      if (Array.isArray(messages["content"].content)){
+        innermessage.innerText = messages["content"].content[0].text;
+        // Images are attached!
+        var innerGallery = document.createElement("div");
+        innerGallery.style.display = "flex";
+        innerGallery.style.flexWrap = "wrap";
+        var images = messages["content"].content.slice(1);
+        for (let i = 0; i < images.length; i++){
+          if (images[i].type == "image_url"){
+            var img = document.createElement("img");
+            img.src = images[i].image_url.url;
+            img.style.cssText = "max-width: 300px; max-height: 50px; margin-top: 5px; margin-left: 3px; margin-right: 3px;";
+            innerGallery.appendChild(img);
+          }
+        }
+
+        innermessage.appendChild(innerGallery);
+        console.log(idmessage);
+        this.clearGallery(idmessage.split("message_")[0]);
+      }
+
       innermessage.style.textAlign = "right";
       // float the message to the right
       innermessage.style.float = "right";
     } else {
+      innermessage.innerText = messages["content"];
       innermessage.style.textAlign = "left";
       // float the message to the left
       innermessage.style.float = "left";
@@ -853,6 +877,8 @@ class popUpClass extends HTMLElement {
         this.stop_stream = true;
         this.stream_on = false;
       }
+      // Clear the image gallery
+      this.clearGallery(id_target);
 
       this.listOfActivePopups = this.listOfActivePopups.filter((item) => item !== id_target);
       // remove from listOfUnpinnedPopups if it is there
@@ -873,6 +899,8 @@ class popUpClass extends HTMLElement {
     if (modelToUse in CHAT_API_MODELS) {
       if (this.imbase64arr && (modelToUse in VISION_SUPPORTED_MODELS)){
         console.log("Attaching image with text.");
+        console.log(this.imbase64arr);
+        console.log(this.imvalids);
         let contentarr = [
           {
             type: "text",
@@ -956,7 +984,8 @@ class popUpClass extends HTMLElement {
         let modelToUse = this.getBodyData(targetId, "model");
         let userTextPrompt = txtArea.value;
         txtArea.value = "";
-        userTextPrompt = this.getPromptUserContent(userTextPrompt, modelToUse);
+        userTextPrompt = this.getPromptUserContent(userTextPrompt, modelToUse)[0];
+        console.log(userTextPrompt);
 
         let chatElement = this.shadowRoot.getElementById(targetId);
         let previousmessages = chatElement.previousMessages;
@@ -969,7 +998,8 @@ class popUpClass extends HTMLElement {
         if (this.shadowRoot.getElementById(targetId + "text")) {
           this.shadowRoot.getElementById(targetId + "text").id = targetId + "message_" + length_messages;
         }
-        let usermessage = this.createChatElement({ role: "user", content: userTextPrompt }, targetId + "message_" + length_messages - 1);
+
+        let usermessage = this.createChatElement({ role: "user", content: userTextPrompt }, targetId + "message_" + (length_messages - 1));
         completionElement.appendChild(usermessage);
         setTimeout(() => {
           usermessage.classList.add("reveal");
@@ -984,7 +1014,7 @@ class popUpClass extends HTMLElement {
         assistantmessage.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
 
         // append the user text to the previous messages
-        previousmessages.push({ role: "user", content: userTextPrompt });
+        previousmessages.push(userTextPrompt);
         let textPrompt = previousmessages;
         const promptObj = {
           prompt: textPrompt,
@@ -1440,8 +1470,10 @@ class popUpClass extends HTMLElement {
     this.shadowRoot.getElementById(`${targetId}symbol`).innerHTML = symbol;
     this.shadowRoot.getElementById(`${targetId}symbol`).title = request.bodyData.model;
     let header_content = JSON.stringify(request.text);
-    if (header_content.length > 50) {
-      header_content = header_content.substring(0, 50) + "...";
+    let HEADER_CONTENT_THRESHOLD = 120;
+
+    if (header_content.length > HEADER_CONTENT_THRESHOLD) {
+      header_content = header_content.substring(0, HEADER_CONTENT_THRESHOLD) + "...";
       // truncate at "image_url"
       if (header_content.includes("image_url")) {
         header_content = header_content.substring(0, header_content.indexOf("image_url")) + "...";
