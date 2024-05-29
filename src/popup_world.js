@@ -143,13 +143,6 @@ const chatpopup = (id, { text = "", left = 0, top = 0, symbol = "🅶" }) => `
    <div id="${id}system" class="suggestion" style="margin-top: 10px;"></div>
   </div>
     <div id="${id}chat" style="display: flex;">
-      <button type="button" id="${id}submit" class="submitbutton chatsubmit" style="display:inline-block" title="Alt+Enter">Submit</button>
-      <button type="button" id="${id}stop" class="submitbutton chatsubmit hide" title="Alt+Enter" style='background-color: red;'>Stop</button>
-
-      <button type="button" id="${id}upload" for="${id}file" class="submitbutton chatsubmit" style=" width: 150px; display:inline-block" title="Alt+U">Add Image</button>
-      <input type="file" id="${id}file" style="display:none" accept="image/*">
-      <button type="button" id="${id}screenshot" class="submitbutton" style="display:inline-block; color: #71a799;" title="Alt+S">Screenshot</button>
-
       <div class="textarea-container">
         <textarea contentEditable="true" id="${id}chatarea" class="textarea">${text}</textarea>
         <div id="${id}mic-container" title="Transcribe with Whisper (Tab key to start/stop)" >
@@ -160,6 +153,12 @@ const chatpopup = (id, { text = "", left = 0, top = 0, symbol = "🅶" }) => `
         </div>
       </div>
     </div>
+    <button type="button" id="${id}submit" class="submitbutton chatsubmit" style="display:inline-block" title="Alt+Enter">Submit</button>
+    <button type="button" id="${id}stop" class="submitbutton chatsubmit hide" title="Alt+Enter" style='background-color: red;'>Stop</button>
+
+    <button type="button" id="${id}upload" for="${id}file" class="submitbutton chatsubmit" style="width: 110px; display:inline-block" title="Alt+U">Add Image</button>
+    <input type="file" id="${id}file" style="display:none" accept="image/*">
+    <button type="button" id="${id}screenshot" class="submitbutton chatsubmit" style="display:inline-block;" title="Alt+S">Screenshot</button>
 
     <div id="${id}galleryLabel" style="display:none; padding-top: 10px;">
       <span class="popupcompletion" style="color: #71a799">▷ Images:</span>
@@ -240,9 +239,9 @@ const styled = `
   margin-bottom: -.5em;
 }
 .chatsubmit{
-  margin-bottom:10px;
-  margin-top:10px;
-  margin-right:10px;
+  margin-bottom:3px;
+  margin-top:5px;
+  margin-right:5px;
   background-color: #71a799!important;
 }
 .textarea{
@@ -1084,14 +1083,11 @@ class popUpClass extends HTMLElement {
                 const startX = e.clientX;
                 const startY = e.clientY;
 
-                const selection = document.createElement("div");
-                selection.style.cssText = `position: absolute; top: ${startY}px; left: ${startX}px; border: 2px solid red; zIndex: 10002;`;
-                document.body.appendChild(selection);
-                let mouseMoveHandler = (e) => handleMouseMove(e, startX, startY, selection, img, brightenedImg);
+                let mouseMoveHandler = (e) => handleMouseMove(e, startX, startY, brightenedImg);
                 document.addEventListener("mousemove", mouseMoveHandler);
                 let mouseUpHandler = null;
                 mouseUpHandler = (e) => {
-                  handleMouseUp(e, startX, startY, targetId, selection, img, brightenedImg, mouseMoveHandler, mouseUpHandler, this);
+                  handleMouseUp(e, startX, startY, targetId, img, brightenedImg, mouseMoveHandler, mouseUpHandler, this);
                 };
                 document.addEventListener("mouseup", mouseUpHandler);
 
@@ -1788,48 +1784,62 @@ function getImage(src, id){
   return img;
 }
 
-function handleMouseMove(e, startX, startY, selection, img, brightenedImg) {
-  const width = e.clientX - startX;
-  const height = e.clientY - startY;
-
-  selection.style.width = `${width}px`;
-  selection.style.height = `${height}px`;
+function handleMouseMove(e, startX, startY, brightenedImg) {
+  // console.log(e.clientX, e.clientY);
   // Undo brightness filter within the selection
-  brightenedImg.style.clipPath = `inset(${startY}px ${window.innerWidth - e.clientX}px ${window.innerHeight - e.clientY}px ${startX}px)`;
+  
+  // Calculate the minimum and maximum x and y values
+  const minX = Math.min(e.clientX, startX);
+  const maxX = Math.max(e.clientX, startX);
+  const minY = Math.min(e.clientY, startY);
+  const maxY = Math.max(e.clientY, startY);
+
+  // Calculate the top, right, bottom, and left offsets for the inset
+  const top = minY + 'px';
+  const right = (window.innerWidth - maxX) + 'px';
+  const bottom = (window.innerHeight - maxY) + 'px';
+  const left = minX + 'px';
+
+  // Set the clipPath style
+  brightenedImg.style.clipPath = `inset(${top} ${right} ${bottom} ${left})`;
+
   if (brightenedImg.style.display === "none") {
     console.log("Displaying brightened image.");
     brightenedImg.style.display = "block";
   }  
 }
 
-function handleMouseUp(e, startX, startY, targetId, selection, img, brightenedImg, mouseMoveHandler, mouseUpHandler, popupParent) {
+function handleMouseUp(e, startX, startY, targetId, img, brightenedImg, mouseMoveHandler, mouseUpHandler, popupParent) {
   console.log("Mousing up.");
   console.log(mouseMoveHandler, mouseUpHandler);
-  document.removeEventListener("mousemove", mouseMoveHandler);
-  document.removeEventListener("mouseup", mouseUpHandler);
-
-  // Restore document
-  document.body.style.cursor = "default";
-  document.body.removeChild(selection);
-  document.body.removeChild(img);
-  document.body.removeChild(brightenedImg);
-  document.body.style.overflow = "auto";
-  document.body.style.userSelect = "auto";
 
   const endX = e.clientX;
   const endY = e.clientY;
-  const width = Math.abs(endX - startX);
-  const height = Math.abs(endY - startY);
+  const xScale = img.naturalWidth / img.width;
+  const yScale = img.naturalHeight / img.height;
+  const width = Math.abs(endX - startX) * xScale;
+  const height = Math.abs(endY - startY) * yScale;
 
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
   const ctx = canvas.getContext("2d");
-  ctx.drawImage(img, startX, startY, width, height, 0, 0, width, height);
+
+  ctx.drawImage(img, xScale * Math.min(startX, endX), yScale * Math.min(startY, endY), width, height, 0, 0, width, height);
   const dataUrl = canvas.toDataURL("image/png");
 
   popupParent.addImageToGallery(targetId, dataUrl);
   popupParent.shadowRoot.getElementById(targetId).classList.toggle("hide");
+
+  document.removeEventListener("mousemove", mouseMoveHandler);
+  document.removeEventListener("mouseup", mouseUpHandler);
+
+  // Restore document
+  document.body.style.cursor = "default";
+  document.body.removeChild(img);
+  document.body.removeChild(brightenedImg);
+  document.body.style.overflow = "auto";
+  document.body.style.userSelect = "auto";
 }
 
 function updateMarkdownContent(markdownContainer, markdownText) {
