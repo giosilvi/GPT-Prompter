@@ -38,23 +38,6 @@ function computeCost(tokens, model) {
   return cost.toFixed(5);
 }
 
-async function captureScreenshot() {
-  const canvas = document.createElement("canvas");
-  const context = canvas.getContext("2d");
-  const screenshot = document.createElement("screenshot");
-
-  try {
-      const captureStream = await navigator.mediaDevices.getDisplayMedia();
-      screenshot.srcObject = captureStream;
-      context.drawImage(screenshot, 0, 0, window.width, window.height);
-      const frame = canvas.toDataURL("image/png");
-      captureStream.getTracks().forEach(track => track.stop());
-      window.location.href = frame;
-  } catch (err) {
-      console.error("Error: " + err);
-  }
-}
-
 //
 
 const minipopup = (id, { left = 0, top = 0 }) => `
@@ -1063,8 +1046,65 @@ class popUpClass extends HTMLElement {
     const buttonobj = this.shadowRoot.getElementById(`${targetId}screenshot`);
     if (!buttonobj.listener) {
       buttonobj.addEventListener("click", async () => {
-        const screenshot = await captureScreenshot();
-        this.addImageToGallery(targetId, screenshot);
+        // Hide popup
+        this.shadowRoot.getElementById(targetId).classList.toggle("hide");
+        console.log("Hiding popup");          // Hide popup
+        setTimeout(() => {
+          chrome.runtime.sendMessage({ action: "takeScreenCapture"}, (response) => {
+            // response.data is the image in base64
+            if (response && !response.error) {
+              // Change cursor to crosshair
+              document.body.style.cursor = "crosshair";
+              // Create a new image element
+              // Disable dragging of document elements
+              document.body.style.userSelect = "none";
+
+              let img = getImage(response.data, "screenshot");
+              // Darken the image display
+              img.style.filter = "brightness(0.7)";
+              // Put the image on top of the other elements
+              img.style.zIndex = "10000";
+
+              // Disable scrolling
+              document.body.style.overflow = "hidden";
+
+              // Brightened image
+              let brightenedImg = getImage(response.data, "brightened_selection");
+              brightenedImg.style.zIndex = "10001";
+              brightenedImg.style.display = "none";
+              
+              // Append the image to the body
+              document.body.appendChild(img);
+              document.body.appendChild(brightenedImg);
+
+              console.log("Image created!");
+              // Wait for the user to crop a region
+              img.addEventListener("mousedown", (e) => {
+                console.log("Mousedown detected.");
+                const startX = e.clientX;
+                const startY = e.clientY;
+
+                const selection = document.createElement("div");
+                selection.style.cssText = `position: absolute; top: ${startY}px; left: ${startX}px; border: 2px solid red; zIndex: 10002;`;
+                document.body.appendChild(selection);
+                let mouseMoveHandler = (e) => handleMouseMove(e, startX, startY, selection, img, brightenedImg);
+                document.addEventListener("mousemove", mouseMoveHandler);
+                let mouseUpHandler = null;
+                mouseUpHandler = (e) => {
+                  handleMouseUp(e, startX, startY, targetId, selection, img, brightenedImg, mouseMoveHandler, mouseUpHandler, this);
+                };
+                document.addEventListener("mouseup", mouseUpHandler);
+
+                console.log("Added both handlers.");
+              });
+            } else{
+              if (response.error === "Permission denied"){
+                // Create a popup to ask for permission
+                alert("To take a screen capture, the extension needs to access the current tab.")
+              }
+            }
+          });
+        }, 50);
       });
     }
   }
@@ -1238,6 +1278,7 @@ class popUpClass extends HTMLElement {
 
   enableImageSupport(id_target){
     this.shadowRoot.getElementById(id_target + "upload").style.display = "inline-block";
+    this.shadowRoot.getElementById(id_target + "screenshot").style.display = "inline-block";
     this.shadowRoot.getElementById(id_target + "imageGallery").style.display = "block";
   }
 
@@ -1245,9 +1286,11 @@ class popUpClass extends HTMLElement {
     let uploadButton = this.shadowRoot.getElementById(id_target + "upload");
     let galleryLabel = this.shadowRoot.getElementById(id_target + "galleryLabel");
     let imageGallery = this.shadowRoot.getElementById(id_target + "imageGallery");
+    let screenshotButton = this.shadowRoot.getElementById(id_target + "screenshot");
     uploadButton.style.display = "none";
     galleryLabel.style.display = "none";
     imageGallery.style.display = "none";
+    screenshotButton.style.display = "none";
     // galleryLabel.whiteSpace = "nowrap";
   }
 
@@ -1729,6 +1772,64 @@ class popUpClass extends HTMLElement {
       });
     }
   }
+}
+
+function getImage(src, id){
+  const img = new Image();
+  img.src = src
+  img.style.cssText = "position: fixed; top: 0; left: 0; width: 100%; height: 100%;";
+  img.id = id;
+
+  // Disable pointer events in the document
+  // document.body.style.pointerEvents = "none";
+  // Disable dragging of the image
+  img.ondragstart = () => false;
+
+  return img;
+}
+
+function handleMouseMove(e, startX, startY, selection, img, brightenedImg) {
+  const width = e.clientX - startX;
+  const height = e.clientY - startY;
+
+  selection.style.width = `${width}px`;
+  selection.style.height = `${height}px`;
+  // Undo brightness filter within the selection
+  brightenedImg.style.clipPath = `inset(${startY}px ${window.innerWidth - e.clientX}px ${window.innerHeight - e.clientY}px ${startX}px)`;
+  if (brightenedImg.style.display === "none") {
+    console.log("Displaying brightened image.");
+    brightenedImg.style.display = "block";
+  }  
+}
+
+function handleMouseUp(e, startX, startY, targetId, selection, img, brightenedImg, mouseMoveHandler, mouseUpHandler, popupParent) {
+  console.log("Mousing up.");
+  console.log(mouseMoveHandler, mouseUpHandler);
+  document.removeEventListener("mousemove", mouseMoveHandler);
+  document.removeEventListener("mouseup", mouseUpHandler);
+
+  // Restore document
+  document.body.style.cursor = "default";
+  document.body.removeChild(selection);
+  document.body.removeChild(img);
+  document.body.removeChild(brightenedImg);
+  document.body.style.overflow = "auto";
+  document.body.style.userSelect = "auto";
+
+  const endX = e.clientX;
+  const endY = e.clientY;
+  const width = Math.abs(endX - startX);
+  const height = Math.abs(endY - startY);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(img, startX, startY, width, height, 0, 0, width, height);
+  const dataUrl = canvas.toDataURL("image/png");
+
+  popupParent.addImageToGallery(targetId, dataUrl);
+  popupParent.shadowRoot.getElementById(targetId).classList.toggle("hide");
 }
 
 function updateMarkdownContent(markdownContainer, markdownText) {

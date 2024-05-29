@@ -8,7 +8,7 @@
     "48": "icons/NewiconA48.png",
     "128": "icons/NewiconA128.png"
   },
-  "permissions": ["contextMenus", "storage", "commands"],
+  "permissions": ["contextMenus", "storage", "commands", "activeTab"],
   "content_scripts": [
     {
       "matches": ["<all_urls>"],

@@ -222,6 +222,34 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       .then((resp) => sendResponse({ data: resp.text }))
       .catch((error) => sendResponse({ error: error.message }));
     return true; // Required to use sendResponse asynchronously
+  } else if (message.action === "takeScreenCapture"){
+    const { tab } = sender;
+    console.log("Taking screen capture!");
+    // Check for permissions
+    chrome.permissions.contains({ permissions: ["activeTab"] }, function (screenCapturePerms) {
+      if (screenCapturePerms){
+        console.log("Perms available!");
+        chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" }, function (dataUrl) {
+          sendResponse({ data: dataUrl });
+        });
+      }
+      else {
+        chrome.permissions.request({ permissions: ["activeTab"] }, function (granted) {
+          if (granted) {
+            console.log("Perms granted!");
+            chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" }, function (dataUrl) {
+              sendResponse({ data: dataUrl });
+            });
+          }
+          else {
+            console.log("Perms rejected");
+            sendResponse({ error: "Permission denied" });
+          }
+        });
+      }
+    });
+
+    return true;
   } else {
     console.log("Unknown message: ", message);
   }
