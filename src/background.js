@@ -265,10 +265,12 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
 });
 
 function replacePlaceHolder(selectionText) {
+  console.log("Selection text:", selectionText);
   // if there is a text /#TEXT#/g inside selectionText replace with nothing, and use the position to set the cursor later
   if (typeof selectionText == "undefined") {
     selectionText = "";
   }
+  console.log("Selection text:", selectionText);
   var cursorPosition = selectionText.search(/#TEXT#/g);
   if (cursorPosition !== -1) {
     selectionText = selectionText.replace(/#TEXT#/g, "");
@@ -279,7 +281,17 @@ function replacePlaceHolder(selectionText) {
 function launchPopUpInPage(selectionText, prompt, command) {
   // replace the placeholder
   if (command == "showPopUpOnTheFly") {
-    var [selectionText, cursorPosition] = replacePlaceHolder(selectionText);
+    if (selectionText){
+      console.log("Selection text:", selectionText);
+      // console.log(selectionText[0]);
+      // console.log(selectionText[0].content);
+      let userSelection = selectionText[1] ? selectionText[1].content : selectionText[0].content;
+      console.log(userSelection);
+      var [selectionText, cursorPosition] = replacePlaceHolder(userSelection);
+    }
+    else{
+      var [selectionText, cursorPosition] = replacePlaceHolder(selectionText);
+    }
   } else if (command == "showPopUpChatGPT") {
     // loop over the selectionText and replace the placeholder
     for (var i = 0; i < selectionText.length; i++) {
@@ -421,12 +433,12 @@ chrome.contextMenus.onClicked.addListener(async (info, tabs) => {
               })();
             });
           } else {
-            if (prompt.model in CHAT_API_MODELS) {
-              console.log("Chat GPT", prompt);
-              launchPopUpInPage(prompt.prompt, prompt, "showPopUpChatGPT");
-            } else {
+            // if (prompt.model in CHAT_API_MODELS) {
+            //   console.log("Chat GPT", prompt);
+            //   launchPopUpInPage(prompt.prompt, prompt, "showPopUpChatGPT");
+            // } else {
               launchPopUpInPage(prompt.prompt, prompt, "showPopUpOnTheFly");
-            }
+            // }
           }
         } else {
           // If the prompt number is invalid, send an error message to the tab and log a message to the console

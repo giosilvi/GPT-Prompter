@@ -38,6 +38,23 @@ function computeCost(tokens, model) {
   return cost.toFixed(5);
 }
 
+async function captureScreenshot() {
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+  const screenshot = document.createElement("screenshot");
+
+  try {
+      const captureStream = await navigator.mediaDevices.getDisplayMedia();
+      screenshot.srcObject = captureStream;
+      context.drawImage(screenshot, 0, 0, window.width, window.height);
+      const frame = canvas.toDataURL("image/png");
+      captureStream.getTracks().forEach(track => track.stop());
+      window.location.href = frame;
+  } catch (err) {
+      console.error("Error: " + err);
+  }
+}
+
 //
 
 const minipopup = (id, { left = 0, top = 0 }) => `
@@ -100,6 +117,7 @@ const flypopup = (id, { text = "", left = 0, top = 0, symbol = "🅶" }) => `
 
     <button type="button" id="${id}upload" for="${id}file" class="submitbutton" style="display:inline-block" title="Alt+U">Add Image</button>
     <input type="file" id="${id}file" style="display:none" accept="image/*">
+    <button type="button" id="${id}screenshot" class="submitbutton" style="display:inline-block;" title="Alt+S">Screenshot</button>
 
     <div id="${id}galleryLabel" style="display:none; padding-top: 10px;">
       <span class="popupcompletion symbolmodel">▷ Images:</span>
@@ -147,6 +165,7 @@ const chatpopup = (id, { text = "", left = 0, top = 0, symbol = "🅶" }) => `
 
       <button type="button" id="${id}upload" for="${id}file" class="submitbutton chatsubmit" style=" width: 150px; display:inline-block" title="Alt+U">Add Image</button>
       <input type="file" id="${id}file" style="display:none" accept="image/*">
+      <button type="button" id="${id}screenshot" class="submitbutton" style="display:inline-block; color: #71a799;" title="Alt+S">Screenshot</button>
 
       <div class="textarea-container">
         <textarea contentEditable="true" id="${id}chatarea" class="textarea">${text}</textarea>
@@ -589,6 +608,7 @@ class popUpClass extends HTMLElement {
     this.stopButton(this.ids);
     this.imageUpload(this.ids);
     this.clearButton(this.ids);
+    this.screenshotButton(this.ids);
     this.showAdd2CompletionButton(this.ids);
 
     // pause for 1 second to allow the popup to be rendered
@@ -699,6 +719,7 @@ class popUpClass extends HTMLElement {
     this.runClickChat(this.ids);
     this.stopButton(this.ids);
     this.imageUpload(this.ids);
+    this.screenshotButton(this.ids);
     this.clearButton(this.ids);
 
     setTimeout(() => {
@@ -1038,12 +1059,14 @@ class popUpClass extends HTMLElement {
     // this.stopBubblingEvent(txtArea);
   }
 
-  takeScreenshot(targetId) {
-    const screenshotButton = this.shadowRoot.getElementById(`${targetId}screenshot`);
-    screenshotButton.addEventListener("click", async () => {
-      const screenshot = await chrome.tabs.captureVisibleTab();
-      this.addImageToGallery(targetId, screenshot);
-    });
+  screenshotButton(targetId) {
+    const buttonobj = this.shadowRoot.getElementById(`${targetId}screenshot`);
+    if (!buttonobj.listener) {
+      buttonobj.addEventListener("click", async () => {
+        const screenshot = await captureScreenshot();
+        this.addImageToGallery(targetId, screenshot);
+      });
+    }
   }
 
   resetAutoWidthTextArea(targetId) {
@@ -1104,6 +1127,10 @@ class popUpClass extends HTMLElement {
         this.clickCopyToClipboard(targetId);
       } else if (e.key === "a" && this.shadowRoot.getElementById(`${targetId}add2comp`)) {
         this.shadowRoot.getElementById(`${targetId}add2comp`).click();
+      } else if (e.key === "u" && this.shadowRoot.getElementById(`${targetId}upload`)) {
+        this.shadowRoot.getElementById(`${targetId}upload`).click();
+      } else if (e.key === "s" && this.shadowRoot.getElementById(`${targetId}screenshot`)) {
+        this.shadowRoot.getElementById(`${targetId}screenshot`).click();
       }
     }
   }
