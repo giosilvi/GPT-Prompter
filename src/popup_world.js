@@ -592,8 +592,8 @@ class popUpClass extends HTMLElement {
     this.clearButton(this.ids);
     this.screenshotButton(this.ids);
     this.showAdd2CompletionButton(this.ids);
-    this.imbase64arr = {};
-    this.imvalids = {};
+    if (!this.imbase64arr) this.imbase64arr = {};
+    if (!this.imvalids) this.imvalids = {};
 
     // pause for 1 second to allow the popup to be rendered
     setTimeout(() => {
