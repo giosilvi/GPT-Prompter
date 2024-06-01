@@ -705,6 +705,8 @@ class popUpClass extends HTMLElement {
     this.imageUpload(this.ids);
     this.screenshotButton(this.ids);
     this.clearButton(this.ids);
+    if (!this.imbase64arr) this.imbase64arr = {};
+    if (!this.imvalids) this.imvalids = {};
 
     setTimeout(() => {
       element.classList.toggle("show");
@@ -907,12 +909,13 @@ class popUpClass extends HTMLElement {
   }
 
   getPromptUserContent(textPrompt, modelToUse, targetId) {
+    console.log("Before sending message:");
+    console.log(this.imbase64arr, targetId);
     if (modelToUse in CHAT_API_MODELS) {
       if (this.imbase64arr[targetId] && (modelToUse in VISION_SUPPORTED_MODELS)){
         let imbase64arr = this.imbase64arr[targetId];
         let imvalids = this.imvalids[targetId];
         console.log("Attaching image with text.");
-        console.log(imbase64arr);
         console.log(imbase64arr);
         let contentarr = [
           {
@@ -997,7 +1000,7 @@ class popUpClass extends HTMLElement {
         let modelToUse = this.getBodyData(targetId, "model");
         let userTextPrompt = txtArea.value;
         txtArea.value = "";
-        userTextPrompt = this.getPromptUserContent(userTextPrompt, modelToUse)[0];
+        userTextPrompt = this.getPromptUserContent(userTextPrompt, modelToUse, targetId)[0];
         console.log(userTextPrompt);
 
         let chatElement = this.shadowRoot.getElementById(targetId);
@@ -1257,7 +1260,7 @@ class popUpClass extends HTMLElement {
     const image = document.createElement("img");
     image.src = dataUrl;
     image.style.cssText = "max-width: 300px; max-height: 50px; margin-top: 5px;";
-    image.id = `${id_target}_${[id_target].length}image`;
+    image.id = `${id_target}_${this.imbase64arr[id_target].length}image`;
     gallery.appendChild(image);
 
     const xbutton = document.createElement("button");
@@ -1265,20 +1268,22 @@ class popUpClass extends HTMLElement {
     xbutton.className = "imclosebutton";
     xbutton.id = `${id_target}_${this.imbase64arr[id_target].length}xbutton`;
 
-    console.log("Adding image.");
-    console.log(this.imvalids);
+    // console.log("Adding image.");
+    // console.log(this.imvalids);
+    // console.log(this.imbase64arr);
+
     xbutton.addEventListener("click", () => {
       this.shadowRoot.getElementById(image.id).remove();
       this.shadowRoot.getElementById(xbutton.id).remove();
 
       let image_idx = parseInt(image.id.split("_")[1].split("image")[0]) - 1;
       this.imvalids[id_target][image_idx] = false; // mark the image as invalid -> don't send it to the model
-      console.log("Closing image");
-      console.log(this.imvalids);
+      // console.log("Closing image");
       if (this.imvalids[id_target].every((val) => val === false)){
-        console.log("Clearing gallery.");
+        // console.log("Clearing gallery.");
         this.clearGallery(id_target);
       }
+      // console.log(this.imvalids);
     });
     gallery.appendChild(xbutton);
   }
@@ -1304,6 +1309,10 @@ class popUpClass extends HTMLElement {
     this.shadowRoot.getElementById(id_target + "upload").style.display = "inline-block";
     this.shadowRoot.getElementById(id_target + "screenshot").style.display = "inline-block";
     this.shadowRoot.getElementById(id_target + "imageGallery").style.display = "block";
+
+    if (this.imbase64arr[id_target] && this.imbase64arr[id_target].length > 0 && this.imvalids[id_target].some((val) => val === true)){
+      this.shadowRoot.getElementById(id_target + "galleryLabel").style.display = "block";
+    }
   }
 
   disableImageSupport(id_target){
@@ -1660,8 +1669,8 @@ class popUpClass extends HTMLElement {
     /*
     Update the given popup with a message from the model.
     */
-    console.log("Updating popup.");
-    console.log(target_id);
+    // console.log("Updating popup.");
+    // console.log(target_id);
 
     const textarea = this.shadowRoot.getElementById(target_id + "textarea");
     const chatarea = this.shadowRoot.getElementById(target_id + "chat");
@@ -1778,7 +1787,7 @@ class popUpClass extends HTMLElement {
       } else if (chatarea) {
         chatarea.focus();
         this.showCopyToClipboardBtn(target_id);
-        console.log("point5");
+        // console.log("point5");
         element.previousMessages.push({ role: "assistant", content: complete_completion });
       } else {
         element.focus();
@@ -1838,14 +1847,14 @@ function handleMouseMove(e, startX, startY, brightenedImg) {
   brightenedImg.style.clipPath = `inset(${top} ${right} ${bottom} ${left})`;
 
   if (brightenedImg.style.display === "none") {
-    console.log("Displaying brightened image.");
+    // console.log("Displaying brightened image.");
     brightenedImg.style.display = "block";
   }  
 }
 
 function handleMouseUp(e, startX, startY, targetId, img, brightenedImg, mouseMoveHandler, mouseUpHandler, screenshotCancelHandler, imgKeyDownHandler, popupParent) {
-  console.log("Mousing up.");
-  console.log(mouseMoveHandler, mouseUpHandler);
+  // console.log("Mousing up.");
+  // console.log(mouseMoveHandler, mouseUpHandler);
 
   const endX = e.clientX;
   const endY = e.clientY;
@@ -1871,7 +1880,7 @@ function handleMouseUp(e, startX, startY, targetId, img, brightenedImg, mouseMov
 
   document.removeEventListener("mousemove", mouseMoveHandler);
   document.removeEventListener("mouseup", mouseUpHandler);
-  console.log("Screenshot cancel handler:", screenshotCancelHandler);
+  // console.log("Screenshot cancel handler:", screenshotCancelHandler);
   document.removeEventListener("cancel", screenshotCancelHandler);
   document.removeEventListener("keydown", imgKeyDownHandler);
 
@@ -1884,7 +1893,7 @@ function handleMouseUp(e, startX, startY, targetId, img, brightenedImg, mouseMov
 }
 
 function handleScreenshotCancel(img, targetId, brightenedImg, mouseMoveHandler, mouseUpHandler, screenshotCancelHandler, imgKeyDownHandler, popupParent) {
-  console.log("Cancelling screenshot.");
+  // console.log("Cancelling screenshot.");
   
   // Restore all popups
   for (const element of popupParent.shadowRoot.querySelectorAll("div[name='fullpopup']")) {

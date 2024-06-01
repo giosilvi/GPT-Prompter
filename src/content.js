@@ -212,7 +212,7 @@ function processJsonObject(jsonStr, target_id, request) {
 
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log("Full request:", request);
+  // console.log("Full request:", request);
   if (request.greeting === "shouldReenableContextMenu") {
     sendResponse({ farewell: "yes" });
     return;
@@ -252,7 +252,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       break;
     case "GPTStream_completion":
       try {
-        console.log("Request:", request);
+        // console.log("Request:", request);
         // console.log(popUpShadow.stop_stream, popUpShadow.listOfUndesiredStreams);
         if (!popUpShadow.shadowRoot.getElementById(idPopup) || popUpShadow.stop_stream === idPopup) {
           if (!popUpShadow.listOfUndesiredStreams.includes(request.uuid)){

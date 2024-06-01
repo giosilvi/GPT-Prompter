@@ -49,7 +49,7 @@ function checkMaxTokens(content, model) {
     console.log("Original content:", content);
     if (content[0].role === "user"){
       // Request came from prompt-on-the-fly
-      if (content[0].content[0].type) {
+      if (content[0].content.length > 0 && content[0].content[0].type) {
         content = [content[0].content[0].text];
         console.log("Cropping content", content);
       }
@@ -61,7 +61,7 @@ function checkMaxTokens(content, model) {
       // Request came from ChatGPT interface
       let tmp = [];
       for (var i = 0; i < content.length; i++) {
-        if (content[i].content[0].type) tmp.push(content[i].content[0].text);
+        if (content[i].content.length > 0 && content[i].content[0].type) tmp.push(content[i].content[0].text);
         else tmp.push(content[i].content);
       }
       content = tmp;

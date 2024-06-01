@@ -194,7 +194,7 @@ chrome.runtime.onInstalled.addListener(function (details) {
 
 // Listen for a signal to refresh the context menu
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log("Received message:", message);
+  // console.log("Received message:", message);
   // If the signal is to refresh the context menu
   if (message.text === "newPromptList") {
     createContextMenu();
@@ -226,9 +226,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     const { tab } = sender;
     console.log("Taking screen capture!");
     // Check for permissions
+    // Debug: Show permissions
+    chrome.permissions.getAll(function (permissions) {
+      // console.log("Permissions: ", permissions);
+    });
     chrome.permissions.contains({ permissions: ["activeTab"] }, function (screenCapturePerms) {
       if (screenCapturePerms){
-        console.log("Perms available!");
+        // console.log("Perms available!");
         chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" }, function (dataUrl) {
           sendResponse({ data: dataUrl });
         });
