@@ -114,14 +114,15 @@ function checkTabsAndSendStream(message, tabs, string, bodyData, idpopup, uuid, 
 }
 
 function sendStream(message, id, string, bodyData, idpopup, uuid, tokens_sent = 0) {
-  chrome.tabs.sendMessage(id, {
+  let messageObj = {
     message: message,
     text: string,
     bodyData: bodyData,
     id_popup: idpopup,
     uuid: uuid,
     tokens_sent: tokens_sent,
-  }); //send the completion to the content script
+  };
+  chrome.tabs.sendMessage(id, messageObj); //send the completion to the content script
 }
 
 async function promptGPT3Prompting(prompt, items, tabs) {
@@ -147,6 +148,8 @@ async function promptGPT3Prompting(prompt, items, tabs) {
   var { url, str_bodyData, bodyData, tokens } = chooseCompletion(model, temperature, text);
   console.log("Debug1", url, str_bodyData, tokens);
 
+  let keepStreaming = true;
+
   fetch(url, {
     method: "POST",
     headers: {
@@ -163,6 +166,7 @@ async function promptGPT3Prompting(prompt, items, tabs) {
       return pump();
 
       function pump() {
+
         return reader.read().then(({ done, value }) => {
           // When no more data needs to be consumed, close the stream
           if (done) {
@@ -173,7 +177,7 @@ async function promptGPT3Prompting(prompt, items, tabs) {
           var stream = new TextDecoder().decode(value); //.substring(6);
           // console.log(string, typeof string);
           // if tabs.id == -1 then use querySelector to get the tab
-          checkTabsAndSendStream("GPTStream_completion", tabs, stream, str_bodyData, popupID, uuid);
+          checkTabsAndSendStream("GPTStream_completion", tabs, stream, str_bodyData, popupID, uuid, null);
           return pump();
         });
       }

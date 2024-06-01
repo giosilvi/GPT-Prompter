@@ -41,7 +41,7 @@ function computeCost(tokens, model) {
 //
 
 const minipopup = (id, { left = 0, top = 0 }) => `
-<div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px">
+<div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px" name="fullpopup">
   <div id="${id}prompt" class="popupprompt">
     <div id="${id}grabbable" class="grabbable">
       <div style='position:relative; z-index:3; float:right; height:30px'>
@@ -68,7 +68,7 @@ const minipopup = (id, { left = 0, top = 0 }) => `
 `;
 
 const flypopup = (id, { text = "", left = 0, top = 0, symbol = "🅶" }) => `
-<div class="popuptext onylonthefly" id="${id}" style="left: ${left}px; top:${top}px;">
+<div class="popuptext onylonthefly" id="${id}" style="left: ${left}px; top:${top}px;" name="fullpopup">
   <div id="${id}prompt" class="popupprompt">
     <div id="${id}grabbable" class="grabbable">
       <div style='position:relative; z-index:3; float:right; height:30px'>
@@ -123,7 +123,7 @@ const flypopup = (id, { text = "", left = 0, top = 0, symbol = "🅶" }) => `
 // `;
 
 const chatpopup = (id, { text = "", left = 0, top = 0, symbol = "🅶" }) => `
-<div class="popuptext onlychat" id="${id}" style="left: ${left}px; top:${top}px; width:520px;">
+<div class="popuptext onlychat" id="${id}" style="left: ${left}px; top:${top}px; width:520px;" name="fullpopup">
   <div id="${id}prompt" class="popupprompt">
     <div id="${id}grabbable" class="grabbable2">
       <div style='position:relative; z-index:3; float:right; height:30px'>
@@ -592,6 +592,8 @@ class popUpClass extends HTMLElement {
     this.clearButton(this.ids);
     this.screenshotButton(this.ids);
     this.showAdd2CompletionButton(this.ids);
+    this.imbase64arr = {};
+    this.imvalids = {};
 
     // pause for 1 second to allow the popup to be rendered
     setTimeout(() => {
@@ -904,24 +906,26 @@ class popUpClass extends HTMLElement {
     });
   }
 
-  getPromptUserContent(textPrompt, modelToUse) {
+  getPromptUserContent(textPrompt, modelToUse, targetId) {
     if (modelToUse in CHAT_API_MODELS) {
-      if (this.imbase64arr && (modelToUse in VISION_SUPPORTED_MODELS)){
+      if (this.imbase64arr[targetId] && (modelToUse in VISION_SUPPORTED_MODELS)){
+        let imbase64arr = this.imbase64arr[targetId];
+        let imvalids = this.imvalids[targetId];
         console.log("Attaching image with text.");
-        console.log(this.imbase64arr);
-        console.log(this.imvalids);
+        console.log(imbase64arr);
+        console.log(imbase64arr);
         let contentarr = [
           {
             type: "text",
             text: textPrompt
           }
         ]
-        for (let i = 0; i < this.imbase64arr.length; i++){
-          if (this.imvalids[i]){
+        for (let i = 0; i < imbase64arr.length; i++){
+          if (imvalids[i]){
             contentarr.push({
               type: "image_url",
               image_url: {
-                url: this.imbase64arr[i]
+                url: imbase64arr[i]
               }
             });
           }
@@ -950,7 +954,7 @@ class popUpClass extends HTMLElement {
         this.removeHideFromCompletion(targetId);
         let modelToUse = this.getBodyData(targetId, "model");
         let textPrompt = this.getTextareaValue(targetId);
-        textPrompt = this.getPromptUserContent(textPrompt, modelToUse);
+        textPrompt = this.getPromptUserContent(textPrompt, modelToUse, targetId);
 
         const promptObj = {
           prompt: textPrompt,
@@ -1045,8 +1049,12 @@ class popUpClass extends HTMLElement {
     const buttonobj = this.shadowRoot.getElementById(`${targetId}screenshot`);
     if (!buttonobj.listener) {
       buttonobj.addEventListener("click", async () => {
-        // Hide popup
-        this.shadowRoot.getElementById(targetId).classList.toggle("hide");
+        // Hide all popups
+        console.log(this.shadowRoot.querySelectorAll("div[name='fullpopup']"));
+        for (const element of this.shadowRoot.querySelectorAll("div[name='fullpopup']")) {
+          element.classList.toggle("hide");
+        }
+      
         console.log("Hiding popup");          // Hide popup
         setTimeout(() => {
           chrome.runtime.sendMessage({ action: "takeScreenCapture"}, (response) => {
@@ -1076,22 +1084,33 @@ class popUpClass extends HTMLElement {
               document.body.appendChild(img);
               document.body.appendChild(brightenedImg);
 
+              // Add global keydown listener
+              let imgKeyDownHandler = this.handleKeyDownImg.bind(this, targetId);
+              document.addEventListener("keydown", imgKeyDownHandler);
+
               console.log("Image created!");
               // Wait for the user to crop a region
+              let screenshotCancelHandler = null;
+              let mouseUpHandler = null;
+              let mouseMoveHandler = null;
+              screenshotCancelHandler = () => {
+                handleScreenshotCancel(img, targetId, brightenedImg, mouseMoveHandler, mouseUpHandler, screenshotCancelHandler, imgKeyDownHandler, this);
+              }
+              document.addEventListener("cancel", screenshotCancelHandler);
+
               img.addEventListener("mousedown", (e) => {
                 console.log("Mousedown detected.");
                 const startX = e.clientX;
                 const startY = e.clientY;
 
-                let mouseMoveHandler = (e) => handleMouseMove(e, startX, startY, brightenedImg);
+                mouseMoveHandler = (e) => handleMouseMove(e, startX, startY, brightenedImg);
                 document.addEventListener("mousemove", mouseMoveHandler);
-                let mouseUpHandler = null;
                 mouseUpHandler = (e) => {
-                  handleMouseUp(e, startX, startY, targetId, img, brightenedImg, mouseMoveHandler, mouseUpHandler, this);
+                  handleMouseUp(e, startX, startY, targetId, img, brightenedImg, mouseMoveHandler, mouseUpHandler, screenshotCancelHandler, imgKeyDownHandler, this);
                 };
                 document.addEventListener("mouseup", mouseUpHandler);
 
-                console.log("Added both handlers.");
+                console.log("Added all handlers.");
               });
             } else{
               if (response.error === "Permission denied"){
@@ -1144,6 +1163,15 @@ class popUpClass extends HTMLElement {
       }
     });
     this.putCursorAtTheEnd(textarea);
+  }
+
+  handleKeyDownImg(targetId, e) {
+    console.log(e.key);
+    if (e.key === "Escape") {
+      console.log("Sending cancel message.");
+      const cancel = new CustomEvent("cancel");
+      document.dispatchEvent(cancel);
+    }
   }
 
   handleKeydown(targetId, e) {
@@ -1213,29 +1241,29 @@ class popUpClass extends HTMLElement {
     3. Adds image (in base64 dataURL form) to the global variable
     */
     const gallery = this.shadowRoot.getElementById(id_target + "imageGallery");
-    if (!this.imbase64arr || this.imbase64arr.length === 0) {
+    if (!this.imbase64arr[id_target] || this.imbase64arr[id_target].length === 0) {
       let galleryLabel = this.shadowRoot.getElementById(id_target + "galleryLabel");
       galleryLabel.style.display = "block";
       // this.shadowRoot.getElementById(id_target + "clearButton").style.display = "inline-block";
 
-      this.imbase64arr = [dataUrl];
-      this.imvalids = [true];
+      this.imbase64arr[id_target] = [dataUrl];
+      this.imvalids[id_target] = [true];
     }
     else {
-      this.imbase64arr.push(dataUrl);
-      this.imvalids.push(true);
+      this.imbase64arr[id_target].push(dataUrl);
+      this.imvalids[id_target].push(true);
     }
 
     const image = document.createElement("img");
     image.src = dataUrl;
     image.style.cssText = "max-width: 300px; max-height: 50px; margin-top: 5px;";
-    image.id = `${id_target}_${this.imbase64arr.length}image`;
+    image.id = `${id_target}_${[id_target].length}image`;
     gallery.appendChild(image);
 
     const xbutton = document.createElement("button");
     xbutton.innerHTML = "x";
     xbutton.className = "imclosebutton";
-    xbutton.id = `${id_target}_${this.imbase64arr.length}xbutton`;
+    xbutton.id = `${id_target}_${this.imbase64arr[id_target].length}xbutton`;
 
     console.log("Adding image.");
     console.log(this.imvalids);
@@ -1244,10 +1272,10 @@ class popUpClass extends HTMLElement {
       this.shadowRoot.getElementById(xbutton.id).remove();
 
       let image_idx = parseInt(image.id.split("_")[1].split("image")[0]) - 1;
-      this.imvalids[image_idx] = false; // mark the image as invalid -> don't send it to the model
+      this.imvalids[id_target][image_idx] = false; // mark the image as invalid -> don't send it to the model
       console.log("Closing image");
       console.log(this.imvalids);
-      if (this.imvalids.every((val) => val === false)){
+      if (this.imvalids[id_target].every((val) => val === false)){
         console.log("Clearing gallery.");
         this.clearGallery(id_target);
       }
@@ -1260,8 +1288,8 @@ class popUpClass extends HTMLElement {
     gallery.innerHTML = "";
 
     // Reset the global image array
-    this.imbase64arr = [];
-    this.imvalids = [];
+    this.imbase64arr[id_target] = [];
+    this.imvalids[id_target] = [];
 
     this.shadowRoot.getElementById(id_target + "galleryLabel").style.display = "none";
   }
@@ -1317,7 +1345,7 @@ class popUpClass extends HTMLElement {
 
   stopButton(id_target) {
     this.shadowRoot.getElementById(id_target + "stop").addEventListener("click", () => {
-      this.stop_stream = true;
+      this.stop_stream = id_target;
       this.toggleRunStop(id_target);
     });
   }
@@ -1629,10 +1657,16 @@ class popUpClass extends HTMLElement {
   }
 
   updatepopup(message, target_id, stream) {
-    const textarea = this.shadowRoot.getElementById(this.ids + "textarea");
-    const chatarea = this.shadowRoot.getElementById(this.ids + "chat");
-    const element = this.shadowRoot.getElementById(this.ids);
-    const promptarea = this.shadowRoot.getElementById(this.ids + "text");
+    /*
+    Update the given popup with a message from the model.
+    */
+    console.log("Updating popup.");
+    console.log(target_id);
+
+    const textarea = this.shadowRoot.getElementById(target_id + "textarea");
+    const chatarea = this.shadowRoot.getElementById(target_id + "chat");
+    const element = this.shadowRoot.getElementById(target_id);
+    const promptarea = this.shadowRoot.getElementById(target_id + "text");
     var specialCase = false;
     if (textarea && this.autoAdd) {
       specialCase = true;
@@ -1705,7 +1739,7 @@ class popUpClass extends HTMLElement {
         this.tokens = 0;
         this.stream_on = false;
         //show run button and hide stop button
-        this.toggleRunStop(this.ids);
+        this.toggleRunStop(target_id);
       }
       // each message should be 1 token
       this.tokens++;
@@ -1724,9 +1758,9 @@ class popUpClass extends HTMLElement {
       // if stream is false, it means that the stream is over
       this.stream_on = false;
       // compute the probability, get average of element in this.probabilities
-      const final_prob = this.updateProbability(this.ids + "probability", true);
+      const final_prob = this.updateProbability(target_id + "probability", true);
       // show run button and hide stop button
-      this.toggleRunStop(this.ids);
+      this.toggleRunStop(target_id);
       const complete_completion = promptarea.innerText;
       
       //save prompt to local storage
@@ -1743,7 +1777,7 @@ class popUpClass extends HTMLElement {
         textarea.focus();
       } else if (chatarea) {
         chatarea.focus();
-        this.showCopyToClipboardBtn(this.ids);
+        this.showCopyToClipboardBtn(target_id);
         console.log("point5");
         element.previousMessages.push({ role: "assistant", content: complete_completion });
       } else {
@@ -1753,7 +1787,7 @@ class popUpClass extends HTMLElement {
       if (specialCase) {
         this.putCursorAtTheEnd(textarea);
       } else {
-        this.showCopyToClipboardBtn(this.ids);
+        this.showCopyToClipboardBtn(target_id);
       }
 
       // save the completion in the history
@@ -1809,7 +1843,7 @@ function handleMouseMove(e, startX, startY, brightenedImg) {
   }  
 }
 
-function handleMouseUp(e, startX, startY, targetId, img, brightenedImg, mouseMoveHandler, mouseUpHandler, popupParent) {
+function handleMouseUp(e, startX, startY, targetId, img, brightenedImg, mouseMoveHandler, mouseUpHandler, screenshotCancelHandler, imgKeyDownHandler, popupParent) {
   console.log("Mousing up.");
   console.log(mouseMoveHandler, mouseUpHandler);
 
@@ -1829,10 +1863,17 @@ function handleMouseUp(e, startX, startY, targetId, img, brightenedImg, mouseMov
   const dataUrl = canvas.toDataURL("image/png");
 
   popupParent.addImageToGallery(targetId, dataUrl);
-  popupParent.shadowRoot.getElementById(targetId).classList.toggle("hide");
+
+  // Restore all popups
+  for (const element of popupParent.shadowRoot.querySelectorAll("div[name='fullpopup']")) {
+    element.classList.toggle("hide");
+  }
 
   document.removeEventListener("mousemove", mouseMoveHandler);
   document.removeEventListener("mouseup", mouseUpHandler);
+  console.log("Screenshot cancel handler:", screenshotCancelHandler);
+  document.removeEventListener("cancel", screenshotCancelHandler);
+  document.removeEventListener("keydown", imgKeyDownHandler);
 
   // Restore document
   document.body.style.cursor = "default";
@@ -1840,6 +1881,27 @@ function handleMouseUp(e, startX, startY, targetId, img, brightenedImg, mouseMov
   document.body.removeChild(brightenedImg);
   document.body.style.overflow = "auto";
   document.body.style.userSelect = "auto";
+}
+
+function handleScreenshotCancel(img, targetId, brightenedImg, mouseMoveHandler, mouseUpHandler, screenshotCancelHandler, imgKeyDownHandler, popupParent) {
+  console.log("Cancelling screenshot.");
+  
+  // Restore all popups
+  for (const element of popupParent.shadowRoot.querySelectorAll("div[name='fullpopup']")) {
+    element.classList.toggle("hide");
+  }
+  // Restore document
+  document.body.style.cursor = "default";
+  document.body.removeChild(img);
+  document.body.removeChild(brightenedImg);
+  document.body.style.overflow = "auto";
+  document.body.style.userSelect = "auto";
+
+  // Remove event listeners
+  if (mouseMoveHandler) document.removeEventListener("mousemove", mouseMoveHandler);
+  if (mouseUpHandler) document.removeEventListener("mouseup", mouseUpHandler);
+  document.removeEventListener("cancel", screenshotCancelHandler);
+  document.removeEventListener("keydown", imgKeyDownHandler);
 }
 
 function updateMarkdownContent(markdownContainer, markdownText) {
