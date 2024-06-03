@@ -23,6 +23,9 @@
     "default_popup": "popup.html",
     "default_title": "GPT-Prompter"
   },
+  "content_security_policy": {
+    "extension-pages": "script-src 'self' https://cdn.jsdelivr.net; object-src 'self'"
+  },
   "web_accessible_resources": [
     {
       "resources": [

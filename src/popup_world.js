@@ -41,6 +41,9 @@ function computeCost(tokens, model) {
 //
 
 const minipopup = (id, { left = 0, top = 0 }) => `
+<head>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
 <div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px" name="fullpopup">
   <div id="${id}prompt" class="popupprompt">
     <div id="${id}grabbable" class="grabbable">
@@ -68,6 +71,9 @@ const minipopup = (id, { left = 0, top = 0 }) => `
 `;
 
 const flypopup = (id, { text = "", left = 0, top = 0, symbol = "🅶" }) => `
+<head>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
 <div class="popuptext onylonthefly" id="${id}" style="left: ${left}px; top:${top}px;" name="fullpopup">
   <div id="${id}prompt" class="popupprompt">
     <div id="${id}grabbable" class="grabbable">
@@ -123,6 +129,9 @@ const flypopup = (id, { text = "", left = 0, top = 0, symbol = "🅶" }) => `
 // `;
 
 const chatpopup = (id, { text = "", left = 0, top = 0, symbol = "🅶" }) => `
+<head>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
 <div class="popuptext onlychat" id="${id}" style="left: ${left}px; top:${top}px; width:520px;" name="fullpopup">
   <div id="${id}prompt" class="popupprompt">
     <div id="${id}grabbable" class="grabbable2">
@@ -1916,6 +1925,16 @@ function handleScreenshotCancel(img, targetId, brightenedImg, mouseMoveHandler, 
   document.removeEventListener("keydown", imgKeyDownHandler);
 }
 
+// // LaTex Support functions
+// function loadMathJax() {
+//   if (typeof MathJax === 'undefined') {
+//       const script = document.createElement('script');
+//       script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+//       script.async = true;
+//       document.head.appendChild(script);
+//   }
+// }
+
 function updateMarkdownContent(markdownContainer, markdownText) {
   // Wait for the renderMarkdown function to be available
   function waitForRenderMarkdown() {
@@ -1930,6 +1949,12 @@ function updateMarkdownContent(markdownContainer, markdownText) {
         markdownContainer.innerHTML = renderedHtml;
         // console.log("updated markdown");
         // console.log(renderedHtml);
+        
+        // Render MathJax equations in the Markdown container
+        if (typeof MathJax !== 'undefined') {
+             MathJax.typeset();
+        }
+
       }
     } else {
       // If the renderMarkdown function is not yet available, try again after a short delay

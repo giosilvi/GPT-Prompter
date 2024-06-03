@@ -208,6 +208,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // If the signal is to launch GPT
   else if (message.text === "launchGPT") {
     // Get the tab from the sender
+    
     const { tab } = sender; // this line is equivalent to const tab = sender.tab;
 
     // Launch GPT
@@ -543,6 +544,7 @@ function promptExists(prompt, promptList) {
   }
   return false;
 }
+
 
 // Whisper API functions
 

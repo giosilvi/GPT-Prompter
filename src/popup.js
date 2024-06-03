@@ -950,7 +950,7 @@ function dragEnd(e) {
   this.style.opacity = "1";
   // save the new order of the list
   //   newOrderFromID();
-  reoderListinMemory();
+  reorderListinMemory();
 }
 
 function newOrderFromID() {
@@ -963,7 +963,7 @@ function newOrderFromID() {
   return list;
 }
 
-function reoderListinMemory() {
+function reorderListinMemory() {
   // get the list of prompts from memory
   getFromStorage("customprompt", true).then((items) => {
     // Check that the API key exists
@@ -972,7 +972,7 @@ function reoderListinMemory() {
       var list = items.customprompt;
       // get the new order of the list
       var newOrder = newOrderFromID();
-      // reoder the list
+      // reorder the list
       var newList = [];
       for (var i = 0; i < newOrder.length; i++) {
         newList.push(list[newOrder[i]]);
