@@ -317,9 +317,15 @@ function launchPopUpInPage(selectionText, prompt, command) {
       console.log("Selection text:", selectionText);
       // console.log(selectionText[0]);
       // console.log(selectionText[0].content);
-      let userSelection = selectionText[1] ? selectionText[1].content : selectionText[0].content;
-      console.log(userSelection);
-      var [selectionText, cursorPosition] = replacePlaceHolder(userSelection);
+      if (selectionText[0].content){
+        // Legacy: May be safe to remove.
+        let userSelection = selectionText[1] ? selectionText[1].content : selectionText[0].content;
+        console.log(userSelection);
+        var [selectionText, cursorPosition] = replacePlaceHolder(userSelection);
+      }
+      else {
+        var [selectionText, cursorPosition] = replacePlaceHolder(selectionText);
+      }
     }
     else{
       var [selectionText, cursorPosition] = replacePlaceHolder(selectionText);

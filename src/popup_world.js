@@ -571,6 +571,7 @@ class popUpClass extends HTMLElement {
     // Create a new element to hold the pop-up
 
     const popUpElement = document.createElement("div");
+    console.log("selectionText:", selectionText);
     popUpElement.innerHTML = flypopup(this.ids, {
       text: selectionText,
       left: this.mousePosition.left,
@@ -661,6 +662,8 @@ class popUpClass extends HTMLElement {
     } else {
       messageInTextArea = "";
     }
+    
+    console.log("MessageInTextArea:", messageInTextArea);
 
     popUpElement.innerHTML = chatpopup(this.ids, {
       text: messageInTextArea,
