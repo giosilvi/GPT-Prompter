@@ -3,11 +3,8 @@ import {CHAT_API_MODELS, VISION_SUPPORTED_MODELS} from "./gpt3.js";
 import { models } from "./sharedfunctions.js"
 
 function symbolFromModel(model) {
-  console.log(models)
   // check if the model is in the dictionary
   if (models.hasOwnProperty(model)) {
-    console.log("model found", model)
-    console.log("Model symbol:", models[model])
     return models[model];
   }
   console.log("model not found", model)
@@ -571,7 +568,6 @@ class popUpClass extends HTMLElement {
     // Create a new element to hold the pop-up
 
     const popUpElement = document.createElement("div");
-    console.log("selectionText:", selectionText);
     popUpElement.innerHTML = flypopup(this.ids, {
       text: selectionText,
       left: this.mousePosition.left,
@@ -655,7 +651,6 @@ class popUpClass extends HTMLElement {
 
     // get the last message in the list
     var messageInTextArea = "";
-    console.log("point1");
     if (messages[messages.length - 1]["role"] == "user") {
       messageInTextArea = messages[messages.length - 1]["content"];
       messages.pop(); // remove the last message from the list
@@ -663,8 +658,6 @@ class popUpClass extends HTMLElement {
       messageInTextArea = "";
     }
     
-    console.log("MessageInTextArea:", messageInTextArea);
-
     popUpElement.innerHTML = chatpopup(this.ids, {
       text: messageInTextArea,
       left: this.mousePosition.left,
@@ -681,8 +674,6 @@ class popUpClass extends HTMLElement {
     // make a copy of the messages list and attach it to the element
     element.previousMessages = messages;
     // Set the system message in the popup
-    console.log("point2");
-    console.log(messages);
     if (messages.length > 0 && messages[0]["role"] == "system") {
       this.shadowRoot.getElementById(this.ids + "system").innerText = "System: " + messages[0]["content"];
     }
@@ -799,9 +790,8 @@ class popUpClass extends HTMLElement {
 
     innermessage.className = "singlemessage";
     // add to messagepoup an equivalent of the role
-    console.log("point3");
     messagepopup.classList.add(messages["role"]);
-    console.log("Messagecontent:", messages["content"]);
+
     // if the role is user, shift the message to the right
     if (messages["role"] == "user") {
       innermessage.innerText = messages["content"].content;
@@ -823,7 +813,6 @@ class popUpClass extends HTMLElement {
         }
 
         innermessage.appendChild(innerGallery);
-        console.log(idmessage);
         this.clearGallery(idmessage.split("message_")[0]);
       }
 
@@ -912,14 +901,10 @@ class popUpClass extends HTMLElement {
   }
 
   getPromptUserContent(textPrompt, modelToUse, targetId) {
-    console.log("Before sending message:");
-    console.log(this.imbase64arr, targetId);
     if (modelToUse in CHAT_API_MODELS) {
       if (this.imbase64arr[targetId] && (modelToUse in VISION_SUPPORTED_MODELS)){
         let imbase64arr = this.imbase64arr[targetId];
         let imvalids = this.imvalids[targetId];
-        console.log("Attaching image with text.");
-        console.log(imbase64arr);
         let contentarr = [
           {
             type: "text",
@@ -938,7 +923,6 @@ class popUpClass extends HTMLElement {
         }
 
         textPrompt = [{ role: "user", content: contentarr}];
-        console.log(textPrompt);
       }
       else {
         textPrompt = [{ role: "user", content: textPrompt }];
@@ -970,10 +954,9 @@ class popUpClass extends HTMLElement {
           popupID: targetId,
           type: "completion",
         };
-        console.log("promptObj", promptObj);
         chrome.runtime.sendMessage({ text: "launchGPT", prompt: promptObj });
+
         // get the textarea element
-        console.log("After1");
         this.resetAutoWidthTextArea(targetId);
       });
     }
@@ -1004,7 +987,6 @@ class popUpClass extends HTMLElement {
         let userTextPrompt = txtArea.value;
         txtArea.value = "";
         userTextPrompt = this.getPromptUserContent(userTextPrompt, modelToUse, targetId)[0];
-        console.log(userTextPrompt);
 
         let chatElement = this.shadowRoot.getElementById(targetId);
         let previousmessages = chatElement.previousMessages;
@@ -1017,7 +999,7 @@ class popUpClass extends HTMLElement {
         if (this.shadowRoot.getElementById(targetId + "text")) {
           this.shadowRoot.getElementById(targetId + "text").id = targetId + "message_" + length_messages;
         }
-        console.log("point4");
+
         let usermessage = this.createChatElement({ role: "user", content: userTextPrompt }, targetId + "message_" + (length_messages - 1));
         completionElement.appendChild(usermessage);
         setTimeout(() => {
@@ -1043,7 +1025,7 @@ class popUpClass extends HTMLElement {
           popupID: targetId,
           type: "chat",
         };
-        console.log("Launching chat GPT with prompt: ", promptObj);
+
         chrome.runtime.sendMessage({ text: "launchGPT", prompt: promptObj });
       });
     }
@@ -1056,12 +1038,10 @@ class popUpClass extends HTMLElement {
     if (!buttonobj.listener) {
       buttonobj.addEventListener("click", async () => {
         // Hide all popups
-        console.log(this.shadowRoot.querySelectorAll("div[name='fullpopup']"));
         for (const element of this.shadowRoot.querySelectorAll("div[name='fullpopup']")) {
           element.classList.toggle("hide");
         }
       
-        console.log("Hiding popup");          // Hide popup
         setTimeout(() => {
           chrome.runtime.sendMessage({ action: "takeScreenCapture"}, (response) => {
             // response.data is the image in base64
@@ -1105,7 +1085,6 @@ class popUpClass extends HTMLElement {
               document.addEventListener("cancel", screenshotCancelHandler);
 
               img.addEventListener("mousedown", (e) => {
-                console.log("Mousedown detected.");
                 const startX = e.clientX;
                 const startY = e.clientY;
 
@@ -1116,7 +1095,6 @@ class popUpClass extends HTMLElement {
                 };
                 document.addEventListener("mouseup", mouseUpHandler);
 
-                console.log("Added all handlers.");
               });
             } else{
               if (response.error === "Permission denied"){
@@ -1172,7 +1150,6 @@ class popUpClass extends HTMLElement {
   }
 
   handleKeyDownImg(targetId, e) {
-    console.log(e.key);
     if (e.key === "Escape") {
       console.log("Sending cancel message.");
       const cancel = new CustomEvent("cancel");
@@ -1271,10 +1248,6 @@ class popUpClass extends HTMLElement {
     xbutton.className = "imclosebutton";
     xbutton.id = `${id_target}_${this.imbase64arr[id_target].length}xbutton`;
 
-    // console.log("Adding image.");
-    // console.log(this.imvalids);
-    // console.log(this.imbase64arr);
-
     xbutton.addEventListener("click", () => {
       this.shadowRoot.getElementById(image.id).remove();
       this.shadowRoot.getElementById(xbutton.id).remove();
@@ -1286,7 +1259,6 @@ class popUpClass extends HTMLElement {
         // console.log("Clearing gallery.");
         this.clearGallery(id_target);
       }
-      // console.log(this.imvalids);
     });
     gallery.appendChild(xbutton);
   }
@@ -1336,7 +1308,6 @@ class popUpClass extends HTMLElement {
       const reader = new FileReader();
       reader.onloadend = function (e) {
         const base64 = e.target.result //.split(",")[1];
-        // console.log(base64);
         this.caller.addImageToGallery(id_target, base64);
       };
 
@@ -1570,7 +1541,7 @@ class popUpClass extends HTMLElement {
     this.probabilities = [];
     this.clearnewlines = true;
     this.tokens = 0;
-    console.log("request.tokens_sent", request.tokens_sent);
+    // console.log("request.tokens_sent", request.tokens_sent);
     // transfer the tokens_sent to integer
     this.tokens_sent = parseInt(request.tokens_sent);
 
@@ -1672,8 +1643,6 @@ class popUpClass extends HTMLElement {
     /*
     Update the given popup with a message from the model.
     */
-    // console.log("Updating popup.");
-    // console.log(target_id);
 
     const textarea = this.shadowRoot.getElementById(target_id + "textarea");
     const chatarea = this.shadowRoot.getElementById(target_id + "chat");
@@ -1683,12 +1652,9 @@ class popUpClass extends HTMLElement {
     if (textarea && this.autoAdd) {
       specialCase = true;
     }
-    // console.log(message);
-    // console.log(this.shadowRoot);
-    // console.log(element);
+
     //if stream is true
     if (stream) {
-      // console.log("streaming");
       this.stream_on = true;
       var text = "";
       // if choices is a key in message, it means usual stream
@@ -1734,8 +1700,7 @@ class popUpClass extends HTMLElement {
           } else {
             // add text to usual completion
             //check the bodyData of the element
-            // console.log(textarea);
-            // console.log(promptarea);
+
             promptarea.innerText += text;
             // check for markdown
 
@@ -1757,12 +1722,10 @@ class popUpClass extends HTMLElement {
       this.tokens++;
     } 
     else {    // Not streaming!
-      // console.log("Streaming stopped.");
       if (specialCase && textarea) {
         // do nothing
       } 
       else {
-        // console.log("About to update markdown.");
         updateMarkdownContent(promptarea, promptarea.innerText);
         // scroll to the end of the promptarea
         promptarea.scrollIntoView({ behavior: "auto", block: "end" });
@@ -1790,7 +1753,6 @@ class popUpClass extends HTMLElement {
       } else if (chatarea) {
         chatarea.focus();
         this.showCopyToClipboardBtn(target_id);
-        // console.log("point5");
         element.previousMessages.push({ role: "assistant", content: complete_completion });
       } else {
         element.focus();
@@ -1831,7 +1793,6 @@ function getImage(src, id){
 }
 
 function handleMouseMove(e, startX, startY, brightenedImg) {
-  // console.log(e.clientX, e.clientY);
   // Undo brightness filter within the selection
   
   // Calculate the minimum and maximum x and y values
@@ -1883,7 +1844,6 @@ function handleMouseUp(e, startX, startY, targetId, img, brightenedImg, mouseMov
 
   document.removeEventListener("mousemove", mouseMoveHandler);
   document.removeEventListener("mouseup", mouseUpHandler);
-  // console.log("Screenshot cancel handler:", screenshotCancelHandler);
   document.removeEventListener("cancel", screenshotCancelHandler);
   document.removeEventListener("keydown", imgKeyDownHandler);
 
@@ -1919,17 +1879,13 @@ function handleScreenshotCancel(img, targetId, brightenedImg, mouseMoveHandler, 
 function updateMarkdownContent(markdownContainer, markdownText) {
   // Wait for the renderMarkdown function to be available
   function waitForRenderMarkdown() {
-    // console.log("waiting for renderMarkdown");
     if (window.renderMarkdown) {
       // Use the renderMarkdown function to convert the Markdown text to HTML
-      // console.log(markdownText);
       const renderedHtml = window.renderMarkdown(markdownText);
 
       // Find the Markdown container in the chat popup element and update its content
       if (markdownContainer) {
         markdownContainer.innerHTML = renderedHtml;
-        // console.log("updated markdown");
-        // console.log(renderedHtml);
       }
     } else {
       // If the renderMarkdown function is not yet available, try again after a short delay

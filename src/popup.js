@@ -959,7 +959,7 @@ function newOrderFromID() {
   [].forEach.call(listItens, function (item) {
     list.push(item.id);
   });
-  console.log("list", list);
+  // console.log("list", list);
   return list;
 }
 
