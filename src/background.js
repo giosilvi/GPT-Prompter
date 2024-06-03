@@ -298,12 +298,12 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
 });
 
 function replacePlaceHolder(selectionText) {
-  console.log("Selection text:", selectionText);
+  // console.log("Selection text:", selectionText);
   // if there is a text /#TEXT#/g inside selectionText replace with nothing, and use the position to set the cursor later
   if (typeof selectionText == "undefined") {
     selectionText = "";
   }
-  console.log("Selection text:", selectionText);
+  // console.log("Selection text:", selectionText);
   var cursorPosition = selectionText.search(/#TEXT#/g);
   if (cursorPosition !== -1) {
     selectionText = selectionText.replace(/#TEXT#/g, "");
@@ -315,13 +315,11 @@ function launchPopUpInPage(selectionText, prompt, command) {
   // replace the placeholder
   if (command == "showPopUpOnTheFly") {
     if (selectionText){
-      console.log("Selection text:", selectionText);
       // console.log(selectionText[0]);
       // console.log(selectionText[0].content);
       if (selectionText[0].content){
         // Legacy: May be safe to remove.
         let userSelection = selectionText[1] ? selectionText[1].content : selectionText[0].content;
-        console.log(userSelection);
         var [selectionText, cursorPosition] = replacePlaceHolder(userSelection);
       }
       else {

@@ -46,12 +46,12 @@ function checkMaxTokens(content, model) {
   var tokens = 0;
   if (model in CHAT_API_MODELS) {
     // check the tokens in the text, for each "content" key
-    console.log("Original content:", content);
+    // console.log("Original content:", content);
     if (content[0].role === "user"){
       // Request came from prompt-on-the-fly
       if (content[0].content.length > 0 && content[0].content[0].type) {
         content = [content[0].content[0].text];
-        console.log("Cropping content", content);
+        // console.log("Cropping content", content);
       }
       else{
         content = [content[0].content];
@@ -65,7 +65,6 @@ function checkMaxTokens(content, model) {
         else tmp.push(content[i].content);
       }
       content = tmp;
-      console.log("Cropping content", content);
     }
 
     // Content should be a list of strings
@@ -73,7 +72,6 @@ function checkMaxTokens(content, model) {
       tokens += 4; // every message follows <im_start>{role/name}\n{content}<im_end>\n
       var singleMsgToken = countTokens(content[i]);
       tokens += singleMsgToken;
-      console.log(singleMsgToken, content[i]);
       tokens += 2; // every reply is primed with <im_start>assistant
     }
   } else {
@@ -83,7 +81,6 @@ function checkMaxTokens(content, model) {
   if (model in DECOUPLED_INPUT_OUTPUT_LENGTH_MODELS) {
     maxTokens = MaxTokensPerModel[model];
   }
-  console.log("model", model, "maxTokens", maxTokens, "tokens", tokens);
   return { maxTokens, tokens };
 }
 
@@ -143,11 +140,7 @@ async function promptGPT3Prompting(prompt, items, tabs) {
   var popupID = prompt["popupID"]; // may be undefined
   var uuid = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
   //send immediately text to the content script
-  console.log("Before choosing completion");
-  console.log("Debug0", model, temperature, text)
   var { url, str_bodyData, bodyData, tokens } = chooseCompletion(model, temperature, text);
-  console.log("Debug1", url, str_bodyData, tokens);
-
   let keepStreaming = true;
 
   fetch(url, {
@@ -191,8 +184,6 @@ async function promptGPT3Prompting(prompt, items, tabs) {
 export default promptGPT3Prompting;
 
 function chooseCompletion(model, temperature, text) {
-  console.log("Choosing completions! (Final Step)");
-  console.log(text, model);
   var { maxTokens, tokens } = checkMaxTokens(text, model);
   var url = "";
 
