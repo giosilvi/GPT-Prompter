@@ -32,7 +32,7 @@ const md = new MarkdownIt({
 });
 
 function renderFunctionsInRegex(rendered, regex) {
-  console.log("Regex: ", regex);
+  // console.log("Regex: ", regex);
   // Map of equation to rendered HTML
   let equations = {};
   let matches = rendered.match(regex)
@@ -83,17 +83,17 @@ function renderFunctionsInRegex(rendered, regex) {
           equations[equation] = `<span style="color: red;">${error.message}</span>`;
         }
       }
-      console.log("Equation: ", equation);
-      console.log("Rendered equation: ", katexEquation);
+      // console.log("Equation: ", equation);
+      // console.log("Rendered equation: ", katexEquation);
     });
   }
 
   return equations;
 }
 function renderMarkdown(input) {
-  console.log("renderMarkdown called.");
+  // console.log("renderMarkdown called.");
   // Find math equations
-  console.log("Original:", input);
+  // console.log("Original:", input);
   let regexes = [
     /\$\$(.*?)\$\$/g, // Double dollar signs
     /\$(.*?)\$/g, // Single dollar signs
@@ -108,7 +108,7 @@ function renderMarkdown(input) {
     let equations = renderFunctionsInRegex(input, regex);
     allEquations = {...allEquations, ...equations};
   }
-  console.log("All equations: ", allEquations);
+  // console.log("All equations: ", allEquations);
   // Render the input and remove the surrounding <p> and </p> tags
   var rendered = md.render(input).trim();
   if (rendered.startsWith('<p>') && rendered.endsWith('</p>')) {
