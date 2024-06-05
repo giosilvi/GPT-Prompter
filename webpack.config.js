@@ -2,6 +2,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const ZipWebpackPlugin = require('zip-webpack-plugin'); // to zip the dist folder
+const TerserPlugin = require('terser-webpack-plugin');
 
 const manifestJson = require('./src/manifest.json');
 const extensionName = 'GPT-Prompter';
@@ -50,5 +51,19 @@ module.exports = (env, argv) => {
         filename: `${extensionName}-${extensionVersion}.zip`,
       }), // Add the zip-webpack-plugin instance
     ],
+    optimization: {
+      minimize: true,
+      minimizer: [
+        new TerserPlugin({
+          parallel: true,
+          terserOptions: {
+            ecma: 6,
+            output: { 
+              ascii_only: true 
+            },
+          },
+        }),
+      ],
+    },
   };
 };
