@@ -56,7 +56,7 @@ function renderFunctionsInRegex(rendered, regex) {
           equations[equation] = katex.renderToString(katexEquation, {
             throwOnError: false,
             displayMode: false,
-            output: 'html'
+            output: 'mathml'
           });
         }
         catch (error) {

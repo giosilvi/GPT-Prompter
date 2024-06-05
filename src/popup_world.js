@@ -59,6 +59,7 @@ const minipopup = (id, { left = 0, top = 0 }) => `
     <div style="float:right">
       <span id="${id}probability" class="tkn_prb"></span>
       <button class='minibuttons copybutton hide' id='copy_to_clipboard${id}' style="cursor: copy;" title='Copy completion to clipboard (Alt+C)'></button>
+      <button class='minibuttons unrenderbutton hide' id='unrender${id}' title='Un-render markdown and LaTeX.'></button>
     </div>
   </div>
 </div>
@@ -110,6 +111,7 @@ const flypopup = (id, { text = "", left = 0, top = 0, symbol = "🅶" }) => `
     <div style="float:right">
       <span id="${id}probability" class="tkn_prb" ></span>
       <button class='minibuttons copybutton hide' id='copy_to_clipboard${id}' style="cursor: copy;" title='Copy completion to clipboard (Alt+C)'></button>
+      <button class='minibuttons unrenderbutton hide' id='unrender${id}' title='Un-render markdown and LaTeX.'></button>
     </div>
     </div>
 </div>
@@ -199,6 +201,10 @@ const styled = `
   font-family: 'Material Icons';
   content: '\uD83D\uDCCB';
 }
+.unrenderbutton:before {
+  font-family: 'Material Icons';
+  content: '\uD83D\uDD01';
+}
 .pinbutton:before {
   font-family: 'Material Icons';
   content: '\uD83D\uDCCC';
@@ -232,6 +238,10 @@ const styled = `
 }
   }
 .copybutton {
+  float:right;
+  margin-bottom: -.5em;
+}
+.unrenderbutton {
   float:right;
   margin-bottom: -.5em;
 }
@@ -1348,6 +1358,22 @@ class popUpClass extends HTMLElement {
       }, 500);
     });
   }
+  unrenderButtonListener(id_target) {
+    this.shadowRoot.getElementById("unrender" + id_target).addEventListener("click", () => {
+
+      this.shadowRoot.getElementById("unrender" + id_target).classList.toggle("invertcolor");
+      setTimeout(() => {
+        this.shadowRoot.getElementById("unrender" + id_target).classList.toggle("invertcolor");
+      }, 500);
+      let currentTextArea = this.shadowRoot.getElementById(id_target + "text");
+      if (currentTextArea.oldHTML) {
+        let tmp = currentTextArea.innerHTML;
+        currentTextArea.innerHTML = currentTextArea.oldHTML;
+        currentTextArea.oldHTML = tmp;
+      }
+    });
+  }
+
   togglerModelChat(id_target, id_symbol) {
     //prevent double click to propagate to the parent
     const symbolElement = this.shadowRoot.getElementById(id_symbol);
@@ -1504,6 +1530,7 @@ class popUpClass extends HTMLElement {
     this.closeButtons(id_target, id_close);
     this.doubleClick(id_target);
     this.copyButtonListener(id_target);
+    this.unrenderButtonListener(id_target);
     this.keysShortcuts(id_target);
   }
 
@@ -1752,6 +1779,7 @@ class popUpClass extends HTMLElement {
       } else if (chatarea) {
         chatarea.focus();
         this.showCopyToClipboardBtn(target_id);
+        this.shadowRoot.getElementById('unrender' + target_id).classList.remove("hide");
         element.previousMessages.push({ role: "assistant", content: complete_completion });
       } else {
         element.focus();
@@ -1761,6 +1789,7 @@ class popUpClass extends HTMLElement {
         this.putCursorAtTheEnd(textarea);
       } else {
         this.showCopyToClipboardBtn(target_id);
+        this.shadowRoot.getElementById('unrender' + target_id).classList.remove("hide");
       }
 
       // save the completion in the history
@@ -1881,6 +1910,7 @@ function updateMarkdownContent(markdownContainer, markdownText) {
 
       // Find the Markdown container in the chat popup element and update its content
       if (markdownContainer) {
+        markdownContainer.oldHTML = markdownContainer.innerHTML;
         markdownContainer.innerHTML = renderedHtml;
         console.log("updated markdown");
         console.log(renderedHtml);
