@@ -1560,7 +1560,8 @@ class popUpClass extends HTMLElement {
     const symbol = symbolFromModel(request.bodyData.model);
     this.shadowRoot.getElementById(`${targetId}symbol`).innerHTML = symbol;
     this.shadowRoot.getElementById(`${targetId}symbol`).title = request.bodyData.model;
-    let header_content = JSON.stringify(request.text);
+    let lastElementIndex = request.text.length - 1;
+    let header_content = JSON.stringify(request.text[lastElementIndex].content || "");
     let HEADER_CONTENT_THRESHOLD = 120;
 
     if (header_content.length > HEADER_CONTENT_THRESHOLD) {
