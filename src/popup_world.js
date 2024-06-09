@@ -1,13 +1,10 @@
 import "@webcomponents/custom-elements/custom-elements.min.js";
-import {CHAT_API_MODELS} from "./gpt3.js";
+import {CHAT_API_MODELS, VISION_SUPPORTED_MODELS} from "./gpt3.js";
 import { models } from "./sharedfunctions.js"
 
 function symbolFromModel(model) {
-  console.log(models)
   // check if the model is in the dictionary
   if (models.hasOwnProperty(model)) {
-    console.log("model found", model)
-    console.log("Model symbol:", models[model])
     return models[model];
   }
   console.log("model not found", model)
@@ -41,7 +38,7 @@ function computeCost(tokens, model) {
 //
 
 const minipopup = (id, { left = 0, top = 0 }) => `
-<div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px">
+<div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px" name="fullpopup">
   <div id="${id}prompt" class="popupprompt">
     <div id="${id}grabbable" class="grabbable">
       <div style='position:relative; z-index:3; float:right; height:30px'>
@@ -68,7 +65,7 @@ const minipopup = (id, { left = 0, top = 0 }) => `
 `;
 
 const flypopup = (id, { text = "", left = 0, top = 0, symbol = "🅶" }) => `
-<div class="popuptext onylonthefly" id="${id}" style="left: ${left}px; top:${top}px;">
+<div class="popuptext onylonthefly" id="${id}" style="left: ${left}px; top:${top}px;" name="fullpopup">
   <div id="${id}prompt" class="popupprompt">
     <div id="${id}grabbable" class="grabbable">
       <div style='position:relative; z-index:3; float:right; height:30px'>
@@ -94,10 +91,22 @@ const flypopup = (id, { text = "", left = 0, top = 0, symbol = "🅶" }) => `
       <div id="${id}loading-spinner" class="loading-spinner microphone-button" style="display: none;"></div>
     </div>
   </div>
-    <button type="button" id="${id}submit" class="submitbutton" title="Alt+Enter">Submit</button>
+    <button type="button" id="${id}submit" class="submitbutton" style="display:inline-block" title="Alt+Enter">Submit</button>
     <button type="button" id="${id}stop" class="submitbutton hide" title="Alt+Enter" style='background-color: red;'>Stop</button>
     <button type="button" id="${id}add2comp" class="submitbutton hide" style=" width: 65px;" title="Alt+A">Add &#8682;</button>
+
+    <button type="button" id="${id}upload" for="${id}file" class="submitbutton" style="display:inline-block" title="Alt+U">Add Image</button>
+    <input type="file" id="${id}file" style="display:none" accept="image/*">
+    <button type="button" id="${id}screenshot" class="submitbutton" style="display:inline-block;" title="Alt+S">Screenshot</button>
+
+    <div id="${id}galleryLabel" style="display:none; padding-top: 10px;">
+      <span class="popupcompletion symbolmodel">▷ Images:</span>
+      <button type="button" id="${id}clearButton" class="submitbutton" title="Alt+Shift+D" style="width: 120px;">Clear Images</button>      
+    </div> 
+
+    <div id="${id}imageGallery" style="display: flex; flex-wrap: wrap;"></div>
     <p id="${id}text" class='popupcompletion'></p>
+
     <div style="float:right">
       <span id="${id}probability" class="tkn_prb" ></span>
       <button class='minibuttons copybutton hide' id='copy_to_clipboard${id}' style="cursor: copy;" title='Copy completion to clipboard (Alt+C)'></button>
@@ -111,7 +120,7 @@ const flypopup = (id, { text = "", left = 0, top = 0, symbol = "🅶" }) => `
 // `;
 
 const chatpopup = (id, { text = "", left = 0, top = 0, symbol = "🅶" }) => `
-<div class="popuptext onlychat" id="${id}" style="left: ${left}px; top:${top}px; width:520px;">
+<div class="popuptext onlychat" id="${id}" style="left: ${left}px; top:${top}px; width:520px;" name="fullpopup">
   <div id="${id}prompt" class="popupprompt">
     <div id="${id}grabbable" class="grabbable2">
       <div style='position:relative; z-index:3; float:right; height:30px'>
@@ -131,8 +140,6 @@ const chatpopup = (id, { text = "", left = 0, top = 0, symbol = "🅶" }) => `
    <div id="${id}system" class="suggestion" style="margin-top: 10px;"></div>
   </div>
     <div id="${id}chat" style="display: flex;">
-      <button type="button" id="${id}submit" class="submitbutton chatsubmit" title="Alt+Enter">Submit</button>
-      <button type="button" id="${id}stop" class="submitbutton chatsubmit hide" title="Alt+Enter" style='background-color: red;'>Stop</button>
       <div class="textarea-container">
         <textarea contentEditable="true" id="${id}chatarea" class="textarea">${text}</textarea>
         <div id="${id}mic-container" title="Transcribe with Whisper (Tab key to start/stop)" >
@@ -143,6 +150,19 @@ const chatpopup = (id, { text = "", left = 0, top = 0, symbol = "🅶" }) => `
         </div>
       </div>
     </div>
+    <button type="button" id="${id}submit" class="submitbutton chatsubmit" style="display:inline-block" title="Alt+Enter">Submit</button>
+    <button type="button" id="${id}stop" class="submitbutton chatsubmit hide" title="Alt+Enter" style='background-color: red;'>Stop</button>
+
+    <button type="button" id="${id}upload" for="${id}file" class="submitbutton chatsubmit" style="width: 110px; display:inline-block" title="Alt+U">Add Image</button>
+    <input type="file" id="${id}file" style="display:none" accept="image/*">
+    <button type="button" id="${id}screenshot" class="submitbutton chatsubmit" style="display:inline-block;" title="Alt+S">Screenshot</button>
+
+    <div id="${id}galleryLabel" style="display:none; padding-top: 10px;">
+      <span class="popupcompletion" style="color: #71a799">▷ Images:</span>
+      <button type="button" id="${id}clearButton" class="submitbutton chatsubmit" title="Alt+Shift+D" style="width: 120px;">Clear Images</button>      
+    </div> 
+    <div id="${id}imageGallery" style="display: flex; flex-wrap: wrap;"></div>
+
     <div style="float:right">
         <span id="${id}probability" class="tkn_prb" ></span>
         <button class='minibuttons copybutton hide' id='copy_to_clipboard${id}' style="cursor: copy;" title='Copy completion to clipboard (Alt+C)'></button>
@@ -184,6 +204,21 @@ const styled = `
   content: '\uD83D\uDCCC';
 }
 
+.imclosebutton{
+  background-color: #eb3b43;
+  color: #E8EAED;
+  border: none;
+  border-radius: 50%;
+  padding: 2px;
+  margin-left: -5px;
+  cursor: pointer;
+  font-size: 10px;
+  height: 15px;
+  width: 15px;
+  display: inline;
+  vertical-align: middle;
+}
+
 .regeneratebutton:before {
   font-family: 'Material Icons';
   content: "\u21BB";
@@ -201,9 +236,9 @@ const styled = `
   margin-bottom: -.5em;
 }
 .chatsubmit{
-  margin-bottom:10px;
-  margin-top:10px;
-  margin-right:10px;
+  margin-bottom:3px;
+  margin-top:5px;
+  margin-right:5px;
   background-color: #71a799!important;
 }
 .textarea{
@@ -550,7 +585,12 @@ class popUpClass extends HTMLElement {
     this.updateTemperature(this.ids);
     this.runClick(this.ids);
     this.stopButton(this.ids);
+    this.imageUpload(this.ids);
+    this.clearButton(this.ids);
+    this.screenshotButton(this.ids);
     this.showAdd2CompletionButton(this.ids);
+    if (!this.imbase64arr) this.imbase64arr = {};
+    if (!this.imvalids) this.imvalids = {};
 
     // pause for 1 second to allow the popup to be rendered
     setTimeout(() => {
@@ -617,7 +657,7 @@ class popUpClass extends HTMLElement {
     } else {
       messageInTextArea = "";
     }
-
+    
     popUpElement.innerHTML = chatpopup(this.ids, {
       text: messageInTextArea,
       left: this.mousePosition.left,
@@ -634,7 +674,7 @@ class popUpClass extends HTMLElement {
     // make a copy of the messages list and attach it to the element
     element.previousMessages = messages;
     // Set the system message in the popup
-    if (messages[0]["role"] == "system") {
+    if (messages.length > 0 && messages[0]["role"] == "system") {
       this.shadowRoot.getElementById(this.ids + "system").innerText = "System: " + messages[0]["content"];
     }
 
@@ -656,6 +696,11 @@ class popUpClass extends HTMLElement {
     this.updateTemperature(this.ids);
     this.runClickChat(this.ids);
     this.stopButton(this.ids);
+    this.imageUpload(this.ids);
+    this.screenshotButton(this.ids);
+    this.clearButton(this.ids);
+    if (!this.imbase64arr) this.imbase64arr = {};
+    if (!this.imvalids) this.imvalids = {};
 
     setTimeout(() => {
       element.classList.toggle("show");
@@ -746,13 +791,36 @@ class popUpClass extends HTMLElement {
     innermessage.className = "singlemessage";
     // add to messagepoup an equivalent of the role
     messagepopup.classList.add(messages["role"]);
-    innermessage.innerText = messages["content"];
+
     // if the role is user, shift the message to the right
     if (messages["role"] == "user") {
+      innermessage.innerText = messages["content"].content;
+
+      if (Array.isArray(messages["content"].content)){
+        innermessage.innerText = messages["content"].content[0].text;
+        // Images are attached!
+        var innerGallery = document.createElement("div");
+        innerGallery.style.display = "flex";
+        innerGallery.style.flexWrap = "wrap";
+        var images = messages["content"].content.slice(1);
+        for (let i = 0; i < images.length; i++){
+          if (images[i].type == "image_url"){
+            var img = document.createElement("img");
+            img.src = images[i].image_url.url;
+            img.style.cssText = "max-width: 300px; max-height: 50px; margin-top: 5px; margin-left: 3px; margin-right: 3px;";
+            innerGallery.appendChild(img);
+          }
+        }
+
+        innermessage.appendChild(innerGallery);
+        this.clearGallery(idmessage.split("message_")[0]);
+      }
+
       innermessage.style.textAlign = "right";
       // float the message to the right
       innermessage.style.float = "right";
     } else {
+      innermessage.innerText = messages["content"];
       innermessage.style.textAlign = "left";
       // float the message to the left
       innermessage.style.float = "left";
@@ -814,6 +882,8 @@ class popUpClass extends HTMLElement {
         this.stop_stream = true;
         this.stream_on = false;
       }
+      // Clear the image gallery
+      this.clearGallery(id_target);
 
       this.listOfActivePopups = this.listOfActivePopups.filter((item) => item !== id_target);
       // remove from listOfUnpinnedPopups if it is there
@@ -830,6 +900,37 @@ class popUpClass extends HTMLElement {
     });
   }
 
+  getPromptUserContent(textPrompt, modelToUse, targetId) {
+    if (modelToUse in CHAT_API_MODELS) {
+      if (this.imbase64arr[targetId] && (modelToUse in VISION_SUPPORTED_MODELS)){
+        let imbase64arr = this.imbase64arr[targetId];
+        let imvalids = this.imvalids[targetId];
+        let contentarr = [
+          {
+            type: "text",
+            text: textPrompt
+          }
+        ]
+        for (let i = 0; i < imbase64arr.length; i++){
+          if (imvalids[i]){
+            contentarr.push({
+              type: "image_url",
+              image_url: {
+                url: imbase64arr[i]
+              }
+            });
+          }
+        }
+
+        textPrompt = [{ role: "user", content: contentarr}];
+      }
+      else {
+        textPrompt = [{ role: "user", content: textPrompt }];
+      }
+    }
+    return textPrompt;
+  }
+
   runClick(targetId) {
     const submitButton = this.shadowRoot.getElementById(`${targetId}submit`);
 
@@ -843,9 +944,7 @@ class popUpClass extends HTMLElement {
         this.removeHideFromCompletion(targetId);
         let modelToUse = this.getBodyData(targetId, "model");
         let textPrompt = this.getTextareaValue(targetId);
-        if (modelToUse in CHAT_API_MODELS) {
-          textPrompt = [{ role: "user", content: textPrompt }];
-        }
+        textPrompt = this.getPromptUserContent(textPrompt, modelToUse, targetId);
 
         const promptObj = {
           prompt: textPrompt,
@@ -855,8 +954,8 @@ class popUpClass extends HTMLElement {
           popupID: targetId,
           type: "completion",
         };
-        // console.log("promptObj", promptObj);
         chrome.runtime.sendMessage({ text: "launchGPT", prompt: promptObj });
+
         // get the textarea element
         this.resetAutoWidthTextArea(targetId);
       });
@@ -887,6 +986,8 @@ class popUpClass extends HTMLElement {
         let modelToUse = this.getBodyData(targetId, "model");
         let userTextPrompt = txtArea.value;
         txtArea.value = "";
+        userTextPrompt = this.getPromptUserContent(userTextPrompt, modelToUse, targetId)[0];
+
         let chatElement = this.shadowRoot.getElementById(targetId);
         let previousmessages = chatElement.previousMessages;
         // add a Child to the chat element with id of id+"text", of type assistant
@@ -898,7 +999,8 @@ class popUpClass extends HTMLElement {
         if (this.shadowRoot.getElementById(targetId + "text")) {
           this.shadowRoot.getElementById(targetId + "text").id = targetId + "message_" + length_messages;
         }
-        let usermessage = this.createChatElement({ role: "user", content: userTextPrompt }, targetId + "message_" + length_messages - 1);
+
+        let usermessage = this.createChatElement({ role: "user", content: userTextPrompt }, targetId + "message_" + (length_messages - 1));
         completionElement.appendChild(usermessage);
         setTimeout(() => {
           usermessage.classList.add("reveal");
@@ -913,7 +1015,7 @@ class popUpClass extends HTMLElement {
         assistantmessage.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
 
         // append the user text to the previous messages
-        previousmessages.push({ role: "user", content: userTextPrompt });
+        previousmessages.push(userTextPrompt);
         let textPrompt = previousmessages;
         const promptObj = {
           prompt: textPrompt,
@@ -923,11 +1025,87 @@ class popUpClass extends HTMLElement {
           popupID: targetId,
           type: "chat",
         };
+
         chrome.runtime.sendMessage({ text: "launchGPT", prompt: promptObj });
       });
     }
 
     // this.stopBubblingEvent(txtArea);
+  }
+
+  screenshotButton(targetId) {
+    const buttonobj = this.shadowRoot.getElementById(`${targetId}screenshot`);
+    if (!buttonobj.listener) {
+      buttonobj.addEventListener("click", async () => {
+        // Hide all popups
+        for (const element of this.shadowRoot.querySelectorAll("div[name='fullpopup']")) {
+          element.classList.toggle("hide");
+        }
+      
+        setTimeout(() => {
+          chrome.runtime.sendMessage({ action: "takeScreenCapture"}, (response) => {
+            // response.data is the image in base64
+            if (response && !response.error) {
+              // Change cursor to crosshair
+              document.body.style.cursor = "crosshair";
+              // Create a new image element
+              // Disable dragging of document elements
+              document.body.style.userSelect = "none";
+
+              let img = getImage(response.data, "screenshot");
+              // Darken the image display
+              img.style.filter = "brightness(0.7)";
+              // Put the image on top of the other elements
+              img.style.zIndex = "10000";
+
+              // Disable scrolling
+              document.body.style.overflow = "hidden";
+
+              // Brightened image
+              let brightenedImg = getImage(response.data, "brightened_selection");
+              brightenedImg.style.zIndex = "10001";
+              brightenedImg.style.display = "none";
+              
+              // Append the image to the body
+              document.body.appendChild(img);
+              document.body.appendChild(brightenedImg);
+
+              // Add global keydown listener
+              let imgKeyDownHandler = this.handleKeyDownImg.bind(this, targetId);
+              document.addEventListener("keydown", imgKeyDownHandler);
+
+              console.log("Image created!");
+              // Wait for the user to crop a region
+              let screenshotCancelHandler = null;
+              let mouseUpHandler = null;
+              let mouseMoveHandler = null;
+              screenshotCancelHandler = () => {
+                handleScreenshotCancel(img, targetId, brightenedImg, mouseMoveHandler, mouseUpHandler, screenshotCancelHandler, imgKeyDownHandler, this);
+              }
+              document.addEventListener("cancel", screenshotCancelHandler);
+
+              img.addEventListener("mousedown", (e) => {
+                const startX = e.clientX;
+                const startY = e.clientY;
+
+                mouseMoveHandler = (e) => handleMouseMove(e, startX, startY, brightenedImg);
+                document.addEventListener("mousemove", mouseMoveHandler);
+                mouseUpHandler = (e) => {
+                  handleMouseUp(e, startX, startY, targetId, img, brightenedImg, mouseMoveHandler, mouseUpHandler, screenshotCancelHandler, imgKeyDownHandler, this);
+                };
+                document.addEventListener("mouseup", mouseUpHandler);
+
+              });
+            } else{
+              if (response.error === "Permission denied"){
+                // Create a popup to ask for permission
+                alert("To take a screen capture, the extension needs to access the current tab.")
+              }
+            }
+          });
+        }, 50);
+      });
+    }
   }
 
   resetAutoWidthTextArea(targetId) {
@@ -971,6 +1149,14 @@ class popUpClass extends HTMLElement {
     this.putCursorAtTheEnd(textarea);
   }
 
+  handleKeyDownImg(targetId, e) {
+    if (e.key === "Escape") {
+      console.log("Sending cancel message.");
+      const cancel = new CustomEvent("cancel");
+      document.dispatchEvent(cancel);
+    }
+  }
+
   handleKeydown(targetId, e) {
     if (e.key === "Escape") {
       this.closePopup(targetId);
@@ -988,6 +1174,10 @@ class popUpClass extends HTMLElement {
         this.clickCopyToClipboard(targetId);
       } else if (e.key === "a" && this.shadowRoot.getElementById(`${targetId}add2comp`)) {
         this.shadowRoot.getElementById(`${targetId}add2comp`).click();
+      } else if (e.key === "u" && this.shadowRoot.getElementById(`${targetId}upload`)) {
+        this.shadowRoot.getElementById(`${targetId}upload`).click();
+      } else if (e.key === "s" && this.shadowRoot.getElementById(`${targetId}screenshot`)) {
+        this.shadowRoot.getElementById(`${targetId}screenshot`).click();
       }
     }
   }
@@ -1027,9 +1217,118 @@ class popUpClass extends HTMLElement {
     }
   }
 
+  addImageToGallery(id_target, dataUrl) {
+    /* 
+    1. Adds image to gallery object
+    2. Handles the close button for the image
+    3. Adds image (in base64 dataURL form) to the global variable
+    */
+    const gallery = this.shadowRoot.getElementById(id_target + "imageGallery");
+    if (!this.imbase64arr[id_target] || this.imbase64arr[id_target].length === 0) {
+      let galleryLabel = this.shadowRoot.getElementById(id_target + "galleryLabel");
+      galleryLabel.style.display = "block";
+      // this.shadowRoot.getElementById(id_target + "clearButton").style.display = "inline-block";
+
+      this.imbase64arr[id_target] = [dataUrl];
+      this.imvalids[id_target] = [true];
+    }
+    else {
+      this.imbase64arr[id_target].push(dataUrl);
+      this.imvalids[id_target].push(true);
+    }
+
+    const image = document.createElement("img");
+    image.src = dataUrl;
+    image.style.cssText = "max-width: 300px; max-height: 50px; margin-top: 5px;";
+    image.id = `${id_target}_${this.imbase64arr[id_target].length}image`;
+    gallery.appendChild(image);
+
+    const xbutton = document.createElement("button");
+    xbutton.innerHTML = "x";
+    xbutton.className = "imclosebutton";
+    xbutton.id = `${id_target}_${this.imbase64arr[id_target].length}xbutton`;
+
+    xbutton.addEventListener("click", () => {
+      this.shadowRoot.getElementById(image.id).remove();
+      this.shadowRoot.getElementById(xbutton.id).remove();
+
+      let image_idx = parseInt(image.id.split("_")[1].split("image")[0]) - 1;
+      this.imvalids[id_target][image_idx] = false; // mark the image as invalid -> don't send it to the model
+      // console.log("Closing image");
+      if (this.imvalids[id_target].every((val) => val === false)){
+        // console.log("Clearing gallery.");
+        this.clearGallery(id_target);
+      }
+    });
+    gallery.appendChild(xbutton);
+  }
+
+  clearGallery(id_target){
+    const gallery = this.shadowRoot.getElementById(id_target + "imageGallery");
+    gallery.innerHTML = "";
+
+    // Reset the global image array
+    this.imbase64arr[id_target] = [];
+    this.imvalids[id_target] = [];
+
+    this.shadowRoot.getElementById(id_target + "galleryLabel").style.display = "none";
+  }
+
+  clearButton(id_target) {
+    this.shadowRoot.getElementById(id_target + "clearButton").addEventListener("click", () => {
+      this.clearGallery(id_target);
+    });
+  }
+
+  enableImageSupport(id_target){
+    this.shadowRoot.getElementById(id_target + "upload").style.display = "inline-block";
+    this.shadowRoot.getElementById(id_target + "screenshot").style.display = "inline-block";
+    this.shadowRoot.getElementById(id_target + "imageGallery").style.display = "block";
+
+    if (this.imbase64arr[id_target] && this.imbase64arr[id_target].length > 0 && this.imvalids[id_target].some((val) => val === true)){
+      this.shadowRoot.getElementById(id_target + "galleryLabel").style.display = "block";
+    }
+  }
+
+  disableImageSupport(id_target){
+    let uploadButton = this.shadowRoot.getElementById(id_target + "upload");
+    let galleryLabel = this.shadowRoot.getElementById(id_target + "galleryLabel");
+    let imageGallery = this.shadowRoot.getElementById(id_target + "imageGallery");
+    let screenshotButton = this.shadowRoot.getElementById(id_target + "screenshot");
+    uploadButton.style.display = "none";
+    galleryLabel.style.display = "none";
+    imageGallery.style.display = "none";
+    screenshotButton.style.display = "none";
+    // galleryLabel.whiteSpace = "nowrap";
+  }
+
+  imageUpload(id_target) {
+    const uploadButton = this.shadowRoot.getElementById(id_target + "upload");
+    if (!uploadButton.listener) {  
+      const reader = new FileReader();
+      reader.onloadend = function (e) {
+        const base64 = e.target.result //.split(",")[1];
+        this.caller.addImageToGallery(id_target, base64);
+      };
+
+      // Listen for file upload
+      this.shadowRoot.getElementById(id_target + "file").addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        reader.caller = this;
+        reader.readAsDataURL(file);
+      });
+
+      uploadButton.addEventListener("click", () => {
+        // Trigger file upload behavior
+        this.shadowRoot.getElementById(id_target + "file").click();
+        this.shadowRoot.getElementById(id_target + "file").value = "";        
+      });
+    }
+  }
+
   stopButton(id_target) {
     this.shadowRoot.getElementById(id_target + "stop").addEventListener("click", () => {
-      this.stop_stream = true;
+      this.stop_stream = id_target;
       this.toggleRunStop(id_target);
     });
   }
@@ -1073,6 +1372,14 @@ class popUpClass extends HTMLElement {
         element.bodyData.model = "gpt-4";
         symbolElement.innerHTML = models["gpt-4"];
       }
+
+      if (element.bodyData.model in VISION_SUPPORTED_MODELS) {
+        this.enableImageSupport(id_target);
+      }
+      else {
+        this.disableImageSupport(id_target);
+      }
+
       symbolElement.title = element.bodyData.model;
     });
   }
@@ -1104,6 +1411,14 @@ class popUpClass extends HTMLElement {
         element.bodyData.model = "gpt-4-turbo";
         symbolElement.innerHTML = models["gpt-4-turbo"];
       }
+
+      if (element.bodyData.model in VISION_SUPPORTED_MODELS) {
+        this.enableImageSupport(id_target);
+      }
+      else {
+        this.disableImageSupport(id_target);
+      }
+
       symbolElement.title = element.bodyData.model;
     });
   }
@@ -1226,7 +1541,7 @@ class popUpClass extends HTMLElement {
     this.probabilities = [];
     this.clearnewlines = true;
     this.tokens = 0;
-    console.log("request.tokens_sent", request.tokens_sent);
+    // console.log("request.tokens_sent", request.tokens_sent);
     // transfer the tokens_sent to integer
     this.tokens_sent = parseInt(request.tokens_sent);
 
@@ -1245,10 +1560,18 @@ class popUpClass extends HTMLElement {
     const symbol = symbolFromModel(request.bodyData.model);
     this.shadowRoot.getElementById(`${targetId}symbol`).innerHTML = symbol;
     this.shadowRoot.getElementById(`${targetId}symbol`).title = request.bodyData.model;
-    const firstMessage = request.text[1]["content"];
-    if (firstMessage){
-        this.shadowRoot.getElementById(`${targetId}header`).innerHTML = `<i> ${JSON.stringify(firstMessage)} </i>`;
+    let lastElementIndex = request.text.length - 1;
+    let content = request.text[lastElementIndex].content;
+    let header_content;
+
+    if (Array.isArray(content)) {
+        header_content = JSON.stringify(content[0].text || "");
+    } else {
+        header_content = JSON.stringify(content || "");
     }
+    this.shadowRoot.getElementById(`${targetId}header`).innerHTML = `<i> ${ 
+      header_content
+    } </i>`;
 
     if (this.shadowRoot.getElementById(`regenerate${targetId}`)) {
       if (!this.alreadyCalled[targetId]) {
@@ -1316,20 +1639,21 @@ class popUpClass extends HTMLElement {
   }
 
   updatepopup(message, target_id, stream) {
-    const textarea = this.shadowRoot.getElementById(this.ids + "textarea");
-    const chatarea = this.shadowRoot.getElementById(this.ids + "chat");
-    const element = this.shadowRoot.getElementById(this.ids);
-    const promptarea = this.shadowRoot.getElementById(this.ids + "text");
+    /*
+    Update the given popup with a message from the model.
+    */
+
+    const textarea = this.shadowRoot.getElementById(target_id + "textarea");
+    const chatarea = this.shadowRoot.getElementById(target_id + "chat");
+    const element = this.shadowRoot.getElementById(target_id);
+    const promptarea = this.shadowRoot.getElementById(target_id + "text");
     var specialCase = false;
     if (textarea && this.autoAdd) {
       specialCase = true;
     }
-    // console.log(message);
-    // console.log(this.shadowRoot);
-    // console.log(element);
+
     //if stream is true
     if (stream) {
-      // console.log("streaming");
       this.stream_on = true;
       var text = "";
       // if choices is a key in message, it means usual stream
@@ -1375,8 +1699,7 @@ class popUpClass extends HTMLElement {
           } else {
             // add text to usual completion
             //check the bodyData of the element
-            // console.log(textarea);
-            // console.log(promptarea);
+
             promptarea.innerText += text;
             // check for markdown
 
@@ -1392,18 +1715,16 @@ class popUpClass extends HTMLElement {
         this.tokens = 0;
         this.stream_on = false;
         //show run button and hide stop button
-        this.toggleRunStop(this.ids);
+        this.toggleRunStop(target_id);
       }
       // each message should be 1 token
       this.tokens++;
     } 
     else {    // Not streaming!
-      // console.log("Streaming stopped.");
       if (specialCase && textarea) {
         // do nothing
       } 
       else {
-        // console.log("About to update markdown.");
         updateMarkdownContent(promptarea, promptarea.innerText);
         // scroll to the end of the promptarea
         promptarea.scrollIntoView({ behavior: "auto", block: "end" });
@@ -1411,9 +1732,9 @@ class popUpClass extends HTMLElement {
       // if stream is false, it means that the stream is over
       this.stream_on = false;
       // compute the probability, get average of element in this.probabilities
-      const final_prob = this.updateProbability(this.ids + "probability", true);
+      const final_prob = this.updateProbability(target_id + "probability", true);
       // show run button and hide stop button
-      this.toggleRunStop(this.ids);
+      this.toggleRunStop(target_id);
       const complete_completion = promptarea.innerText;
       
       //save prompt to local storage
@@ -1430,7 +1751,7 @@ class popUpClass extends HTMLElement {
         textarea.focus();
       } else if (chatarea) {
         chatarea.focus();
-        this.showCopyToClipboardBtn(this.ids);
+        this.showCopyToClipboardBtn(target_id);
         element.previousMessages.push({ role: "assistant", content: complete_completion });
       } else {
         element.focus();
@@ -1439,7 +1760,7 @@ class popUpClass extends HTMLElement {
       if (specialCase) {
         this.putCursorAtTheEnd(textarea);
       } else {
-        this.showCopyToClipboardBtn(this.ids);
+        this.showCopyToClipboardBtn(target_id);
       }
 
       // save the completion in the history
@@ -1456,20 +1777,114 @@ class popUpClass extends HTMLElement {
   }
 }
 
+function getImage(src, id){
+  const img = new Image();
+  img.src = src
+  img.style.cssText = "position: fixed; top: 0; left: 0; width: 100%; height: 100%;";
+  img.id = id;
+
+  // Disable pointer events in the document
+  // document.body.style.pointerEvents = "none";
+  // Disable dragging of the image
+  img.ondragstart = () => false;
+
+  return img;
+}
+
+function handleMouseMove(e, startX, startY, brightenedImg) {
+  // Undo brightness filter within the selection
+  
+  // Calculate the minimum and maximum x and y values
+  const minX = Math.min(e.clientX, startX);
+  const maxX = Math.max(e.clientX, startX);
+  const minY = Math.min(e.clientY, startY);
+  const maxY = Math.max(e.clientY, startY);
+
+  // Calculate the top, right, bottom, and left offsets for the inset
+  const top = minY + 'px';
+  const right = (window.innerWidth - maxX) + 'px';
+  const bottom = (window.innerHeight - maxY) + 'px';
+  const left = minX + 'px';
+
+  // Set the clipPath style
+  brightenedImg.style.clipPath = `inset(${top} ${right} ${bottom} ${left})`;
+
+  if (brightenedImg.style.display === "none") {
+    // console.log("Displaying brightened image.");
+    brightenedImg.style.display = "block";
+  }  
+}
+
+function handleMouseUp(e, startX, startY, targetId, img, brightenedImg, mouseMoveHandler, mouseUpHandler, screenshotCancelHandler, imgKeyDownHandler, popupParent) {
+  // console.log("Mousing up.");
+  // console.log(mouseMoveHandler, mouseUpHandler);
+
+  const endX = e.clientX;
+  const endY = e.clientY;
+  const xScale = img.naturalWidth / img.width;
+  const yScale = img.naturalHeight / img.height;
+  const width = Math.abs(endX - startX) * xScale;
+  const height = Math.abs(endY - startY) * yScale;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+
+  ctx.drawImage(img, xScale * Math.min(startX, endX), yScale * Math.min(startY, endY), width, height, 0, 0, width, height);
+  const dataUrl = canvas.toDataURL("image/png");
+
+  popupParent.addImageToGallery(targetId, dataUrl);
+
+  // Restore all popups
+  for (const element of popupParent.shadowRoot.querySelectorAll("div[name='fullpopup']")) {
+    element.classList.toggle("hide");
+  }
+
+  document.removeEventListener("mousemove", mouseMoveHandler);
+  document.removeEventListener("mouseup", mouseUpHandler);
+  document.removeEventListener("cancel", screenshotCancelHandler);
+  document.removeEventListener("keydown", imgKeyDownHandler);
+
+  // Restore document
+  document.body.style.cursor = "default";
+  document.body.removeChild(img);
+  document.body.removeChild(brightenedImg);
+  document.body.style.overflow = "auto";
+  document.body.style.userSelect = "auto";
+}
+
+function handleScreenshotCancel(img, targetId, brightenedImg, mouseMoveHandler, mouseUpHandler, screenshotCancelHandler, imgKeyDownHandler, popupParent) {
+  // console.log("Cancelling screenshot.");
+  
+  // Restore all popups
+  for (const element of popupParent.shadowRoot.querySelectorAll("div[name='fullpopup']")) {
+    element.classList.toggle("hide");
+  }
+  // Restore document
+  document.body.style.cursor = "default";
+  document.body.removeChild(img);
+  document.body.removeChild(brightenedImg);
+  document.body.style.overflow = "auto";
+  document.body.style.userSelect = "auto";
+
+  // Remove event listeners
+  if (mouseMoveHandler) document.removeEventListener("mousemove", mouseMoveHandler);
+  if (mouseUpHandler) document.removeEventListener("mouseup", mouseUpHandler);
+  document.removeEventListener("cancel", screenshotCancelHandler);
+  document.removeEventListener("keydown", imgKeyDownHandler);
+}
+
 function updateMarkdownContent(markdownContainer, markdownText) {
   // Wait for the renderMarkdown function to be available
   function waitForRenderMarkdown() {
-    // console.log("waiting for renderMarkdown");
     if (window.renderMarkdown) {
       // Use the renderMarkdown function to convert the Markdown text to HTML
-      // console.log(markdownText);
       const renderedHtml = window.renderMarkdown(markdownText);
 
       // Find the Markdown container in the chat popup element and update its content
       if (markdownContainer) {
         markdownContainer.innerHTML = renderedHtml;
-        // console.log("updated markdown");
-        // console.log(renderedHtml);
       }
     } else {
       // If the renderMarkdown function is not yet available, try again after a short delay

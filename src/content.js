@@ -134,7 +134,7 @@ function checkIdPopup(id) {
 
 const buffers = {};
 
-function handleDataChunk(uuid, dataChunk, request) {
+function handleDataChunk(uuid, dataChunk, request, target_id) {
   // Initialize buffer for this uuid if not already present
   buffers[uuid] = buffers[uuid] || "";
 
@@ -159,14 +159,14 @@ function handleDataChunk(uuid, dataChunk, request) {
       const completeJsonObjectStr = buffers[uuid].substring(0, endOfObjectPos + 1);
 
       // Process the complete JSON object
-      processJsonObject(completeJsonObjectStr, uuid, request);
+      processJsonObject(completeJsonObjectStr, target_id, request);
 
       // Remove the processed data from the buffer
       buffers[uuid] = buffers[uuid].substring(endOfObjectPos + 2);
     }
   }
   if (buffers[uuid].includes("[DONE]")) {
-    processJsonObject("[DONE]", uuid, request);
+    processJsonObject("[DONE]", target_id, request);
   }
 }
 function sendStopSignal(request,uuid) {
@@ -174,18 +174,22 @@ function sendStopSignal(request,uuid) {
   popUpShadow.updatepopup(request, uuid, false);
 }
 
-function processJsonObject(jsonStr, uuid, request) {
+function processJsonObject(jsonStr, target_id, request) {
   // console.log("jsonStr:", jsonStr, uuid, request);
   try {
       // Check for the [DONE] marker
       if (jsonStr === "[DONE]") {
-        popUpShadow.updatepopup(request, uuid, false);
+        popUpShadow.updatepopup(request, target_id, false);
         return;
       }
 
       // Otherwise, parse and process the JSON object
       // console.log("About to process JSON.");
+
+      // Remove newlines
+      jsonStr = jsonStr.replace(/\n/g, "");
       const jsonObject = JSON.parse(jsonStr);
+      
       // console.log(`Processing JSON object for ${uuid}:`, jsonObject);
       
       // Check for an error property in the JSON object
@@ -195,13 +199,14 @@ function processJsonObject(jsonStr, uuid, request) {
       //     return;
       // }
 
-      popUpShadow.updatepopup(jsonObject, uuid, true);  // Assuming uuid maps to idPopup
+      popUpShadow.updatepopup(jsonObject, target_id, true);  // Assuming uuid maps to idPopup
 
       // Once a valid JSON object has been processed, send a stop signal
       // sendStopSignal(request,uuid);
 
   } catch (e) {
       console.error("Failed to parse JSON object:", e);
+      console.log(jsonStr);
   }
 }
 
@@ -249,16 +254,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       try {
         // console.log("Request:", request);
         // console.log(popUpShadow.stop_stream, popUpShadow.listOfUndesiredStreams);
-        if (popUpShadow.stop_stream && !popUpShadow.listOfUndesiredStreams.includes(request.uuid)) {
-          console.log("Stop stream with uuid", request.uuid);
-          popUpShadow.listOfUndesiredStreams.push(request.uuid);
-          delete buffers[request.uuid];  // Clear the buffer for this stream
-          popUpShadow.stop_stream = false;
-          popUpShadow.clearnewlines = true;
+        if (!popUpShadow.shadowRoot.getElementById(idPopup) || popUpShadow.stop_stream === idPopup) {
+          if (!popUpShadow.listOfUndesiredStreams.includes(request.uuid)){
+            console.log("Stop stream with uuid", request.uuid);
+            popUpShadow.listOfUndesiredStreams.push(request.uuid);
+            delete buffers[request.uuid];  // Clear the buffer for this stream
+            popUpShadow.stop_stream = false;
+            popUpShadow.clearnewlines = true;
+          }
         }
         if (!popUpShadow.listOfUndesiredStreams.includes(request.uuid)) {
-          handleDataChunk(request.uuid, request.text, request);
-          // processJsonObject(request.text,idPopup,  request);
+          handleDataChunk(request.uuid, request.text, request, idPopup);
         }
       } catch (e) {
         console.error(e);

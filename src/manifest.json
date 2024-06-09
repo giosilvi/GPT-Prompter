@@ -1,6 +1,6 @@
 {
   "name": "GPT-Prompter",
-  "version": "0.0.4.4",
+  "version": "0.0.4.5",
   "description": "Fast custom prompts to GPT-3.5, GPT-4 and ChatGPT API",
   "manifest_version": 3,
   "icons": {
@@ -8,7 +8,7 @@
     "48": "icons/NewiconA48.png",
     "128": "icons/NewiconA128.png"
   },
-  "permissions": ["contextMenus", "storage", "commands"],
+  "permissions": ["contextMenus", "storage", "commands", "activeTab"],
   "content_scripts": [
     {
       "matches": ["<all_urls>"],

@@ -194,6 +194,7 @@ chrome.runtime.onInstalled.addListener(function (details) {
 
 // Listen for a signal to refresh the context menu
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  // console.log("Received message:", message);
   // If the signal is to refresh the context menu
   if (message.text === "newPromptList") {
     createContextMenu();
@@ -221,6 +222,38 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       .then((resp) => sendResponse({ data: resp.text }))
       .catch((error) => sendResponse({ error: error.message }));
     return true; // Required to use sendResponse asynchronously
+  } else if (message.action === "takeScreenCapture"){
+    const { tab } = sender;
+    console.log("Taking screen capture!");
+    // Check for permissions
+    // Debug: Show permissions
+    chrome.permissions.getAll(function (permissions) {
+      // console.log("Permissions: ", permissions);
+    });
+    chrome.permissions.contains({ permissions: ["activeTab"] }, function (screenCapturePerms) {
+      if (screenCapturePerms){
+        // console.log("Perms available!");
+        chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" }, function (dataUrl) {
+          sendResponse({ data: dataUrl });
+        });
+      }
+      else {
+        chrome.permissions.request({ permissions: ["activeTab"] }, function (granted) {
+          if (granted) {
+            console.log("Perms granted!");
+            chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" }, function (dataUrl) {
+              sendResponse({ data: dataUrl });
+            });
+          }
+          else {
+            console.log("Perms rejected");
+            sendResponse({ error: "Permission denied" });
+          }
+        });
+      }
+    });
+
+    return true;
   } else {
     console.log("Unknown message: ", message);
   }
@@ -264,10 +297,12 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
 });
 
 function replacePlaceHolder(selectionText) {
+  // console.log("Selection text:", selectionText);
   // if there is a text /#TEXT#/g inside selectionText replace with nothing, and use the position to set the cursor later
   if (typeof selectionText == "undefined") {
     selectionText = "";
   }
+  // console.log("Selection text:", selectionText);
   var cursorPosition = selectionText.search(/#TEXT#/g);
   if (cursorPosition !== -1) {
     selectionText = selectionText.replace(/#TEXT#/g, "");
@@ -278,7 +313,21 @@ function replacePlaceHolder(selectionText) {
 function launchPopUpInPage(selectionText, prompt, command) {
   // replace the placeholder
   if (command == "showPopUpOnTheFly") {
-    var [selectionText, cursorPosition] = replacePlaceHolder(selectionText);
+    if (selectionText){
+      // console.log(selectionText[0]);
+      // console.log(selectionText[0].content);
+      if (selectionText[0].content){
+        // Legacy: May be safe to remove.
+        let userSelection = selectionText[1] ? selectionText[1].content : selectionText[0].content;
+        var [selectionText, cursorPosition] = replacePlaceHolder(userSelection);
+      }
+      else {
+        var [selectionText, cursorPosition] = replacePlaceHolder(selectionText);
+      }
+    }
+    else{
+      var [selectionText, cursorPosition] = replacePlaceHolder(selectionText);
+    }
   } else if (command == "showPopUpChatGPT") {
     // loop over the selectionText and replace the placeholder
     for (var i = 0; i < selectionText.length; i++) {
@@ -420,12 +469,12 @@ chrome.contextMenus.onClicked.addListener(async (info, tabs) => {
               })();
             });
           } else {
-            if (prompt.model in CHAT_API_MODELS) {
-              console.log("Chat GPT", prompt);
-              launchPopUpInPage(prompt.prompt, prompt, "showPopUpChatGPT");
-            } else {
+            // if (prompt.model in CHAT_API_MODELS) {
+            //   console.log("Chat GPT", prompt);
+            //   launchPopUpInPage(prompt.prompt, prompt, "showPopUpChatGPT");
+            // } else {
               launchPopUpInPage(prompt.prompt, prompt, "showPopUpOnTheFly");
-            }
+            // }
           }
         } else {
           // If the prompt number is invalid, send an error message to the tab and log a message to the console
