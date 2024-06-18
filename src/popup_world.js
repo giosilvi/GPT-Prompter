@@ -884,22 +884,26 @@ class popUpClass extends HTMLElement {
       // prevent a second click on the button to close the popup
       this.shadowRoot.getElementById(id_button).disabled = true;
       this.shadowRoot.getElementById(id_target).classList.toggle("show");
-      setTimeout(() => {
-        this.shadowRoot.getElementById(id_target).remove();
-      }, 500);
       // if the stream is on, stop it
       if (this.stream_on) {
         this.stop_stream = true;
         this.stream_on = false;
       }
       // Clear the image gallery
-      this.clearGallery(id_target);
-
+      if (this.imbase64arr[id_target]) {
+        this.clearGallery(id_target);
+      }
+      // console.log("Before filtering the list of active popups", this.listOfActivePopups);
       this.listOfActivePopups = this.listOfActivePopups.filter((item) => item !== id_target);
       // remove from listOfUnpinnedPopups if it is there
       if (this.listOfUnpinnedPopups.includes(id_target)) {
         this.listOfUnpinnedPopups.splice(this.listOfUnpinnedPopups.indexOf(id_target), 1);
       }
+      // console.log("After filtering the list of active popups", this.listOfActivePopups);
+
+      setTimeout(() => {
+        this.shadowRoot.getElementById(id_target).remove();
+      }, 500);
     });
   }
 

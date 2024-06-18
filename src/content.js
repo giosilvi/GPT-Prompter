@@ -41,6 +41,8 @@ document.addEventListener("contextmenu", function (e) {
 });
 
 function addListenersForDrag() {
+  console.log("Adding listeners for drag");
+  console.log(popUpShadow.listOfActivePopups);
   popUpShadow.listOfActivePopups.forEach((id) => {
     const elem = popUpShadow.shadowRoot.getElementById(`${id}grabbable`);
     // check if I am hovering ${id}temperature"
@@ -51,6 +53,7 @@ function addListenersForDrag() {
 let offsetX, offsetY;
 
 function mouseDown(e) {
+  // console.log("Mousedown before dragging!");
   // check if I am hovering ${id}temperature"
   if (e.target.id.includes("temperature")) {
     return;
@@ -87,6 +90,7 @@ function spanMove(e, id) {
   const mouseXPosition = e.clientX - offsetX;
   fullPopup.style.top = `${mouseYPosition}px`;
   fullPopup.style.left = `${mouseXPosition}px`;
+  // console.log("I LIKE TO MOVE IT MOVE IT");
 }
 
 // MOUSE POSITION FUNCTIONS
