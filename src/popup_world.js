@@ -1590,15 +1590,14 @@ class popUpClass extends HTMLElement {
     const symbol = symbolFromModel(request.bodyData.model);
     this.shadowRoot.getElementById(`${targetId}symbol`).innerHTML = symbol;
     this.shadowRoot.getElementById(`${targetId}symbol`).title = request.bodyData.model;
-    let header_content = JSON.stringify(request.text);
-    let HEADER_CONTENT_THRESHOLD = 120;
+    let lastElementIndex = request.text.length - 1;
+    let content = request.text[lastElementIndex].content;
+    let header_content;
 
-    if (header_content.length > HEADER_CONTENT_THRESHOLD) {
-      header_content = header_content.substring(0, HEADER_CONTENT_THRESHOLD) + "...";
-      // truncate at "image_url"
-      if (header_content.includes("image_url")) {
-        header_content = header_content.substring(0, header_content.indexOf("image_url")) + "...";
-      }
+    if (Array.isArray(content)) {
+        header_content = JSON.stringify(content[0].text || "");
+    } else {
+        header_content = JSON.stringify(content || "");
     }
     this.shadowRoot.getElementById(`${targetId}header`).innerHTML = `<i> ${ 
       header_content
