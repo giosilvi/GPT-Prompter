@@ -5,42 +5,16 @@ export const CHAT_API_MODELS = {
   "gpt-4": true,
   "gpt-3.5-turbo": true,
   "gpt-4-turbo": true,
-  "gpt-4o": true
+  "gpt-4o": true,
+  "gpt-4o-mini": true,
 };
 
 export const VISION_SUPPORTED_MODELS = {
   "gpt-4-turbo": true,
-  "gpt-4o": true
+  "gpt-4o": true,
+  "gpt-4o-mini": true,
 }
 
-// For models that have a maximum token limit (input + output tokens per request).
-var MaxTokensPerModel = {
-  "gpt-4": 8000,
-  "gpt-3.5-turbo": 4000,
-  "gpt-3.5-turbo-instruct": 4000,
-  "text-davinci-003": 4000,
-  "text-davinci-002": 4000,
-  "text-curie-001": 2000,
-  "text-babbage-001": 2000,
-  "text-ada-001": 2000
-};
-
-// Note: This is the number of maximum output tokens (not the context window size).
-const MaxOutputTokensPerModel = {
-  "gpt-4o": 4000,
-  "gpt-4-turbo": 4096
-}
-
-const MaxInputTokensPerModel = {
-  "gpt-4o": 4000,
-  "gpt-4-turbo": 4096
-
-}
-
-const DECOUPLED_INPUT_OUTPUT_LENGTH_MODELS = {
-  "gpt-4-turbo": true,
-  "gpt-4o": true
-};
 
 function checkMaxTokens(content, model) {
   var tokens = 0;
@@ -77,10 +51,7 @@ function checkMaxTokens(content, model) {
   } else {
     tokens = countTokens(content, model);
   }
-  var maxTokens = MaxTokensPerModel[model] - tokens;
-  if (model in DECOUPLED_INPUT_OUTPUT_LENGTH_MODELS) {
-    maxTokens = MaxTokensPerModel[model];
-  }
+  const maxTokens = 4096 // True for most models
   return { maxTokens, tokens };
 }
 
