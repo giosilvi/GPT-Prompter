@@ -99,7 +99,7 @@ function update_lower_buttons(items) {
 }
 
 function erasePrompt(index) {
-  // try to retrive the custom prompt from the storage API
+  // try to retrieve the custom prompt from the storage API
   console.log("erasePrompt: " + index);
   chrome.storage.local.get("history", function (items) {
     // Check that the history prompt exists

@@ -325,7 +325,7 @@ function savePrompt(type) {
     title: "",
     type: type,
   };
-  // try to retrive the custom prompt from the storage API
+  // try to retrieve the custom prompt from the storage API
   getFromStorage("customprompt", true).then((items) => {
     // Check that the prompt exists
     if (typeof items.customprompt !== "undefined") {
@@ -458,7 +458,7 @@ function addTitle(index) {
 async function saveTitle(index) {
   // get the text from the title
   var title = document.getElementById(`title-text${index}`).value;
-  // try to retrive the custom prompt from the storage API
+  // try to retrieve the custom prompt from the storage API
   try {
     const items = await getFromStorage("customprompt", true);
 

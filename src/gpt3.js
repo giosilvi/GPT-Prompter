@@ -65,8 +65,8 @@ function countTokens(text, model) {
 
 
 function checkTabsAndSendStream(message, tabs, string, bodyData, idpopup, uuid, tokens_sent) {
-  if (typeof text === "object") {
-    text = text[text.length - 1]["content"];
+  if (typeof string === "object") {
+    string = string[string.length - 1]["content"];
   }
   if (tabs.id == -1) {
     //pdf case
