@@ -26,18 +26,13 @@ const md = new MarkdownIt({
     // Fallback to default auto-detection
     return hljs.highlightAuto(str).value;
   },
-  // Use inline mode instead of block mode
-  inline: true
+  // Use md.renderInline for inline mode
 });
 
-function renderMarkdown(input) {
-   // Render the input and remove the surrounding <p> and </p> tags
-   const rendered = md.render(input).trim();
-   if (rendered.startsWith('<p>') && rendered.endsWith('</p>')) {
-     return rendered.slice(3, -4);
-   }
-   return rendered;
- }
+export function renderMarkdown(input) {
+   // Render the input in inline mode
+   return md.renderInline(input).trim();
+}
 
 window.renderMarkdown = renderMarkdown;
 
