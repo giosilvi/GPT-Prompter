@@ -8,18 +8,13 @@
 import { CHAT_API_MODELS } from "./gpt.js";
 
 function makeHistoryList(items) {
-  // create empty list and total cost variables
+  // create empty list
   var list = "";
-  var totalCost = 0;
   // loop through items.history array in reverse order
   for (var i = items.history.length - 1; i >= 0; i--) {
     // create list item for current item
     list += createListItem(items.history[i], i);
-    // add cost of current item to total cost
-    totalCost += parseFloat(items.history[i][2]);
   }
-  // update total cost display
-  updateTotalCostDisplay(totalCost);
   return list;
 }
 
@@ -59,22 +54,13 @@ function createListItem(item, index) {
   }
   // create completion content string
   var completionContent = `<strong>completion:</strong> ${item[1]}<br>`;
-  // create cost content string with delete button
-  var costContent = `<strong>cost:</strong> ${item[2]}$  <button  class="save" style="float:right;" id="eraseItem${index}" > Delete </button> <br>`;
+  // create delete button
+  var deleteButton = `<button  class="save" style="float:right;" id="eraseItem${index}" > Delete </button> <br>`;
   // add content strings to list item element
-  listItem += `${costContent}${promptContent}${completionContent}`;
+  listItem += `${deleteButton}${promptContent}${completionContent}`;
   // close list item element
   listItem += "</li>";
   return listItem;
-}
-
-/**
- * Updates the total cost display element with the provided total cost.
- *
- * @param {number} totalCost - The total cost to display.
- */
-function updateTotalCostDisplay(totalCost) {
-  document.getElementById("totCost").innerHTML = `<strong>Total cost:</strong> ${totalCost.toFixed(2)}$`;
 }
 
 // in javascript, to return two values, use an array
@@ -139,7 +125,6 @@ function delete_all() {
     if (typeof items.history !== "undefined") {
       items.history = [];
       document.getElementById("history-of-prompts").innerHTML = "History deleted";
-      document.getElementById("totCost").innerHTML = "";
       update_lower_buttons(items);
       chrome.storage.local.set({ history: items.history }, function () {
         // Notify that is erased
@@ -175,7 +160,7 @@ function export_history() {
     if (li[i].style.display != "none") {
       // from li[i].innerHTML get the prompt, completion , and remove any <br> element
       var prompt = li[i].innerText.split("prompt:")[1].split("completion:")[0].replace(/<br>/g, "");
-      var completion = li[i].innerText.split("completion:")[1].split("Cost:")[0].replace(/<br>/g, "");
+      var completion = li[i].innerText.split("completion:")[1].replace(/<br>/g, "");
       // combine the prompt and completion to dictionary
       var prompt_completion = { prompt: prompt, completion: completion };
       // add the dictionary to the history_to_save array

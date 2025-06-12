@@ -12,24 +12,7 @@ function symbolFromModel(model) {
 }
 
 // const highlightColor = "#d2f4d3";//"rgb(16, 163, 255)";
-const Gpt4oMiniCost = 0.0006 / 1000;
-const Gpt4oCost = 0.015 / 1000;
-const Gpt4TurboCost = 0.03 / 1000;
-const Gpt4Cost8kCompl = 0.06 / 1000;
-const ChatGPTCost = 0.002 / 1000;
 
-
-function computeCost(tokens, model) {
-  var cost = 0;
-  if (model == "gpt-3.5-turbo") cost = tokens * ChatGPTCost;
-  else if (model == "gpt-4") cost = tokens * Gpt4Cost8kCompl;
-  else if (model == "gpt-4-turbo") cost = tokens * Gpt4TurboCost;
-  else if (model == "gpt-4o") cost = tokens * Gpt4oCost;
-  else if (model == "gpt-4o-mini") cost = tokens * Gpt4oMiniCost;
-  return cost.toFixed(5);
-}
-
-//
 
 const minipopup = (id, { left = 0, top = 0 }) => `
 <div class="popuptext" id="${id}" style="left: ${left}px; top:${top}px" name="fullpopup">
@@ -1739,8 +1722,6 @@ class popUpClass extends HTMLElement {
       
       //save prompt to local storage
       const bodyData = JSON.parse(message.bodyData);
-      const model = bodyData.model;
-      const cost = computeCost(this.tokens + this.tokens_sent, model);
       // update in bodyData the final probability in logprobs
       if (final_prob !== undefined){
           bodyData.logprobs = final_prob + " %";
@@ -1766,10 +1747,10 @@ class popUpClass extends HTMLElement {
       // save the completion in the history
       chrome.storage.local.get("history", function (items) {
         if (typeof items.history !== "undefined") {
-          items.history.push([JSON.stringify(bodyData), complete_completion, cost]); // add the result to the history
+          items.history.push([JSON.stringify(bodyData), complete_completion]); // add the result to the history
           chrome.storage.local.set({ history: items.history });
         } else {
-          items.history = [[JSON.stringify(bodyData), complete_completion, cost]]; // initialize the history array
+          items.history = [[JSON.stringify(bodyData), complete_completion]]; // initialize the history array
           chrome.storage.local.set({ history: items.history });
         }
       });
