@@ -1,4 +1,5 @@
 import GPT3Tokenizer from "gpt3-tokenizer";
+import OpenAI from "openai";
 
 const tokenizer = new GPT3Tokenizer({ type: "gpt3" });
 export const CHAT_API_MODELS = {
@@ -94,89 +95,83 @@ function sendStream(message, id, string, bodyData, idpopup, uuid, tokens_sent = 
 }
 
 async function promptGPT3Prompting(prompt, items, tabs) {
-  var text = prompt["prompt"];
-  var model = prompt["model"];
+  let text = prompt["prompt"];
+  const model = prompt["model"];
   // if the model is gpt-4 or gpt-3.5-turbo, we need to check that the text is a valid json
   if (model in CHAT_API_MODELS) {
-    console.log('Check', typeof text)
-    if (typeof text !== "object") { text = [{ "role": "user", "content": text }]; }
-  }
-  else {
-    //we check that text is a string, if is JSON just take the last elemet value corresponding to the key "content"
+    if (typeof text !== "object") {
+      text = [{ role: "user", content: text }];
+    }
+  } else {
+    //we check that text is a string, if is JSON just take the last element value corresponding to the key "content"
     if (typeof text === "object") {
       text = text[text.length - 1]["content"];
     }
   }
-  var temperature = prompt["temperature"];
-  var popupID = prompt["popupID"]; // may be undefined
-  var uuid = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-  //send immediately text to the content script
-  var { url, str_bodyData, bodyData, tokens } = chooseCompletion(model, temperature, text);
-  let keepStreaming = true;
 
-  fetch(url, {
-    method: "POST",
-    headers: {
-      Accept: "application/json, text/plain, */*",
-      "Content-Type": "application/json",
-      Authorization: "Bearer " + items.APIKEY,
-    },
-    body: str_bodyData,
-  })
-    .then((response) => response.body)
-    .then((body) => {
-      checkTabsAndSendStream("GPTprompt", tabs, text, bodyData, popupID, uuid, tokens); // send the prompt to the content script, to be added to last mini popup
-      const reader = body.getReader();
-      return pump();
+  const temperature = prompt["temperature"];
+  const popupID = prompt["popupID"]; // may be undefined
+  const uuid =
+    Math.random().toString(36).substring(2, 15) +
+    Math.random().toString(36).substring(2, 15);
 
-      function pump() {
+  const { params, str_bodyData, tokens } = chooseCompletion(model, temperature, text);
+  const openai = new OpenAI({
+    apiKey: items.APIKEY,
+    dangerouslyAllowBrowser: true,
+  });
 
-        return reader.read().then(({ done, value }) => {
-          // When no more data needs to be consumed, close the stream
-          if (done) {
-            return;
-          }
-          // Enqueue the next data chunk into our target stream
-        //   console.log(value);
-          var stream = new TextDecoder().decode(value); //.substring(6);
-          // console.log(string, typeof string);
-          // if tabs.id == -1 then use querySelector to get the tab
-          checkTabsAndSendStream("GPTStream_completion", tabs, stream, str_bodyData, popupID, uuid, null);
-          return pump();
-        });
-      }
-    })
-    .catch((err) => {
-      console.log("error" + err);
-      checkTabsAndSendStream("GPTStream_completion", tabs, "Error:" + err, str_bodyData, popupID, uuid);
-    });
+  checkTabsAndSendStream("GPTprompt", tabs, text, params, popupID, uuid, tokens);
+
+  let stream;
+  if (model in CHAT_API_MODELS) {
+    stream = await openai.chat.completions.create(params);
+  } else {
+    stream = await openai.completions.create(params);
+  }
+
+  for await (const chunk of stream) {
+    const delta =
+      (chunk.choices && chunk.choices[0] &&
+        (chunk.choices[0].delta?.content || chunk.choices[0].text)) || "";
+    if (delta) {
+      checkTabsAndSendStream(
+        "GPTStream_completion",
+        tabs,
+        delta,
+        str_bodyData,
+        popupID,
+        uuid,
+        null
+      );
+    }
+  }
 }
 
 export default promptGPT3Prompting;
 
 function chooseCompletion(model, temperature, text) {
-  var { maxTokens, tokens } = checkMaxTokens(text, model);
-  var url = "";
+  const { maxTokens, tokens } = checkMaxTokens(text, model);
+  let params;
 
   if (model in CHAT_API_MODELS) {
-    url = "https://api.openai.com/v1/chat/completions";
-    var bodyData = {
-      model: model,
-      temperature: temperature,
+    params = {
+      model,
+      temperature,
       max_tokens: maxTokens,
       messages: text,
       stream: true,
     };
   } else {
-    url = "https://api.openai.com/v1/completions";
-    var bodyData = {
-      model: model,
-      temperature: temperature,
+    params = {
+      model,
+      temperature,
       max_tokens: maxTokens,
       prompt: text,
       stream: true,
     };
   }
-  var str_bodyData = JSON.stringify(bodyData);
-  return { url, str_bodyData, bodyData, tokens };
+
+  const str_bodyData = JSON.stringify(params);
+  return { params, str_bodyData, tokens };
 }
